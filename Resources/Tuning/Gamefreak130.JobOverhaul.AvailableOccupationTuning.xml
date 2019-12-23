@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OccupationTuning>
+<!--This first section is a constructor; do NOT type anything in here!-->
+  <Occupation>
+    <OccupationName>
+      <!--The GUID of the occupation as it appears in the game's XML. This is found in the "CareerName" element of the "Careers" XML resource or the XML resource of custom occupations added through NRaas Careers, or the "ActiveCareer" element of the "ActiveCareers" XML resource-->
+    </OccupationName>
+    <Enabled>
+      <!--True/False: Whether or not the occupation should appear in-game through the "Browse Classifieds" and "Upload Resume" interactions-->
+    </Enabled>
+    <RequiredDegrees>
+      <!--The names of the university degrees, if any, that are required to apply for the occupation. These can be found in the "AcademicDegreeName" element of the "AcademicDegrees" XML resource or the XML resource of custom degrees added through NRaas Careers Academics-->
+    </RequiredDegrees>
+  </Occupation>
+<!--Begin occupation tuning below-->
+  <Occupation>
+    <OccupationName>LawEnforcement</OccupationName>
+    <Enabled>True</Enabled>
+    <RequiredDegrees></RequiredDegrees>
+  </Occupation>
+</OccupationTuning>

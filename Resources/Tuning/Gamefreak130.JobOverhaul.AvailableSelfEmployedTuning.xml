@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SelfEmployedTuning>
+<!--This first section is a constructor; do NOT type anything in here!-->
+  <SelfEmployedCareer>
+    <CareerName>
+      <!--The name of the occupation as it appears in the game's XML. This is found in the "SkilledProfession" element of the "SkillBasedCareers" XML resource or the XML resource of custom occupations added through NRaas Careers SelfEmployed.-->
+    </CareerName>
+    <Enabled>
+      <!--True/False: Whether or not the occupation should appear in-game through the "Register as Self-Employed" interaction-->
+    </Enabled>
+  </SelfEmployedCareer>
+<!--Begin occupation tuning below-->
+  <SelfEmployedCareer>
+    <CareerName>Gardener</CareerName>
+    <Enabled>True</Enabled>
+  </SelfEmployedCareer>
+</SelfEmployedTuning>

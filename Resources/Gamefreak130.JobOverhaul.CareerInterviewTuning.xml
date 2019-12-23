@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InterviewTuning>
+<!--This first section is a constructor; do NOT type anything in here!-->
+  <Career>
+    <CareerName>
+      <!--The GUID of the occupation as it appears in the game's XML. This is found in the "CareerName" element of the "Careers" XML resource or the XML resource of custom occupations added through NRaas Careers-->
+    </CareerName>
+    <RequiresInterview>True</RequiresInterview> <!--True/False: Whether a sim has to interview for the career or get it immediately after applying-->
+    <PositiveTraits>Ambitious</PositiveTraits> <!--The enumeration of traits that increase a sim's chances of having a successful interview as they appear in the game's XML. These are found in the "Hex" element of the "Traits" XML resource or the XML resource of custom traits-->
+    <NegativeTraits>Loser</NegativeTraits> <!--The enumeration of traits that decrease a sim's chances of having a successful interview as they appear in the game's XML. These are found in the "Hex" element of the "Traits" XML resource or the XML resource of custom traits-->
+    <RequiredSkills></RequiredSkills> <!--The enumeration of skills that increase a sim's chances of having a successful interview as they appear in the game's XML. These are found in the "Hex" element of the "Skills" XML resource or the XML resource of custom skills-->
+  </Career>
+<!--Begin career interview tuning below-->
+  <Career>
+    <CareerName>Business</CareerName>
+    <PositiveTraits>Ambitious, Schmoozer, Charismatic, Irresistible, Frugal, Perceptive</PositiveTraits>
+    <NegativeTraits>Rebellious, Shy, SociallyAwkward, Loser</NegativeTraits>
+  </Career>
+  <Career>
+    <CareerName>Criminal</CareerName>
+    <PositiveTraits>Ambitious, Evil, MeanSpirited, Insane, Athletic, Genius</PositiveTraits>
+    <NegativeTraits>Good, Friendly, FamilyOriented, Coward, Clumsy, Loser</NegativeTraits>
+    <RequiredSkills>Athletic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Culinary</CareerName>
+    <PositiveTraits>Ambitious, NaturalCook, Schmoozer</PositiveTraits>
+    <NegativeTraits>MeanSpirited, Shy, Loser</NegativeTraits>
+    <RequiredSkills>Cooking</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Journalism</CareerName>
+    <PositiveTraits>Ambitious, BookWorm, Artistic, Friendly, Charismatic, SocialButterfly</PositiveTraits>
+    <NegativeTraits>SociallyAwkward, Shy, Loner, MeanSpirited, Loser</NegativeTraits>
+    <RequiredSkills>Writing, Charisma</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>LawEnforcement</CareerName>
+    <PositiveTraits>Ambitious, Genius, Athletic, Artistic, Disciplined, Brave</PositiveTraits>
+    <NegativeTraits>AbsentMinded, Clumsy, Coward, Loser</NegativeTraits>
+    <RequiredSkills>Logic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Medical</CareerName>
+    <PositiveTraits>Ambitious, Genius, BookWorm, SociallyAwkward</PositiveTraits>
+    <NegativeTraits>AbsentMinded, Loser</NegativeTraits>
+    <RequiredSkills>Science, Logic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Military</CareerName>
+    <PositiveTraits>Ambitious, Athletic, Handy, Schmoozer, Daredevil, Disciplined, Brave</PositiveTraits>
+    <NegativeTraits>AbsentMinded, Coward, Clumsy, Loser</NegativeTraits>
+    <RequiredSkills>Handiness, Athletic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Music</CareerName>
+    <PositiveTraits>Ambitious, Artistic, Virtuoso, Genius, XFactor</PositiveTraits>
+    <NegativeTraits>CantStandArt, Loser</NegativeTraits>
+    <RequiredSkills>Guitar, Piano, Drums, Bass, LaserHarp</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Political</CareerName>
+    <PositiveTraits>Ambitious, Charismatic, Friendly, Schmoozer, SocialButterfly</PositiveTraits>
+    <NegativeTraits>SociallyAwkward, Shy, Loner, MeanSpirited, Loser</NegativeTraits>
+    <RequiredSkills>Charisma</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>ProfessionalSports</CareerName>
+    <PositiveTraits>Ambitious, Athletic, Disciplined</PositiveTraits>
+    <NegativeTraits>Clumsy, CouchPotato, Loser</NegativeTraits>
+    <RequiredSkills>Athletic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Science</CareerName>
+    <PositiveTraits>Ambitious, Genius, GreenThumb, Handy, Angler, SociallyAwkward</PositiveTraits>
+    <NegativeTraits>AbsentMinded, Loser</NegativeTraits>
+    <RequiredSkills>Science, Gardening, Handiness, Fishing</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Education</CareerName>
+    <PositiveTraits>Ambitious, BookWorm, Charismatic, Genius, Friendly, Nuturing</PositiveTraits>
+    <NegativeTraits>MeanSpirited, Shy, Loner, SociallyAwkward, Loser, DislikesChildren</NegativeTraits>
+    <RequiredSkills>Logic, Charisma</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Film</CareerName>
+    <PositiveTraits>Ambitious, NaturalBornPerformer, XFactor, Schmoozer, Charismatic, Artistic, SocialButterfly, AvantGarde</PositiveTraits>
+    <NegativeTraits>Shy, SociallyAwkward, Loner, CantStandArt, Loser</NegativeTraits>
+    <RequiredSkills>Writing, Charisma</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>FortuneTellerCareer</CareerName>
+    <PositiveTraits>Ambitious, Charismatic, Schmoozer, SupernaturalFanTrait, SocialButterfly, Genius</PositiveTraits>
+    <NegativeTraits>SupernaturalSkeptic, Shy, SociallyAwkward, Loser</NegativeTraits>
+    <RequiredSkills>Spellcraft, Charisma, Logic</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>PTAlienTestSubject</CareerName>
+    <RequiresInterview>False</RequiresInterview>
+  </Career>
+  <Career>
+    <CareerName>VideoGameDeveloper</CareerName>
+    <PositiveTraits>Ambitious, Genius, Artistic, SociallyAwkward, ComputerWhiz</PositiveTraits>
+    <NegativeTraits>AbsentMinded, AntiTV, CantStandArt, Loser</NegativeTraits>
+    <RequiredSkills>Writing, InfluenceNerd</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>ArtAppraiserCareer</CareerName>
+    <PositiveTraits>Ambitious, Artistic, AvantGarde</PositiveTraits>
+    <NegativeTraits>CantStandArt, Loser</NegativeTraits>
+    <RequiredSkills>Painting, InfluenceRebel</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>SportsAgentCareer</CareerName>
+    <PositiveTraits>Ambitious, Charismatic, Schmoozer, Irresistible</PositiveTraits>
+    <NegativeTraits>SociallyAwkward, Shy, Loser</NegativeTraits>
+    <RequiredSkills>Charisma, SocialNetworking, InfluenceSocialite</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>Astronomer</CareerName>
+    <PositiveTraits>Ambitious, Athletic, Genius, Schmoozer, FutureSim, FutureSimLHR</PositiveTraits>
+    <NegativeTraits>Shy, SociallyAwkward, AntiTV, Loser</NegativeTraits>
+    <RequiredSkills>Future</RequiredSkills>
+  </Career>
+  <Career>
+    <CareerName>BotArena</CareerName>
+    <PositiveTraits>Ambitious, Schmoozer, BotFan, Charismatic, SocialButterfly, FutureSim, FutureSimLHR</PositiveTraits>
+    <NegativeTraits>AntiTV, Loser</NegativeTraits>
+    <RequiredSkills>Future, Charisma, BotBuilding</RequiredSkills>
+  </Career>
+</InterviewTuning>

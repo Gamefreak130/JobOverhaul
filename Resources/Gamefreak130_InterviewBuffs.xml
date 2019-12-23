@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<Gamefreak130_InterviewBuffs>
+  <BuffList>
+    <BuffName></BuffName>
+    <BuffDescription></BuffDescription>
+    <BuffHelpText></BuffHelpText>
+    <FirstPersonDescription>Gamefreak130_InterviewBuffFirstPersonDescription</FirstPersonDescription>
+    <Category>Misc</Category>
+    <PermaMoodlet>False</PermaMoodlet>
+    <PermaMoodletColor></PermaMoodletColor>
+    <AxisEffected>None</AxisEffected>
+    <PolarityOverride>NoOverride</PolarityOverride>
+    <EffectValue>0</EffectValue>
+    <DelayTimer>0</DelayTimer>
+    <TimeoutLength>1440</TimeoutLength>
+    <SKU>BaseGame</SKU>
+    <SolveCommodity></SolveCommodity>
+    <AttemptAutoSolve>False</AttemptAutoSolve>
+    <SolveTime></SolveTime>
+    <Stackable>False</Stackable>
+    <IsExtreme>False</IsExtreme>
+    <FacialIdle></FacialIdle>
+    <IncreasedEffectiveness></IncreasedEffectiveness>
+    <ReducedEffectiveness></ReducedEffectiveness>
+    <Hex></Hex>
+    <CustomClassName></CustomClassName>
+    <ThumbFilename></ThumbFilename>
+    <Topic></Topic>
+    <ShowBallon>True</ShowBallon>
+    <Travel>False</Travel>
+    <DisallowedOccults></DisallowedOccults>
+    <JazzStateSuffix></JazzStateSuffix>
+    <Version>1.0</Version>
+    <SpeciesAvailability>All</SpeciesAvailability>
+  </BuffList>
+  <BuffList>
+    <BuffName>Gamefreak130_ReadyForInterviewBuff</BuffName>
+    <BuffDescription>Gamefreak130_ReadyForInterviewBuffDescription</BuffDescription>
+    <TimeoutLength>7200</TimeoutLength>
+    <Hex>Gamefreak130_ReadyForInterviewBuff=0xCA57D12A3647413D</Hex>
+    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffReadyForInterview, Gamefreak130.JobOverhaul</CustomClassName>
+    <ThumbFilename>moodlet_anxiousToAdvance</ThumbFilename>
+    <Travel>True</Travel>
+  </BuffList>
+  <BuffList>
+    <BuffName>Gamefreak130_GotTheJobBuff</BuffName>
+    <BuffDescription>Gamefreak130_GotTheJobBuffDescription</BuffDescription>
+    <AxisEffected>Happy</AxisEffected>
+    <EffectValue>20</EffectValue>
+    <Hex>Gamefreak130_GotTheJobBuff=0x1770B99317A5D98A</Hex>
+    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffGotTheJob, Gamefreak130.JobOverhaul</CustomClassName>
+    <ThumbFilename>moodlet_jobtastic</ThumbFilename>
+  </BuffList>
+  <BuffList>
+    <BuffName>Gamefreak130_BadInterviewBuff</BuffName>
+    <BuffDescription>Gamefreak130_BadInterviewBuffDescription</BuffDescription>
+    <AxisEffected>Stressed</AxisEffected>
+    <EffectValue>-20</EffectValue>
+    <Hex>Gamefreak130_BadInterviewBuff=0x552A7AD84AF2FA7E</Hex>
+    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffBadInterview, Gamefreak130.JobOverhaul</CustomClassName>
+    <ThumbFilename>moodlet_Gamefreak130_BadInterviewBuff</ThumbFilename>
+  </BuffList>
+</Gamefreak130_InterviewBuffs>

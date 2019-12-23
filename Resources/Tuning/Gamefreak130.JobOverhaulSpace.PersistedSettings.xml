@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base>
+  <Current_Tuning>
+    <kFullTimeInterviewHour value="10">
+      <!--Range 0-24: The hour at which an interview for a full-time job will be scheduled-->
+    </kFullTimeInterviewHour>
+    <kPartTimeInterviewHour value="17">
+      <!--Range 0-24: The hour at which an interview for a part-time job will be scheduled-->
+    </kPartTimeInterviewHour>
+    <kEnableGetJobInRabbitHole value="True">
+      <!--True/False: Whether or not to enable the EA default 'Join Career' rabbithole interactions for occupations that do not require an interview-->
+    </kEnableGetJobInRabbitHole>
+    <kEnableJoinProfessionInRabbitHoleOrLot value="False">
+      <!--True/False: Whether or not to enable the EA default 'Join Profession' interactions-->
+    </kEnableJoinProfessionInRabbitHoleOrLot>
+    <kInstantGratification value="False">
+      <!--True/False: Whether or not job offers from computers, newspapers, or smartphones will be presented in one menu; if set to true, kHoloComputerInstantGratification and kHoloPhoneInstantGratification are also assumed to be true"-->
+    </kInstantGratification>
+    <kHoloComputerInstantGratification value="True">
+      <!--True/False: Whether or not to have the Holocomputer present all job offers in one menu like the crazy future tech it is, rather than through multiple dialogues over time-->
+    </kHoloComputerInstantGratification>
+    <kHoloPhoneInstantGratification value="True">
+      <!--True/False: Whether or not to have the Holophone present all job offers in one menu like the crazy future tech it is, rather than through multiple dialogues over time-->
+    </kHoloPhoneInstantGratification>
+    <kNewspaperSelfEmployed value="False">
+      <!--True/False: Whether or not to allow the "Register as Self-Employed" interaction on newspapers-->
+    </kNewspaperSelfEmployed>
+    <kNumBonusResumeJobs value="1">
+      <!--How many bonus job offers to award sims with enough blog followers through the "Upload Resume" interaction-->
+    </kNumBonusResumeJobs>
+    <kBaseFullTimeJobChance value="30">
+      <!--Range 0-100: Base chance of a sim getting a full-time job after a job interview-->
+    </kBaseFullTimeJobChance>
+    <kBasePartTimeJobChance value="65">
+      <!--Range 0-100: Base chance of a sim getting a part-time job after a job interview-->
+    </kBasePartTimeJobChance>
+    <kPostponeInterviewChanceChange value="10">
+      <!--Range 0-100: How much each postponement of a job interview decreases the chances of getting a job after that interview-->
+    </kPostponeInterviewChanceChange>
+    <kReadyForInterviewChanceChange value="15">
+      <!--Range 0-100: How much the 'Ready For Interview' moodlet affects the chance of getting a job after a job interview-->
+    </kReadyForInterviewChanceChange>
+    <kPositiveTraitInterviewChanceChange value="10">
+      <!--Range 0-100: How much traits beneficial to a job affect the chance of getting that job after an interview-->
+    </kPositiveTraitInterviewChanceChange>
+    <kNegativeTraitInterviewChanceChange value="15">
+      <!--Range 0-100: How much traits detrimental to a job affect the chance of getting that job after an interview-->
+    </kNegativeTraitInterviewChanceChange>
+    <kRequiredSkillInterviewChanceChange value="3">
+      <!--Range 0-100: Change in chance of a sim getting a job after an interview per level in that job's required skills-->
+    </kRequiredSkillInterviewChanceChange>
+    <kPromotionChance value="10">
+      <!--Range 0-100: Chance that a sim gets offered a promotion upon leaving work when the performance bar is full-->
+    </kPromotionChance>
+    <kMaxInterviewPostpones value="3">
+      <!--Maximum times a sim can postpone a job interview-->
+    </kMaxInterviewPostpones>
+    <kInterviewTime value="60">
+      <!--The amount of time, in sim minutes, that a sim spends inside a rabbithole for a job interview-->
+    </kInterviewTime>
+    <kApplicationTime value="30">
+      <!--The amount of time, in sim minutes, that a sim spends inside a rabbithole to fill out a job application or sign self-employment paperwork-->
+    </kApplicationTime>
+  </Current_Tuning>
+</base>
