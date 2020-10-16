@@ -38,7 +38,6 @@
     <BuffDescription>Gamefreak130_ReadyForInterviewBuffDescription</BuffDescription>
     <TimeoutLength>7200</TimeoutLength>
     <Hex>Gamefreak130_ReadyForInterviewBuff=0xCA57D12A3647413D</Hex>
-    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffReadyForInterview, Gamefreak130.JobOverhaul</CustomClassName>
     <ThumbFilename>moodlet_anxiousToAdvance</ThumbFilename>
     <Travel>True</Travel>
   </BuffList>
@@ -48,7 +47,6 @@
     <AxisEffected>Happy</AxisEffected>
     <EffectValue>20</EffectValue>
     <Hex>Gamefreak130_GotTheJobBuff=0x1770B99317A5D98A</Hex>
-    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffGotTheJob, Gamefreak130.JobOverhaul</CustomClassName>
     <ThumbFilename>moodlet_jobtastic</ThumbFilename>
   </BuffList>
   <BuffList>
@@ -57,7 +55,6 @@
     <AxisEffected>Stressed</AxisEffected>
     <EffectValue>-20</EffectValue>
     <Hex>Gamefreak130_BadInterviewBuff=0x552A7AD84AF2FA7E</Hex>
-    <CustomClassName>Gamefreak130.JobOverhaulSpace.Buffs.BuffBadInterview, Gamefreak130.JobOverhaul</CustomClassName>
     <ThumbFilename>moodlet_Gamefreak130_BadInterviewBuff</ThumbFilename>
   </BuffList>
 </Gamefreak130_InterviewBuffs>

@@ -49,48 +49,54 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ScriptCore">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\ScriptCore.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\ScriptCore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="SimIFace">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\SimIFace.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\SimIFace.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sims3GameplayObjects">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3GameplayObjects.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3GameplayObjects.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sims3GameplaySystems">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3GameplaySystems.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3GameplaySystems.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sims3Metadata">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3Metadata.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3Metadata.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sims3StoreObjects">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3StoreObjects.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\Sims3StoreObjects.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\System.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\System.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\System.Xml.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\System.Xml.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UI">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\UI_edit.dll</HintPath>
+      <HintPath>..\Resources\UI_edit.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib">
-      <HintPath>..\..\..\..\Moddin' Projects\Sims 3\Sims 3 Libraries\He Unprotec He Attac\mscorlib.dll</HintPath>
+      <HintPath>..\..\..\..\Workbench\Sims 3\Sims 3 Libraries\He Unprotec He Attac\mscorlib.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="JobOverhaul.cs" />
+    <Compile Include="Common.cs" />
+    <Compile Include="JobOverhaulSpace.Helpers.cs" />
+    <Compile Include="JobOverhaulSpace.Helpers.Situations.cs" />
+    <Compile Include="JobOverhaulSpace.Helpers.UI.cs" />
+    <Compile Include="JobOverhaulSpace.Interactions.cs" />
+    <Compile Include="JobOverhaulSpace.PersistedSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
