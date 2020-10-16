@@ -96,6 +96,7 @@
     <Compile Include="JobOverhaulSpace.Helpers.Situations.cs" />
     <Compile Include="JobOverhaulSpace.Helpers.UI.cs" />
     <Compile Include="JobOverhaulSpace.Interactions.cs" />
+    <Compile Include="JobOverhaulSpace.Interactions.Interviews.cs" />
     <Compile Include="JobOverhaulSpace.PersistedSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

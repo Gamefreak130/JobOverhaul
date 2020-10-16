@@ -391,6 +391,27 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
     public static class Methods
     {
+        public static bool TestApplyForProfession(Sim sim, OccupationNames profession, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
+        {
+            Settings.CareerAvailabilitySettings.TryGetValue(profession.ToString(), out CareerAvailabilitySettings settings);
+            if (!settings.IsAvailable)
+            {
+                return false;
+            }
+            if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
+            {
+                foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
+                {
+                    if (sim.DegreeManager == null || !sim.DegreeManager.HasCompletedDegree(degree))
+                    {
+                        greyedOutTooltipCallback = InteractionInstance.CreateTooltipCallback(LocalizeString(sim.IsFemale, "DoesNotHaveRequiredDegrees"));
+                        return false;
+                    }
+                }
+            }
+            return Settings.EnableJoinProfessionInRabbitHoleOrLot && CareerManager.GetStaticOccupation(profession) is ActiveCareer activeCareer && IsActiveCareerAvailable(activeCareer) && ActiveCareer.CanAddActiveCareer(sim.SimDescription, profession);
+        }
+
         public static void AddPhoneInteractions(PhoneHome phoneHome, InterviewData data)
         {
             bool hasPostpone = false;
@@ -618,10 +639,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         public static void OfferJob(Sim sim, OccupationEntryTuple occupation)
         {
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1)
-            {
-                occupation
-            };
+            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1) { occupation };
             UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(sim, sim.ObjectId, list);
         }
 

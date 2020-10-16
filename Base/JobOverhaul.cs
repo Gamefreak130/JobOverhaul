@@ -718,7 +718,7 @@ namespace Gamefreak130
         public static bool IsOnceReadInstalled;
 
         [PersistableStatic]
-        public static Dictionary<ulong, SavedTravelOccupation> SavedOccupationsForTravel = new Dictionary<ulong, SavedTravelOccupation>(); //TODO Refactor to not persist
+        public static Dictionary<ulong, SavedTravelOccupation> SavedOccupationsForTravel = new Dictionary<ulong, SavedTravelOccupation>();
 
         [PersistableStatic]
         public static int RandomNewspaperSeed;

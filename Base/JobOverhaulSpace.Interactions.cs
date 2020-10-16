@@ -1324,22 +1324,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         occupation = OccupationNames.MagicianCareer;
                         break;
                 }
-                if (!Settings.CareerAvailabilitySettings.TryGetValue(occupation.ToString(), out CareerAvailabilitySettings settings) || !settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(Helpers.Methods.LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && !a.NeedsToBeGreeted(target) && target.SimDescription.AssignedRole is Proprietor && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
+                return a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && !a.NeedsToBeGreeted(target) && target.SimDescription.AssignedRole is Proprietor && TestApplyForProfession(a, occupation, ref greyedOutTooltipCallback) && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
             }
         }
 
@@ -1374,27 +1359,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
             }
 
-            public override bool Test(Sim a, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.Stylist.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(Helpers.Methods.LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && target.SimDescription.HasActiveRole && target.SimDescription.AssignedRole is Styling.StylistRole 
-                    && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
-            }
+            public override bool Test(Sim a, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) 
+                => a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && target.SimDescription.HasActiveRole && target.SimDescription.AssignedRole is Styling.StylistRole
+                    && TestApplyForProfession(a, OccupationNames.Stylist, ref greyedOutTooltipCallback) && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
         }
 
         public static void OnRequestFinish(Sim actor, Sim _, string __, ActiveTopic ___, InteractionInstance ____)
@@ -1410,26 +1377,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public override string GetInteractionName(Sim actor, Lot target, InteractionObjectPair iop) => Localization.LocalizeString("Gameplay/Excel/Socializing/Action:JoinStylistActiveCareer");
 
-            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.Stylist.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && target.CommercialLotSubType == CommercialLotSubType.kEP2_Salon && !(a.Occupation is Stylist) && Stylist.IsStylistActiveCareerAvailable();
-            }
+            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType == CommercialLotSubType.kEP2_Salon && TestApplyForProfession(a, OccupationNames.Stylist, ref greyedOutTooltipCallback);
         }
 
         public override bool Run()
@@ -1474,26 +1422,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public override string GetInteractionName(Sim actor, Lot target, InteractionObjectPair iop) => Localization.LocalizeString(actor.IsFemale, "Gameplay/Excel/Socializing/Action:JoinFirefighterActiveCareer");
 
-            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.Firefighter.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && target.CommercialLotSubType == CommercialLotSubType.kEP2_FireStation && !a.IsActiveFirefighter && ActiveFireFighter.IsFireFighterActiveCareerAvailable();
-            }
+            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType == CommercialLotSubType.kEP2_FireStation && TestApplyForProfession(a, OccupationNames.Firefighter, ref greyedOutTooltipCallback);
         }
 
         public override bool Run()
@@ -1524,26 +1453,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         public class Definition : InteractionDefinition<Sim, CityHall, JoinActiveCareerDaycare>
         {
-            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.Daycare.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && ActiveCareer.CanAddActiveCareer(a.SimDescription, OccupationNames.Daycare);
-            }
+            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => TestApplyForProfession(a, OccupationNames.Daycare, ref greyedOutTooltipCallback);
 
             public override string GetInteractionName(Sim actor, CityHall target, InteractionObjectPair iop) => LocalizeString("JoinActiveCareerDaycareName");
         }
@@ -1565,26 +1475,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, PoliceStation, JoinActiveCareerPrivateEyeEx>
         {
-            public override bool Test(Sim a, PoliceStation target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.PrivateEye.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && ActiveCareer.CanAddActiveCareer(a.SimDescription, OccupationNames.PrivateEye);
-            }
+            public override bool Test(Sim a, PoliceStation target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => TestApplyForProfession(a, OccupationNames.PrivateEye, ref greyedOutTooltipCallback);
         }
 
         public override bool InRabbitHole()
@@ -1600,26 +1491,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, ScienceLab, JoinActiveCareerGhostHunterEx>
         {
-            public override bool Test(Sim a, ScienceLab target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.GhostHunter.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && ActiveCareer.CanAddActiveCareer(a.SimDescription, OccupationNames.GhostHunter);
-            }
+            public override bool Test(Sim a, ScienceLab target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => TestApplyForProfession(a, OccupationNames.GhostHunter, ref greyedOutTooltipCallback);
         }
 
         public override bool InRabbitHole()
@@ -1635,26 +1507,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, CityHall, JoinActiveCareerInteriorDesignerEx>
         {
-            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.InteriorDesigner.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;//TODO refactor all this shit
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && ActiveCareer.CanAddActiveCareer(a.SimDescription, OccupationNames.InteriorDesigner);
-            }
+            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => TestApplyForProfession(a, OccupationNames.InteriorDesigner, ref greyedOutTooltipCallback);
         }
 
         public override bool InRabbitHole()
@@ -1670,26 +1523,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, CityHall, JoinActiveCareerLifeguardEx>
         {
-            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-            {
-                Settings.CareerAvailabilitySettings.TryGetValue(OccupationNames.Lifeguard.ToString(), out CareerAvailabilitySettings settings);
-                if (!settings.IsAvailable)
-                {
-                    return false;
-                }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && settings.RequiredDegrees.Count > 0)
-                {
-                    foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                    {
-                        if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                            return false;
-                        }
-                    }
-                }
-                return Settings.EnableJoinProfessionInRabbitHoleOrLot && CareerManager.GetStaticOccupation(OccupationNames.Lifeguard) is ActiveCareer activeCareer && IsActiveCareerAvailable(activeCareer) && ActiveCareer.CanAddActiveCareer(a.SimDescription, OccupationNames.Lifeguard);
-            }
+            public override bool Test(Sim a, CityHall target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => TestApplyForProfession(a, OccupationNames.Lifeguard, ref greyedOutTooltipCallback);
         }
 
         public override bool InRabbitHole()
@@ -1851,407 +1685,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Sim sim = parameters.Actor as Sim;
                 List<Sim> steadyGigProprietors = sim.OccupationAsPerformanceCareer.GetSteadyGigProprietors();
                 PopulateSimPicker(ref parameters, out listObjs, out headers, steadyGigProprietors, false);
-            }
-        }
-    }
-
-    public class Interviews
-    {
-        [Persistable]
-        public class InterviewData
-        {
-            public ulong ActorId { get; }
-
-            public DateAndTime InterviewDate { get; set; }
-
-            public int TimesPostponed { get; set; }
-
-            public AlarmHandle RemindAlarm { get; set; } = AlarmHandle.kInvalidHandle;
-
-            public AlarmHandle TimeoutAlarm { get; set; } = AlarmHandle.kInvalidHandle;
-
-            public EventListener RabbitHoleDisposedListener { get; set; }
-
-            public RabbitHole RabbitHole { get; }
-
-            public OccupationNames CareerName { get; }
-
-            public InterviewData()
-            {
-            }
-
-            public InterviewData(CareerLocation careerLocation, Sim actor)
-            {
-                RabbitHole = careerLocation.Owner;
-                ActorId = actor.SimDescription.SimDescriptionId;
-                CareerName = careerLocation.Career.Guid;
-                TimesPostponed = 0;
-                float interviewDelta = careerLocation.Career.SharedData.Category == Career.CareerCategory.FullTime ? SimClock.HoursUntil(Settings.FullTimeInterviewHour) + 24 : SimClock.HoursUntil(Settings.PartTimeInterviewHour) + 24;
-                HolidayManager manager = HolidayManager.Instance;
-                while (SimClock.Add(SimClock.CurrentTime(), TimeUnit.Hours, interviewDelta).DayOfWeek == DaysOfTheWeek.Saturday || SimClock.Add(SimClock.CurrentTime(), TimeUnit.Hours, interviewDelta).DayOfWeek == DaysOfTheWeek.Sunday 
-                    || (manager != null && SimClock.IsSameDay(SimClock.Add(SimClock.CurrentTime(), TimeUnit.Hours, interviewDelta), manager.mStartDateTimeOfHoliday)))
-                {
-                    interviewDelta += 24;
-                }
-                InterviewDate = SimClock.Add(SimClock.CurrentTime(), TimeUnit.Hours, interviewDelta);
-                string text = LocalizeString(actor.IsFemale, "InterviewOffer", new object[]
-                    {
-                        actor,
-                        careerLocation.Owner.GetLocalizedName(),
-                        careerLocation.Career.GetLocalizedCareerName(actor.IsFemale),
-                        GetTextDayOfWeek(InterviewDate),
-                        SimClockUtils.GetText(Convert.ToInt32(InterviewDate.Hour), 0)
-                    });
-                Show(new Format(text, NotificationStyle.kGameMessagePositive));
-                RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) - 1, TimeUnit.Hours, new AlarmTimerCallback(OnReminderCallback), "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, actor);
-                TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) + 1, TimeUnit.Hours, new AlarmTimerCallback(OnInterviewTimeout), "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, actor);
-                careerLocation.Owner.AddInteraction(new DoInterview.Definition(this));
-                RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, new ProcessEventDelegate(OnRabbitHoleDisposed), null, RabbitHole);
-                PhoneCell phone = actor.Inventory.Find<PhoneCell>();
-                if (phone != null)
-                {
-                    phone.AddInventoryInteraction(new PostponeInterview.Definition(this));
-                    phone.AddInventoryInteraction(new CancelInterview.Definition(this));
-                }
-                foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                {
-                    AddPhoneInteractions(phoneHome, this);
-                }
-                InterviewList.Add(this);
-                Audio.StartSound("sting_opp_success");
-            }
-
-            protected internal void OnReminderCallback()
-            {
-                DoInterview.Definition definition = new DoInterview.Definition(this);
-                if (ScavengerManager.GetSimFromDescriptionId(ActorId) is Sim sim)
-                {
-                    sim.InteractionQueue.Add(definition.CreateInstance(RabbitHole, sim, new InteractionPriority(InteractionPriorityLevel.UserDirected), true, true) as DoInterview);
-                    sim.ShowTNSIfSelectable(LocalizeString(sim.IsFemale, "InterviewReminder", new object[]
-                        {
-                            sim,
-                            RabbitHole.GetLocalizedName()
-                        }), NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, ObjectGuid.InvalidObjectGuid);
-                }
-            }
-
-            protected internal void OnInterviewTimeout() => Dispose(true);
-
-            protected internal ListenerAction OnRabbitHoleDisposed(Event e)
-            {
-                Dispose(false);
-                return ListenerAction.Remove;
-            }
-
-            protected internal void Dispose(bool isTimeout)
-            {
-                InteractionObjectPair iop = null;
-                if (ScavengerManager.GetSimFromDescriptionId(ActorId) is Sim sim)
-                {
-                    PhoneCell phone = sim.Inventory.Find<PhoneCell>();
-                    if (phone != null)
-                    {
-                        RemovePhoneInteractions(sim, phone, isTimeout);
-                    }
-                    foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                    {
-                        RemovePhoneInteractions(sim, phoneHome, isTimeout);
-                    }
-                    if (RabbitHole != null)
-                    {
-                        foreach (InteractionObjectPair current in RabbitHole.Interactions)
-                        {
-                            if (current.InteractionDefinition is DoInterview.Definition definition && definition.mData.ActorId == ActorId)
-                            {
-                                iop = current;
-                                break;
-                            }
-                        }
-                    }
-                    if (iop != null)
-                    {
-                        InteractionInstance firstInstance = sim.InteractionQueue.GetCurrentInteraction();
-                        if (firstInstance != null && firstInstance.InteractionDefinition.GetType() == iop.InteractionDefinition.GetType() && isTimeout)
-                        {
-                            firstInstance.CancellableByPlayer = false;
-                        }
-                        else if (isTimeout)
-                        {
-                            if (sim.IsSelectable)
-                            {
-                                Audio.StartSound("sting_opp_fail");
-                                sim.ShowTNSIfSelectable(LocalizeString(sim.IsFemale, "InterviewTimeout", new object[]
-                                {
-                                    sim,
-                                    CareerManager.GetStaticOccupation(CareerName).GetLocalizedCareerName(sim.IsFemale)
-                                }), NotificationStyle.kGameMessageNegative, ObjectGuid.InvalidObjectGuid, sim.ObjectId);
-                            }
-                        }
-                        for (int i = sim.InteractionQueue.Count - 1; i >= 1; i--)
-                        {
-                            InteractionInstance current = sim.InteractionQueue.mInteractionList[i];
-                            if (current.InteractionDefinition.GetType() == iop.InteractionDefinition.GetType())
-                            {
-                                sim.InteractionQueue.RemoveInteractionByRef(current);
-                            }
-                        }
-                        RabbitHole.RemoveInteraction(iop);
-                    }
-                }
-                InterviewList.Remove(this);
-                AlarmManager.Global.RemoveAlarm(RemindAlarm);
-                AlarmManager.Global.RemoveAlarm(TimeoutAlarm);
-                EventTracker.RemoveListener(RabbitHoleDisposedListener);
-                RabbitHoleDisposedListener = null;
-            }
-        }
-
-        [PersistableStatic]
-        public static List<InterviewData> InterviewList = new List<InterviewData>();
-
-        public class DoInterview : RabbitHole.RabbitHoleInteraction<Sim, RabbitHole>
-        {
-            public class Definition : InteractionDefinition<Sim, RabbitHole, DoInterview>
-            {
-                internal InterviewData mData;
-
-                public Definition()
-                {
-                }
-
-                public Definition(InterviewData data) => mData = data;
-
-                public override string GetInteractionName(Sim actor, RabbitHole target, InteractionObjectPair iop) => LocalizeString("DoInterview");
-
-                public override InteractionInstance CreateInstance(ref InteractionInstanceParameters parameters)
-                {
-                    DoInterview doInterview = base.CreateInstance(ref parameters) as DoInterview;
-                    doInterview.mData = mData;
-                    return doInterview;
-                }
-
-                public override bool Test(Sim actor, RabbitHole target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-                {
-                    if (!(mData.ActorId == actor.SimDescription.SimDescriptionId))
-                    {
-                        return false;
-                    }
-                    if (SimClock.CurrentTime() < SimClock.Subtract(mData.InterviewDate, TimeUnit.Hours, 1))
-                    {
-                        greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString("NotYetTimeForInterview", new object[]
-                        {
-                            actor,
-                            GetTextDayOfWeek(mData.InterviewDate),
-                            SimClockUtils.GetText(Convert.ToInt32(mData.InterviewDate.Hour), 0)
-                        }));
-                        return false;
-                    }
-                    return true;
-                }
-            }
-
-            private InterviewData mData;
-
-            private AlarmHandle mAlarm1 = AlarmHandle.kInvalidHandle;
-
-            private AlarmHandle mAlarm2 = AlarmHandle.kInvalidHandle;
-
-            private bool mSuccess;
-
-            public override bool Run()
-            {
-                Actor.SwitchToOutfitWithSpin(Sim.ClothesChangeReason.GoingToRabbitHole, OutfitCategories.Formalwear);
-                return base.Run();
-            }
-
-            public override bool InRabbitHole()
-            {
-                CancellableByPlayer = false;
-                mData.Dispose(false);
-                if (Actor.IsSelectable && CareerManager.GetStaticCareer(mData.CareerName) is Career career && Settings.InterviewSettings.TryGetValue(career.SharedData.Name.Substring(34), out InterviewSettings settings))
-                {
-                    float chance = career.Category == Career.CareerCategory.FullTime ? Settings.BaseFullTimeJobChance : Settings.BasePartTimeJobChance;
-                    chance -= Settings.PostponeInterviewChanceChange * mData.TimesPostponed;
-                    foreach (TraitNames trait in settings.PositiveTraits)
-                    {
-                        if (Actor.TraitManager.HasElement(trait))
-                        {
-                            chance += Settings.PositiveTraitInterviewChanceChange;
-                        }
-                    }
-                    foreach (TraitNames trait in settings.NegativeTraits)
-                    {
-                        if (Actor.TraitManager.HasElement(trait))
-                        {
-                            chance -= Settings.NegativeTraitInterviewChanceChange;
-                        }
-                    }
-                    foreach (SkillNames skill in settings.RequiredSkills)
-                    {
-                        if (Actor.SkillManager.HasElement(skill))
-                        {
-                            chance += Settings.RequiredSkillInterviewChanceChange * Actor.SkillManager.GetElement(skill).SkillLevel;
-                        }
-                    }
-                    if (Actor.BuffManager.HasElement(kReadyForInterviewGuid))
-                    {
-                        chance += Settings.ReadyForInterviewChanceChange;
-                    }
-                    chance *= MathHelpers.LinearInterpolate(-100f, 100f, 0.65f, 1.15f, Actor.MoodManager.MoodValue);
-                    MathUtils.Clamp(chance, 0, 100);
-                    mSuccess = RandomUtil.RandomChance(chance);
-                    float time = Settings.InterviewTime / 3;
-                    mAlarm1 = AlarmManager.Global.AddAlarm(time, TimeUnit.Minutes, new AlarmTimerCallback(ShowFirstMessage), "Gamefreak130 wuz here -- Interview Message Callback", AlarmType.AlwaysPersisted, Actor);
-                    mAlarm2 = AlarmManager.Global.AddAlarm(time * 2, TimeUnit.Minutes, new AlarmTimerCallback(ShowSecondMessage), "Gamefreak130 wuz here -- Interview Message Callback", AlarmType.AlwaysPersisted, Actor);
-                    bool flag = DoTimedLoop(Settings.InterviewTime);
-                    if (!flag)
-                    {
-                        return false;
-                    }
-                    if (mSuccess)
-                    {
-                        if (mData.RabbitHole.CareerLocations.TryGetValue((ulong)mData.CareerName, out CareerLocation location))
-                        {
-                            bool showUi = Actor.SimDescription.CareerManager.IsLocationTransfer(new AcquireOccupationParameters(location, false, false));
-                            AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(location, showUi, true);
-                            if (BoardingSchool.DidSimGraduate(Actor.SimDescription, BoardingSchool.BoardingSchoolTypes.None, false))
-                            {
-                                BoardingSchool.UpdateAcquireOccupationParameters(Actor.SimDescription.BoardingSchool, (ulong)mData.CareerName, ref occupationParameters);
-                            }
-                            if (Actor.AcquireOccupation(occupationParameters))
-                            {
-                                if (!showUi)
-                                {
-                                    Occupation occupation = Actor.CareerManager.Occupation;
-                                    string newOccupationTnsText = occupation.GetNewOccupationTnsText();
-                                    if (!string.IsNullOrEmpty(newOccupationTnsText))
-                                    {
-                                        occupation.ShowOccupationTNS(newOccupationTnsText);
-                                    }
-                                    Audio.StartSound("sting_career_positive");
-                                }
-                                Actor.BuffManager.AddElement(0x1770B99317A5D98A, (Origin)ResourceUtils.HashString64("FromGoodInterview"));
-                            }
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, "InterviewFailure", new object[]
-                        {
-                            Actor
-                        }), NotificationStyle.kGameMessageNegative, Target.RabbitHoleProxy.ObjectId, ObjectGuid.InvalidObjectGuid);
-                        Audio.StartSound("sting_opp_fail");
-                        Actor.BuffManager.AddElement(0x552A7AD84AF2FA7E, (Origin)ResourceUtils.HashString64("FromBadInterview"));
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            public void ShowFirstMessage() => Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, mSuccess ? "FirstInterviewTNSGood" : "FirstInterviewTNSBad"), NotificationStyle.kSimTalking);
-
-            public void ShowSecondMessage() => Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, mSuccess ? "SecondInterviewTNSGood" : "SecondInterviewTNSBad"), NotificationStyle.kSimTalking);
-
-            public override void Cleanup()
-            {
-                base.Cleanup();
-                AlarmManager.Global.RemoveAlarm(mAlarm1);
-                AlarmManager.Global.RemoveAlarm(mAlarm2);
-            }
-        }
-
-        public class PostponeInterview : Phone.Call
-        {
-            public class Definition : CallDefinition<PostponeInterview>
-            {
-                internal InterviewData mData;
-
-                public Definition()
-                {
-                }
-
-                public Definition(InterviewData data) => mData = data;
-
-                public override string[] GetPath(bool isFemale) => new string[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
-
-                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("PostponeInterview");
-
-                public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
-                {
-                    if (SimClock.CurrentTime() > SimClock.Subtract(mData.InterviewDate, TimeUnit.Hours, 1))
-                    {
-                        greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "PostponePointOfNoReturn", new object[] { a }));
-                        return false;
-                    }
-                    if (mData.TimesPostponed >= Settings.MaxInterviewPostpones)
-                    {
-                        greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "OutOfPostpones", new object[] { a }));
-                        return false;
-                    }
-                    return base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback) && mData.ActorId == a.SimDescription.SimDescriptionId;
-                }
-            }
-
-            public override ConversationBehavior OnCallConnected() => ConversationBehavior.TalkBriefly;
-
-            public override void OnCallFinished()
-            {
-                InterviewData data = (InteractionDefinition as Definition).mData;
-                HolidayManager manager = HolidayManager.Instance;
-                data.InterviewDate = SimClock.Add(data.InterviewDate, TimeUnit.Days, 1);
-                while (data.InterviewDate.DayOfWeek == DaysOfTheWeek.Saturday || data.InterviewDate.DayOfWeek == DaysOfTheWeek.Sunday || (manager != null && SimClock.IsSameDay(data.InterviewDate, manager.mStartDateTimeOfHoliday)))
-                {
-                    data.InterviewDate = SimClock.Add(data.InterviewDate, TimeUnit.Days, 1);
-                }
-                AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
-                data.RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) - 1, TimeUnit.Hours, new AlarmTimerCallback(data.OnReminderCallback), "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, Actor);
-                AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
-                data.TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) + 1, TimeUnit.Hours, new AlarmTimerCallback(data.OnInterviewTimeout), "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, Actor);
-                data.TimesPostponed += 1;
-                Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, data.TimesPostponed >= Settings.MaxInterviewPostpones ? "InterviewPostponedFinal" : "InterviewPostponed", new object[]
-                    {
-                        Actor,
-                        data.RabbitHole.GetLocalizedName(),
-                        GetTextDayOfWeek(data.InterviewDate),
-                        SimClockUtils.GetText(Convert.ToInt32(data.InterviewDate.Hour), 0)
-                    }), data.TimesPostponed >= Settings.MaxInterviewPostpones ? NotificationStyle.kGameMessageNegative : NotificationStyle.kSystemMessage);
-            }
-        }
-
-        public class CancelInterview : Phone.Call
-        {
-            public class Definition : CallDefinition<CancelInterview>
-            {
-                internal InterviewData mData;
-
-                public Definition()
-                {
-                }
-
-                public Definition(InterviewData data) => mData = data;
-
-                public override string[] GetPath(bool isFemale) => new string[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
-
-                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("CancelInterview");
-
-                public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback) && mData.ActorId == a.SimDescription.SimDescriptionId;
-            }
-
-            public override ConversationBehavior OnCallConnected() => ConversationBehavior.TalkBriefly;
-
-            public override void OnCallFinished()
-            {
-                if (TwoButtonDialog.Show(LocalizeString(Actor.IsFemale, "CancelInterviewDialog", new object[] { Actor }), LocalizationHelper.Yes, LocalizationHelper.No))
-                {
-                    InterviewData data = (InteractionDefinition as Definition).mData;
-                    data.Dispose(false);
-                    Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, "InterviewCanceled", new object[]
-                    {
-                        Actor,
-                        CareerManager.GetStaticOccupation(data.CareerName).GetLocalizedCareerName(Actor.IsFemale)
-                    }), NotificationStyle.kSystemMessage);
-                }
             }
         }
     }
