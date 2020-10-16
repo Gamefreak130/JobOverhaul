@@ -63,7 +63,6 @@ namespace Gamefreak130
             //TODO Add not enough celebrity level string for PT Film
             //TODO Add Italian translation
             //TODO Update Commons
-            //TODO Use Stringbuilder for settings export
             //TODO Fix newspaper posture cleanup (and test holo computer)
             //TODO Fix Combo rabbitholes for base game
             //CONSIDER Custom degrees for jobs?

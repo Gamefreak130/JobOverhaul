@@ -6,6 +6,7 @@ using Sims3.SimIFace;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace Gamefreak130.JobOverhaulSpace
 {
@@ -117,9 +118,26 @@ namespace Gamefreak130.JobOverhaulSpace
         [Tunable, TunableComment("The amount of time, in sim minutes, that a sim spends inside a rabbithole to fill out a job application or sign self-employment paperwork")]
         private static readonly float kApplicationTime = 30;
 
+#pragma warning disable IDE0032 // Use auto property
+        private bool mEnableGetJobInRabbitHole = kEnableGetJobInRabbitHole;
+
+        private bool mEnableJoinProfessionInRabbitHoleOrLot = kEnableJoinProfessionInRabbitHoleOrLot;
+
+        private bool mInstantGratification = kInstantGratification;
+
+        private bool mHoloComputerInstantGratification = kHoloComputerInstantGratification;
+
+        private bool mHoloPhoneInstantGratification = kHoloPhoneInstantGratification;
+
+        private bool mNewspaperSelfEmployed = kNewspaperSelfEmployed;
+
         private int mFullTimeInterviewHour = kFullTimeInterviewHour;
 
         private int mPartTimeInterviewHour = kPartTimeInterviewHour;
+
+        private int mNumBonusResumeJobs = kNumBonusResumeJobs;
+
+        private int mMaxInterviewPostpones = kMaxInterviewPostpones;
 
         private float mBaseFullTimeJobChance = kBaseFullTimeJobChance;
 
@@ -137,29 +155,30 @@ namespace Gamefreak130.JobOverhaulSpace
 
         private float mPromotionChance = kPromotionChance;
 
-        public int NumBonusResumeJobs { get; set; } = kNumBonusResumeJobs;
+        private float mInterviewTime = kInterviewTime;
 
-        public int MaxInterviewPostpones { get; set; } = kMaxInterviewPostpones;
+        private float mApplicationTime = kApplicationTime;
+#pragma warning restore IDE0032 // Use auto property
 
-        public bool EnableGetJobInRabbitHole { get; set; } = kEnableGetJobInRabbitHole;
+        public bool EnableGetJobInRabbitHole { get => mEnableGetJobInRabbitHole; set => mEnableGetJobInRabbitHole = value; }
 
-        public bool EnableJoinProfessionInRabbitHoleOrLot { get; set; } = kEnableJoinProfessionInRabbitHoleOrLot;
+        public bool EnableJoinProfessionInRabbitHoleOrLot { get => mEnableJoinProfessionInRabbitHoleOrLot; set => mEnableJoinProfessionInRabbitHoleOrLot = value; }
 
-        public bool InstantGratification { get; set; } = kInstantGratification;
+        public bool InstantGratification { get => mInstantGratification; set => mInstantGratification = value; }
 
-        public bool HoloComputerInstantGratification { get; set; } = kHoloComputerInstantGratification;
+        public bool HoloComputerInstantGratification { get => mHoloComputerInstantGratification; set => mHoloComputerInstantGratification = value; }
 
-        public bool HoloPhoneInstantGratification { get; set; } = kHoloPhoneInstantGratification;
+        public bool HoloPhoneInstantGratification { get => mHoloPhoneInstantGratification; set => mHoloPhoneInstantGratification = value; }
 
-        public bool NewspaperSelfEmployed { get; set; } = kNewspaperSelfEmployed;
-
-        public float InterviewTime { get; set; } = kInterviewTime;
-
-        public float ApplicationTime { get; set; } = kApplicationTime;
+        public bool NewspaperSelfEmployed { get => mNewspaperSelfEmployed; set => mNewspaperSelfEmployed = value; }
 
         public int FullTimeInterviewHour { get => mFullTimeInterviewHour; set => mFullTimeInterviewHour = Math.Min(value, 23); }
 
         public int PartTimeInterviewHour { get => mPartTimeInterviewHour; set => mPartTimeInterviewHour = Math.Min(value, 23); }
+
+        public int NumBonusResumeJobs { get => mNumBonusResumeJobs; set => mNumBonusResumeJobs = value; }
+
+        public int MaxInterviewPostpones { get => mMaxInterviewPostpones; set => mMaxInterviewPostpones = value; }
 
         public float BaseFullTimeJobChance { get => mBaseFullTimeJobChance; set => mBaseFullTimeJobChance = Math.Min(value, 100); }
 
@@ -177,6 +196,10 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public float PromotionChance { get => mPromotionChance; set => mPromotionChance = Math.Min(value, 100); }
 
+        public float InterviewTime { get => mInterviewTime; set => mInterviewTime = value; }
+
+        public float ApplicationTime { get => mApplicationTime; set => mApplicationTime = value; }
+
         public Dictionary<string, InterviewSettings> InterviewSettings { get; set; } = new Dictionary<string, InterviewSettings>();
 
         public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings { get; set; } = new Dictionary<string, CareerAvailabilitySettings>();
@@ -189,12 +212,12 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public string Export()
         {
-            string text = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<JobOverhaulSettings>";
+            StringBuilder text = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<JobOverhaulSettings>\n");
             foreach (var field in typeof(PersistedSettings).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (field.GetValue(this) is Dictionary<string, InterviewSettings> dict)
                 {
-                    text += "\n  <mInterviewSettings>";
+                    text.AppendLine("  <mInterviewSettings>");
                     foreach (KeyValuePair<string, InterviewSettings> pair in dict)
                     {
                         InterviewSettings settings = pair.Value;
@@ -213,18 +236,18 @@ namespace Gamefreak130.JobOverhaulSpace
                         {
                             skills.Add(skill.ToString());
                         }
-                        text += "\n    <" + pair.Key + ">";
-                        text += "\n      <mRequiresInterview value=\"" + settings.RequiresInterview.ToString() + "\"/>";
-                        text += "\n      <mPositiveTraits value=\"" + string.Join(",", posTraits.ToArray()) + "\"/>";
-                        text += "\n      <mNegativeTraits value=\"" + string.Join(",", negTraits.ToArray()) + "\"/>";
-                        text += "\n      <mRequiredSkills value=\"" + string.Join(",", skills.ToArray()) + "\"/>";
-                        text += "\n    </" + pair.Key + ">";
+                        text.AppendFormat("    <{0}>\n", pair.Key);
+                        text.AppendFormat("      <mRequiresInterview value=\"{0}\"/>\n", settings.RequiresInterview.ToString());
+                        text.AppendFormat("      <mPositiveTraits value=\"{0}\"/>\n", string.Join(",", posTraits.ToArray()));
+                        text.AppendFormat("      <mNegativeTraits value=\"{0}\"/>\n", string.Join(",", negTraits.ToArray()));
+                        text.AppendFormat("      <mRequiredSkills value=\"{0}\"/>\n", string.Join(",", skills.ToArray()));
+                        text.AppendFormat("    </{0}>\n", pair.Key);
                     }
-                    text += "\n  </mInterviewSettings>";
+                    text.AppendLine("  </mInterviewSettings>");
                 }
                 else if (field.GetValue(this) is Dictionary<string, CareerAvailabilitySettings> dict2)
                 {
-                    text += "\n  <mCareerAvailabilitySettings>";
+                    text.AppendLine("  <mCareerAvailabilitySettings>");
                     foreach (KeyValuePair<string, CareerAvailabilitySettings> pair in dict2)
                     {
                         CareerAvailabilitySettings settings = pair.Value;
@@ -233,28 +256,29 @@ namespace Gamefreak130.JobOverhaulSpace
                         {
                             list.Add(degree.ToString());
                         }
-                        text += "\n    <m" + pair.Key + ">";
-                        text += "\n      <mIsAvailable value=\"" + settings.IsAvailable.ToString() + "\"/>";
-                        text += "\n      <mRequiredDegrees value=\"" + string.Join(",", list.ToArray()) + "\"/>";
-                        text += "\n    </m" + pair.Key + ">";
+                        text.AppendFormat("    <m{0}>\n", pair.Key);
+                        text.AppendFormat("      <mIsAvailable value=\"{0}\"/>\n", settings.IsAvailable.ToString());
+                        text.AppendFormat("      <mRequiredDegrees value=\"{0}\"/>\n", string.Join(",", list.ToArray()));
+                        text.AppendFormat("    </m{0}>\n", pair.Key);
                     }
-                    text += "\n  </mCareerAvailabilitySettings>";
+                    text.AppendLine("  </mCareerAvailabilitySettings>");
                 }
                 else if (field.GetValue(this) is Dictionary<string, bool> dict3)
                 {
-                    text += "\n  <mSelfEmployedAvailabilitySettings>";
+                    text.AppendLine("  <mSelfEmployedAvailabilitySettings>");
                     foreach (KeyValuePair<string, bool> pair in dict3)
                     {
-                        text += "\n    <m" + pair.Key + " value=\"" + pair.Value.ToString() + "\"/>";
+                        text.AppendFormat("    <m{0} value=\"{1}\"/>\n", pair.Key, pair.Value.ToString());
                     }
-                    text += "\n  </mSelfEmployedAvailabilitySettings>";
+                    text.AppendLine("  </mSelfEmployedAvailabilitySettings>");
                 }
                 else
                 {
-                    text += "\n  <" + field.Name + " value=\"" + field.GetValue(this).ToString() + "\"/>";
+                    text.AppendFormat("  <{0} value=\"{1}\"/>\n", field.Name, field.GetValue(this).ToString());
                 }
             }
-            return text + "\n</JobOverhaulSettings>";
+            text.Append("</JobOverhaulSettings>");
+            return text.ToString();
         }
     }
 }
