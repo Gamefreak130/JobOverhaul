@@ -61,14 +61,11 @@ namespace Gamefreak130
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
             //TODO Add not enough celebrity level string for PT Film
-            //TODO Add Italian translation
-            //TODO Update Commons
             //TODO Fix newspaper posture cleanup (and test holo computer)
             //TODO Fix Combo rabbitholes for base game
             //CONSIDER Custom degrees for jobs?
             //CONSIDER Audition string?
             //CONSIDER Random amount of jobs per day from specified min to max?
-            //CONSIDER Possible to reject careers after canceling an interview? Would require a static dictionary, and you know how fun those are to manage...
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
             //CONSIDER Multiple interviews, job offers at one time?
             new Common.BuffBooter("Gamefreak130_InterviewBuffs").LoadBuffData();
@@ -282,12 +279,13 @@ namespace Gamefreak130
             EventTracker.AddListener(EventTypeId.kTravelToPresent, new ProcessEventDelegate(SaveOccupationForTravel));
         }
 
+        // This is absolute garbage
+        // But I'm afraid to touch it 'cause it works
         private static void BootSettings()
         {
             List<string> currentInterviews = new List<string>();
             List<string> currentCareers = new List<string>();
             List<string> currentSelfEmployedJobs = new List<string>();
-            //TODO Refactor
             List<string> newCareers = new List<string>();
             foreach (Career career in CareerManager.CareerList)
             {

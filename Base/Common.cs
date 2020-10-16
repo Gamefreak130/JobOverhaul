@@ -145,7 +145,7 @@ namespace Gamefreak130.Common
                     return;
                 }
             }
-            if (gameObject.ItemComp != null && gameObject.ItemComp.InteractionsInventory != null)
+            if (gameObject.ItemComp?.InteractionsInventory != null)
             {
                 foreach (InteractionObjectPair iop in gameObject.ItemComp.InteractionsInventory)
                 {
@@ -388,6 +388,21 @@ namespace Gamefreak130.Common.UI
                 }
             }
         }
+
+        public void UpdateItems()
+        {
+            UpdateRows();
+            foreach (TabInfo current in TabInformation)
+            {
+                foreach (RowInfo current2 in current.RowInfo)
+                {
+                    if (current2.Item is MenuObject)
+                    {
+                        (current2.Item as MenuObject).UpdateMenuObject();
+                    }
+                }
+            }
+        }
     }
 
     public class MenuController : ModalDialog
@@ -432,7 +447,7 @@ namespace Gamefreak130.Common.UI
             : this(true, PauseMode.PauseSimulator, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, showHeadersAndToggle)
             => EndDelegates = EndResultDelegate;
 
-        public MenuController(bool _, PauseMode __, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool ___) : base("UiObjectPicker", kWinExportID, true, PauseMode.PauseSimulator, null)
+        public MenuController(bool _, PauseMode __, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle) : base("UiObjectPicker", kWinExportID, true, PauseMode.PauseSimulator, null)
         {
             if (mModalDialogWindow == null)
             {
@@ -441,24 +456,24 @@ namespace Gamefreak130.Common.UI
             Text text = mModalDialogWindow.GetChildByID(99576787u, false) as Text;
             text.Caption = title;
             mTable = mModalDialogWindow.GetChildByID(99576784u, false) as ObjectPicker;
-            mTable.SelectionChanged += new ObjectPickerSelectionChanged(OnRowClicked);
+            mTable.SelectionChanged += OnRowClicked;
             mTabsContainer = mTable.mTabs;
+            mTable.mTable.mPopulationCompletedCallback += ResizeWindow;
             mOkayButton = mModalDialogWindow.GetChildByID(99576785u, false) as Button;
             mOkayButton.TooltipText = buttonTrue;
             mOkayButton.Enabled = true;
-            mOkayButton.Click += new UIEventHandler<UIButtonClickEventArgs>(OnOkayButtonClick);
+            mOkayButton.Click += OnOkayButtonClick;
             OkayID = mOkayButton.ID;
             SelectedID = mOkayButton.ID;
             mCloseButton = mModalDialogWindow.GetChildByID(99576786u, false) as Button;
             mCloseButton.TooltipText = buttonFalse;
-            mCloseButton.Click += new UIEventHandler<UIButtonClickEventArgs>(OnCloseButtonClick);
+            mCloseButton.Click += OnCloseButtonClick;
             CancelID = mCloseButton.ID;
             mTableOffset = mModalDialogWindow.Area.BottomRight - mModalDialogWindow.Area.TopLeft - (mTable.Area.BottomRight - mTable.Area.TopLeft);
-            mTable.ShowHeaders = true;
+            mTable.ShowHeaders = showHeadersAndToggle;
             mTable.ViewTypeToggle = false;
             mTable.ShowToggle = false;
             mTable.Populate(listObjs, headers, numSelectableRows);
-            UpdateItems();
             ResizeWindow();
         }
 
@@ -473,7 +488,7 @@ namespace Gamefreak130.Common.UI
             Repopulate();
         }
 
-        public void UpdateItems()
+        /*public void UpdateItems()
         {
             if (mTable == null)
             {
@@ -491,7 +506,7 @@ namespace Gamefreak130.Common.UI
             }
             Repopulate();
             mTable.mTable.ScrollRowToTop(15);//TODO Fix
-        }
+        }*/
 
         public void SetTableColor(Color color) => mModalDialogWindow.GetChildByID(99576789u, false).ShadeColor = color;
 
@@ -510,11 +525,14 @@ namespace Gamefreak130.Common.UI
             (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = TextStyle;
         }
 
-        public void SetTitleText(string Text, Color TextColor, bool _)
+        public void SetTitleText(string Text, Color TextColor, bool TextStyleBold)
         {
             (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = Text;
             (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = 2u;
+            if (TextStyleBold)
+            {
+                (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = 2u;
+            }
         }
 
         public void SetTitleTextColor(Color TextColor) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
@@ -609,7 +627,7 @@ namespace Gamefreak130.Common.UI
         {
             while (true)
             {
-                container.UpdateRows();
+                container.UpdateItems();
                 MenuController controller = Show(container);
                 if (controller.Okay)
                 {
@@ -634,7 +652,7 @@ namespace Gamefreak130.Common.UI
         {
             while (true)
             {
-                container.UpdateRows();
+                container.UpdateItems();
                 MenuController controller = Show(container, tab);
                 if (controller.Okay)
                 {
@@ -744,7 +762,7 @@ namespace Gamefreak130.Common.UI
             }
         }
 
-        public virtual void AdaptToMenu(TabInfo tabinfo)
+        public virtual void AdaptToMenu(TabInfo tabInfo)
         {
         }
 
