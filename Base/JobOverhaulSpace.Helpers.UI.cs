@@ -65,7 +65,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.UI
                         tuple.OccupationEntry = occupation.CloneCareerAtNewStartingLevel();
                     }
                     mAvailableCareersLocationsEx.Add(tuple);
-                    mCareerEntries.Add(tuple.OccupationEntry as Occupation);
+                    mCareerEntries.Add(tuple.OccupationEntry);
                 }
                 IOccupationEntry occupationEntry = mCareerEntries.Count > 0 ? CareerSelectionDialogEx.Show(sim.IsFemale) : null;
                 if (occupationEntry != null && mCurrentState != CareerSelectionStates.kSelectingCareer)
@@ -533,7 +533,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.UI
                 }
                 else
                 {
-                    text.Caption = (mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation as CareerLocation).Owner.GetLocalizedName();
+                    text.Caption = mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation.Owner.GetLocalizedName();
                     text.AutoSize(true);
                     text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
                     text.Caption = (entry as Career).IsPartTime ? LocalizeString("PartTime") : LocalizeString("FullTime");
@@ -550,7 +550,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.UI
                 ScrollWindow scrollWindow = mModalDialogWindow.GetChildByID(107605770u, true) as ScrollWindow;
                 scrollWindow.Update();
                 Button button = mModalDialogWindow.GetChildByID(114633987u, true) as Button;
-                button.Visible = !(entry.IsActive && entry.ActiveCareerLotID == 0uL);// TODO here's the rabbithole shit
+                button.Visible = !(entry.IsActive && entry.ActiveCareerLotID == 0uL);
                 window.Invalidate();
             }
         }

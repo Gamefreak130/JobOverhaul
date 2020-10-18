@@ -567,7 +567,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             {
                 foreach (CareerLocation location in rabbitHole.CareerLocations.Values)
                 {
-                    if (location.Career is Career career && !(career is School))
+                    if (location.Career is Career career && !(career is School) && !string.IsNullOrEmpty(location.Owner.GetLocalizedName()))
                     {
                         OccupationEntryTuple tuple = new OccupationEntryTuple(career, location);
                         if (isResume && degreeManager != null && degreeManager.HasCompletedDegreeForOccupation(career.Guid) && !list.Contains(tuple) && career.CanAcceptCareer(actor.ObjectId, ref tooltipCallback) && career.CareerAgeTest(actor.SimDescription))
