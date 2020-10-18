@@ -1850,7 +1850,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             OccupationEntries = GetRandomJobs(Actor, Newspaper.FindJobNumJobsOpportunitiesPerDay, false, RandomNewspaperSeeds[Target.ObjectId]);
             EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
             DoLoop(ExitReason.Default);
-            return true;
+            return Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
         }
 
         private void FindJobAlarmCallback()

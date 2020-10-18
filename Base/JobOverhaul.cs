@@ -61,8 +61,6 @@ namespace Gamefreak130
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
             //TODO Add not enough celebrity level string for PT Film
-            //TODO Fix newspaper posture cleanup (and test holo computer)
-            //TODO Fix Combo rabbitholes for base game
             //CONSIDER Custom degrees for jobs?
             //CONSIDER Audition string?
             //CONSIDER Random amount of jobs per day from specified min to max?
