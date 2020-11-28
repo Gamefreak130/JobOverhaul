@@ -1,5 +1,5 @@
 ﻿using Gamefreak130.JobOverhaulSpace;
-using Gamefreak130.JobOverhaulSpace.Helpers;
+using Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates;
 using Gamefreak130.JobOverhaulSpace.Helpers.Situations;
 using Gamefreak130.JobOverhaulSpace.Interactions;
 using Sims3.Gameplay.Abstracts;
@@ -25,7 +25,6 @@ using Sims3.Gameplay.Skills;
 using Sims3.Gameplay.Socializing;
 using Sims3.Gameplay.Utilities;
 using Sims3.SimIFace;
-using Sims3.SimIFace.CAS;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -45,10 +44,10 @@ namespace Gamefreak130
 
         static JobOverhaul()
         {
-            LoadSaveManager.ObjectGroupsPreLoad += new ObjectGroupsPreLoadHandler(OnPreLoad);
-            LoadSaveManager.ObjectGroupsPostLoad += new ObjectGroupsPostLoadHandler(OnPostLoad);
-            World.OnWorldQuitEventHandler += new EventHandler(OnWorldQuit);
-            World.OnWorldLoadFinishedEventHandler += new EventHandler(OnWorldLoadFinished);
+            LoadSaveManager.ObjectGroupsPreLoad += OnPreLoad;
+            LoadSaveManager.ObjectGroupsPostLoad += OnPostLoad;
+            World.OnWorldQuitEventHandler += OnWorldQuit;
+            World.OnWorldLoadFinishedEventHandler += OnWorldLoadFinished;
             RandomNewspaperSeed = RandomUtil.GetInt(32767);
             RandomComputerSeed = RandomUtil.GetInt(32767);
         }
@@ -191,17 +190,17 @@ namespace Gamefreak130
 
         private static void OnWorldLoadFinished(object sender, EventArgs e)
         {
-            if (Household.ActiveHousehold != null)
+            if (Household.ActiveHousehold is not null)
             {
                 InitInjection();
                 return;
             }
-            EventTracker.AddListener(EventTypeId.kEventSimSelected, new ProcessEventDelegate(OnSimSelected));
+            EventTracker.AddListener(EventTypeId.kEventSimSelected, OnSimSelected);
         }
 
         private static ListenerAction OnSimSelected(Event e)
         {
-            if (Household.ActiveHousehold != null)
+            if (Household.ActiveHousehold is not null)
             {
                 InitInjection();
                 return ListenerAction.Remove;
@@ -226,7 +225,7 @@ namespace Gamefreak130
                 Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
                 computer.RemoveInteractionByType(definitionType);
                 InteractionObjectPair iop = null;
-                if (computer.ItemComp != null && computer.ItemComp.InteractionsInventory != null)
+                if (computer.ItemComp?.InteractionsInventory is not null)
                 {
                     foreach (InteractionObjectPair current in computer.ItemComp.InteractionsInventory)
                     {
@@ -237,7 +236,7 @@ namespace Gamefreak130
                         }
                     }
                 }
-                if (iop != null)
+                if (iop is not null)
                 {
                     computer.ItemComp.InteractionsInventory.Remove(iop);
                 }
@@ -262,29 +261,29 @@ namespace Gamefreak130
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupCareerOpportunities, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupNewspaperSeeds, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             AlarmManager.Global.AddAlarm(2f, TimeUnit.Seconds, FixupOccupations, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
-            World.OnObjectPlacedInLotEventHandler += new EventHandler(OnObjectPlacedInLot);
-            EventTracker.AddListener(EventTypeId.kInventoryObjectAdded, new ProcessEventDelegate(OnObjectChanged));
-            EventTracker.AddListener(EventTypeId.kObjectStateChanged, new ProcessEventDelegate(OnObjectChanged));
-            EventTracker.AddListener(EventTypeId.kSimDied, new ProcessEventDelegate(OnSimDestroyed));
-            EventTracker.AddListener(EventTypeId.kSimDescriptionDisposed, new ProcessEventDelegate(OnSimDestroyed));
-            EventTracker.AddListener(EventTypeId.kSentSimToBoardingSchool, new ProcessEventDelegate(OnSimInBoardingSchool));
-            EventTracker.AddListener(EventTypeId.kSimEnteredVacationWorld, new ProcessEventDelegate(OnTravelComplete));
-            EventTracker.AddListener(EventTypeId.kSimReturnedFromVacationWorld, new ProcessEventDelegate(OnTravelComplete));
-            EventTracker.AddListener(EventTypeId.kSimCompletedOccupationTask, new ProcessEventDelegate(OnTaskCompleted));
-            EventTracker.AddListener(EventTypeId.kCareerPerformanceChanged, new ProcessEventDelegate(OnPerformanceChange));
-            EventTracker.AddListener(EventTypeId.kFinishedWork, new ProcessEventDelegate(OnFinishedWork));
-            EventTracker.AddListener(EventTypeId.kTravelToFuture, new ProcessEventDelegate(SaveOccupationForTravel));
-            EventTracker.AddListener(EventTypeId.kTravelToPresent, new ProcessEventDelegate(SaveOccupationForTravel));
+            World.OnObjectPlacedInLotEventHandler += OnObjectPlacedInLot;
+            EventTracker.AddListener(EventTypeId.kInventoryObjectAdded, OnObjectChanged);
+            EventTracker.AddListener(EventTypeId.kObjectStateChanged, OnObjectChanged);
+            EventTracker.AddListener(EventTypeId.kSimDied, OnSimDestroyed);
+            EventTracker.AddListener(EventTypeId.kSimDescriptionDisposed, OnSimDestroyed);
+            EventTracker.AddListener(EventTypeId.kSentSimToBoardingSchool, OnSimInBoardingSchool);
+            EventTracker.AddListener(EventTypeId.kSimEnteredVacationWorld, OnTravelComplete);
+            EventTracker.AddListener(EventTypeId.kSimReturnedFromVacationWorld, OnTravelComplete);
+            EventTracker.AddListener(EventTypeId.kSimCompletedOccupationTask, OnTaskCompleted);
+            EventTracker.AddListener(EventTypeId.kCareerPerformanceChanged, OnPerformanceChange);
+            EventTracker.AddListener(EventTypeId.kFinishedWork, OnFinishedWork);
+            EventTracker.AddListener(EventTypeId.kTravelToFuture, SaveOccupationForTravel);
+            EventTracker.AddListener(EventTypeId.kTravelToPresent, SaveOccupationForTravel);
         }
 
         // This is absolute garbage
         // But I'm afraid to touch it 'cause it works
         private static void BootSettings()
         {
-            List<string> currentInterviews = new List<string>();
-            List<string> currentCareers = new List<string>();
-            List<string> currentSelfEmployedJobs = new List<string>();
-            List<string> newCareers = new List<string>();
+            List<string> currentInterviews = new();
+            List<string> currentCareers = new();
+            List<string> currentSelfEmployedJobs = new();
+            List<string> newCareers = new();
             foreach (Career career in CareerManager.CareerList)
             {
                 if (GameUtils.IsInstalled(career.SharedData.ProductVersion) && !(career is School))
@@ -296,7 +295,7 @@ namespace Gamefreak130
                     newCareers.Add(name);
                 }
             }
-            List<string> newActiveCareers = new List<string>();
+            List<string> newActiveCareers = new();
             foreach (ActiveCareer career in CareerManager.GetActiveCareers())
             {
                 if (career.GetOccupationStaticDataForActiveCareer().CanJoinCareerFromComputerOrNewspaper && !career.IsAcademicCareer)
@@ -310,7 +309,7 @@ namespace Gamefreak130
                     }
                 }
             }
-            List<string> newSelfEmployedJobs = new List<string>();
+            List<string> newSelfEmployedJobs = new();
             foreach (Occupation occupation in CareerManager.OccupationList)
             {
                 if (occupation is SkillBasedCareer)
@@ -325,10 +324,10 @@ namespace Gamefreak130
             }
 
             XmlDbData data = XmlDbData.ReadData("Gamefreak130.JobOverhaul.CareerInterviewTuning");
-            if (data != null)
+            if (data is not null)
             {
                 data.Tables.TryGetValue("Career", out XmlDbTable xmlDbTable);
-                if (xmlDbTable != null)
+                if (xmlDbTable is not null)
                 {
                     foreach (XmlDbRow row in xmlDbTable.Rows)
                     {
@@ -337,8 +336,8 @@ namespace Gamefreak130
                         {
                             bool requiresInterview = row.GetBool("RequiresInterview");
                             string toList = row.GetString("PositiveTraits").Replace(" ", string.Empty);
-                            List<string> posTraitList = new List<string>(toList.Split(new char[] { ',' }));
-                            List<TraitNames> posTraits = new List<TraitNames>(posTraitList.Count);
+                            List<string> posTraitList = new(toList.Split(new[] { ',' }));
+                            List<TraitNames> posTraits = new(posTraitList.Count);
                             foreach (string str in posTraitList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -360,8 +359,8 @@ namespace Gamefreak130
                                 }
                             }
                             toList = row.GetString("NegativeTraits").Replace(" ", string.Empty);
-                            List<string> negTraitList = new List<string>(toList.Split(new char[] { ',' }));
-                            List<TraitNames> negTraits = new List<TraitNames>(negTraitList.Count);
+                            List<string> negTraitList = new(toList.Split(new[] { ',' }));
+                            List<TraitNames> negTraits = new(negTraitList.Count);
                             foreach (string str in negTraitList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -383,8 +382,8 @@ namespace Gamefreak130
                                 }
                             }
                             toList = row.GetString("RequiredSkills").Replace(" ", string.Empty);
-                            List<string> skillList = new List<string>(toList.Split(new char[] { ',' }));
-                            List<SkillNames> skills = new List<SkillNames>(skillList.Count);
+                            List<string> skillList = new(toList.Split(new[] { ',' }));
+                            List<SkillNames> skills = new(skillList.Count);
                             foreach (string str in skillList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -405,17 +404,17 @@ namespace Gamefreak130
                                     }
                                 }
                             }
-                            InterviewSettings interviewData = new InterviewSettings(requiresInterview, posTraits, negTraits, skills);
+                            InterviewSettings interviewData = new(requiresInterview, posTraits, negTraits, skills);
                             Settings.InterviewSettings.Add(name, interviewData);
                         }
                     }
                 }
             }
             data = XmlDbData.ReadData("Gamefreak130.JobOverhaul.AvailableOccupationTuning");
-            if (data != null)
+            if (data is not null)
             {
                 data.Tables.TryGetValue("Occupation", out XmlDbTable xmlDbTable);
-                if (xmlDbTable != null)
+                if (xmlDbTable is not null)
                 {
                     foreach (XmlDbRow row in xmlDbTable.Rows)
                     {
@@ -424,8 +423,8 @@ namespace Gamefreak130
                         {
                             bool isAvailable = row.GetBool("Enabled");
                             string toList = row.GetString("RequiredDegrees").Replace(" ", string.Empty);
-                            List<string> degreeList = new List<string>(toList.Split(new char[] { ',' }));
-                            List<AcademicDegreeNames> degrees = new List<AcademicDegreeNames>(degreeList.Count);
+                            List<string> degreeList = new(toList.Split(new[] { ',' }));
+                            List<AcademicDegreeNames> degrees = new(degreeList.Count);
                             foreach (string str in degreeList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -451,7 +450,7 @@ namespace Gamefreak130
                                 newCareers.Remove(name);
                                 if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
                                 {
-                                    CareerAvailabilitySettings settings = new CareerAvailabilitySettings(isAvailable, false, degrees);
+                                    CareerAvailabilitySettings settings = new(isAvailable, false, degrees);
                                     Settings.CareerAvailabilitySettings.Add(name, settings);
                                 }
                                 continue;
@@ -459,7 +458,7 @@ namespace Gamefreak130
                             if (newActiveCareers.Contains(name))
                             {
                                 newActiveCareers.Remove(name);
-                                CareerAvailabilitySettings settings = new CareerAvailabilitySettings(isAvailable, true, degrees);
+                                CareerAvailabilitySettings settings = new(isAvailable, true, degrees);
                                 Settings.CareerAvailabilitySettings.Add(name, settings);
                             }
                         }
@@ -467,10 +466,10 @@ namespace Gamefreak130
                 }
             }
             data = XmlDbData.ReadData("Gamefreak130.JobOverhaul.AvailableSelfEmployedTuning");
-            if (data != null)
+            if (data is not null)
             {
                 data.Tables.TryGetValue("SelfEmployedCareer", out XmlDbTable xmlDbTable);
-                if (xmlDbTable != null)
+                if (xmlDbTable is not null)
                 {
                     foreach (XmlDbRow row in xmlDbTable.Rows)
                     {
@@ -495,11 +494,11 @@ namespace Gamefreak130
                     newCareers.Remove(name);
                     if (!Settings.InterviewSettings.ContainsKey(name))
                     {
-                        Settings.InterviewSettings.Add(name, new InterviewSettings(true, new List<TraitNames>() { TraitNames.Ambitious }, new List<TraitNames>() { TraitNames.Loser }, new List<SkillNames>()));
+                        Settings.InterviewSettings.Add(name, new(true, new List<TraitNames>() { TraitNames.Ambitious }, new List<TraitNames>() { TraitNames.Loser }, new()));
                     }
                     if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
                     {
-                        Settings.CareerAvailabilitySettings.Add(name, new CareerAvailabilitySettings(true, false, new List<AcademicDegreeNames>()));
+                        Settings.CareerAvailabilitySettings.Add(name, new(true, false, new()));
                     }
                 }
             }
@@ -509,7 +508,7 @@ namespace Gamefreak130
                 if (newActiveCareers.Contains(name))
                 {
                     newActiveCareers.Remove(name);
-                    Settings.CareerAvailabilitySettings.Add(name, new CareerAvailabilitySettings(true, true, new List<AcademicDegreeNames>()));
+                    Settings.CareerAvailabilitySettings.Add(name, new(true, true, new()));
                 }
             }
             foreach (Occupation occupation in CareerManager.OccupationList)
@@ -559,7 +558,7 @@ namespace Gamefreak130
                 {
                     data.RabbitHole.AddInteraction(new DoInterview.Definition(data));
                     PhoneCell phone = sim.Inventory.Find<PhoneCell>();
-                    if (phone != null)
+                    if (phone is not null)
                     {
                         phone.AddInventoryInteraction(new PostponeInterview.Definition(data));
                         phone.AddInventoryInteraction(new CancelInterview.Definition(data));
@@ -568,19 +567,19 @@ namespace Gamefreak130
                     {
                         AddPhoneInteractions(phoneHome, data);
                     }
-                    data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, new ProcessEventDelegate(data.OnRabbitHoleDisposed), null, data.RabbitHole);
+                    data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, data.RabbitHole);
                 }
             }
         }
 
         private static void FixupCareerOpportunities()
         {
-            MapTagsModel.Singleton.MapTagRefreshAll += new EventHandler(OnMapTagsUpdated);
+            MapTagsModel.Singleton.MapTagRefreshAll += OnMapTagsUpdated;
             foreach (Sim sim in Household.ActiveHousehold.Sims)
             {
                 if (sim.OpportunityManager is OpportunityManager manager)
                 {
-                    List<Opportunity> toRemove = new List<Opportunity>();
+                    List<Opportunity> toRemove = new();
                     foreach (Opportunity opportunity in manager.List)
                     {
                         if ((opportunity.IsCareer || opportunity.IsSkill || opportunity.IsLocationBased || opportunity.IsDare || opportunity.IsSocialGroup || opportunity.IsDayJob) && opportunity.WorldStartedIn != GameUtils.GetCurrentWorld())
@@ -621,62 +620,12 @@ namespace Gamefreak130
                     ulong id = sim.SimDescription.SimDescriptionId;
                     if (SavedOccupationsForTravel.ContainsKey(id))
                     {
-                        if (SavedOccupationsForTravel[id] != null)
+                        if (SavedOccupationsForTravel[id] is not null)
                         {
-                            SavedTravelOccupation savedOccupation = SavedOccupationsForTravel[id];
-                            Occupation occupation = CareerManager.GetStaticOccupation(savedOccupation.Guid);
-                            OccupationNames previousOccupation = manager.Occupation.Guid;
-                            CareerLocation location = null;
-                            if (savedOccupation.RabbitHole != null)
-                            {
-                                savedOccupation.RabbitHole.CareerLocations.TryGetValue((ulong)savedOccupation.Guid, out location);
-                            }
-                            else if (occupation is Career)
-                            {
-                                continue;
-                            }
-                            if (manager.Occupation != null)
-                            {
-                                manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
-                            }
-                            GreyedOutTooltipCallback callback = null;
-                            if (occupation is SkillBasedCareer || (occupation is Career career && career.CareerAgeTest(sim.SimDescription) && career.CanAcceptCareer(sim.ObjectId, ref callback)) || (occupation is ActiveCareer activeCareer && activeCareer.IsActiveCareerAvailable() && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & sim.SimDescription.Age) != CASAgeGenderFlags.None))
-                            {
-                                manager.QuitCareers.Remove(previousOccupation);
-                                AcquireOccupationParameters parameters = new AcquireOccupationParameters(savedOccupation.Guid, location, false, false);
-                                if (occupation is Career)
-                                {
-                                    parameters.JumpStartJob = true;
-                                    (occupation as Career).CareerLevels.TryGetValue(savedOccupation.Branch, out Dictionary<int, CareerLevel> dictionary);
-                                    dictionary.TryGetValue(savedOccupation.Level, out CareerLevel level);
-                                    parameters.JumpStartLevel = level;
-                                }
-                                manager.AcquireOccupation(parameters);
-                                if (manager.OccupationAsCareer is Career newCareer)
-                                {
-                                    newCareer.WorkAnniversary = savedOccupation.Anniversary;
-                                    newCareer.mPerformance = savedOccupation.Xp;
-                                    newCareer.mPayPerHourExtra = savedOccupation.ExtraPay;
-                                    SimDescription description = SimDescription.Find(savedOccupation.BossId);
-                                    if (description != null && newCareer.Coworkers.Contains(description))
-                                    {
-                                        newCareer.SetBoss(description);
-                                    }
-                                }
-                                else
-                                {
-                                    XpBasedCareer xpBasedCareer = manager.Occupation as XpBasedCareer;
-                                    if ((xpBasedCareer as SkillBasedCareer) != null)
-                                    {
-                                        (xpBasedCareer as SkillBasedCareer).mMoneyEarned = savedOccupation.MoneyEarned;
-                                    }
-                                    xpBasedCareer.mLevel = savedOccupation.Level;
-                                    xpBasedCareer.mOvermaxLevel = savedOccupation.OverMaxLevel;
-                                    xpBasedCareer.mXp = savedOccupation.Xp;
-                                }
-                            }
+                            OccupationState state = SavedOccupationsForTravel[id];
+                            state.AcquireOccupation(manager);
                         }
-                        else if (manager.Occupation != null)
+                        else if (manager.Occupation is not null)
                         {
                             manager.Occupation.Cleanup();
                             manager.mJob = null;
@@ -716,13 +665,13 @@ namespace Gamefreak130
         public static bool IsOnceReadInstalled;
 
         [PersistableStatic]
-        public static Dictionary<ulong, SavedTravelOccupation> SavedOccupationsForTravel = new Dictionary<ulong, SavedTravelOccupation>();
+        public static Dictionary<ulong, OccupationState> SavedOccupationsForTravel = new();
 
         [PersistableStatic]
         public static int RandomNewspaperSeed;
 
         [PersistableStatic]
-        public static Dictionary<ObjectGuid, int> RandomNewspaperSeeds = new Dictionary<ObjectGuid, int>();
+        public static Dictionary<ObjectGuid, int> RandomNewspaperSeeds = new();
 
         [PersistableStatic]
         public static int RandomComputerSeed;
@@ -736,7 +685,7 @@ namespace Gamefreak130
             {
                 if (sSettings == null)
                 {
-                    sSettings = new PersistedSettings();
+                    sSettings = new();
                 }
                 return sSettings;
             }

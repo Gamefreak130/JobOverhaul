@@ -1,4 +1,5 @@
-﻿using Gamefreak130.JobOverhaulSpace.Interactions;
+﻿using Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates;
+using Gamefreak130.JobOverhaulSpace.Interactions;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
@@ -16,7 +17,6 @@ using Sims3.Gameplay.Objects.Electronics;
 using Sims3.Gameplay.Objects.Miscellaneous;
 using Sims3.Gameplay.Objects.RabbitHoles;
 using Sims3.Gameplay.Objects.Seating;
-using Sims3.Gameplay.Seasons;
 using Sims3.Gameplay.Skills;
 using Sims3.Gameplay.Utilities;
 using Sims3.SimIFace;
@@ -50,65 +50,15 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         }
     }
 
-    [Persistable]
-    public class SavedTravelOccupation
-    {
-        public OccupationNames Guid { get; }
-
-        public RabbitHole RabbitHole { get; }
-
-        public int Level { get; }
-
-        public string Branch { get; }
-
-        public int OverMaxLevel { get; }
-
-        public float Xp { get; }
-
-        public float ExtraPay { get; }
-
-        public int MoneyEarned { get; }
-
-        public Anniversary Anniversary { get; }
-
-        public ulong BossId { get; }
-
-        public SavedTravelOccupation()
-        {
-        }
-
-        public SavedTravelOccupation(Occupation occupation)
-        {
-            Guid = occupation.Guid;
-            RabbitHole = occupation.OfficeLocation as RabbitHole;
-            Level = occupation.Level;
-            Branch = occupation.CurLevelBranchName;
-            if (occupation is XpBasedCareer xpBasedCareer)
-            {
-                MoneyEarned = xpBasedCareer.TotalCareerMoneyEarned();
-                OverMaxLevel = xpBasedCareer.OvermaxLevel;
-                Xp = xpBasedCareer.mXp;
-            }
-            else
-            {
-                Career career = occupation as Career;
-                BossId = career.Boss.SimDescriptionId;
-                Anniversary = career.WorkAnniversary;
-                ExtraPay = career.mPayPerHourExtra;
-                Xp = career.Performance;
-            }
-        }
-    }
-
     internal static class Listeners
     {
         internal static void OnMapTagsUpdated(object sender, EventArgs e)
         {
-            if (MapTagManager.ActiveMapTagManager != null && Sim.ActiveActor.OccupationAsActiveCareer is ActiveCareer career && career.Jobs != null)
+            if (MapTagManager.ActiveMapTagManager is not null && Sim.ActiveActor.OccupationAsActiveCareer?.Jobs is IEnumerable<Job> jobs)
             {
-                foreach (Job job in career.Jobs)
+                foreach (Job job in jobs)
                 {
-                    if (job.MapTagEnabled && job.RabbitHole != null)
+                    if (job.MapTagEnabled && job.RabbitHole is not null)
                     {
                         job.Specification.mRabbitHole = job.RabbitHole.RabbitHoleProxy;
                     }
@@ -131,7 +81,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
                     computer.RemoveInteractionByType(definitionType);
                     InteractionObjectPair iop = null;
-                    if (computer.ItemComp != null && computer.ItemComp.InteractionsInventory != null)
+                    if (computer.ItemComp?.InteractionsInventory is not null)
                     {
                         foreach (InteractionObjectPair current in computer.ItemComp.InteractionsInventory)
                         {
@@ -142,7 +92,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                             }
                         }
                     }
-                    if (iop != null)
+                    if (iop is not null)
                     {
                         computer.ItemComp.InteractionsInventory.Remove(iop);
                     }
@@ -188,7 +138,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
                 computer.RemoveInteractionByType(definitionType);
                 InteractionObjectPair iop = null;
-                if (computer.ItemComp != null && computer.ItemComp.InteractionsInventory != null)
+                if (computer.ItemComp?.InteractionsInventory is not null)
                 {
                     foreach (InteractionObjectPair current in computer.ItemComp.InteractionsInventory)
                     {
@@ -199,7 +149,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                         }
                     }
                 }
-                if (iop != null)
+                if (iop is not null)
                 {
                     computer.ItemComp.InteractionsInventory.Remove(iop);
                 }
@@ -251,12 +201,12 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                 break;
                             }
                         }
-                        if (iop != null)
+                        if (iop is not null)
                         {
                             data.RabbitHole.RemoveInteraction(iop);
                         }
                         PhoneCell phone = targetSim.Inventory.Find<PhoneCell>();
-                        if (phone != null)
+                        if (phone is not null)
                         {
                             RemovePhoneInteractions(targetSim, phone, false);
                         }
@@ -275,7 +225,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         internal static ListenerAction OnSimDestroyed(Event e)
         {
-            if (e.Actor != null)
+            if (e.Actor is not null)
             {
                 foreach (InterviewData data in InterviewList)
                 {
@@ -290,7 +240,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                 break;
                             }
                         }
-                        if (iop != null)
+                        if (iop is not null)
                         {
                             data.RabbitHole.RemoveInteraction(iop);
                         }
@@ -309,7 +259,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         internal static ListenerAction OnTravelComplete(Event e)
         {
-            if (e.Actor != null)
+            if (e.Actor is not null)
             {
                 foreach (Sims3.Gameplay.InventoryStack stack in e.Actor.Inventory.InventoryItems.Values)
                 {
@@ -328,21 +278,43 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         internal static ListenerAction SaveOccupationForTravel(Event e)
         {
-            if (e.Actor != null && e.Actor.CareerManager != null)
+            if (e.Actor?.CareerManager is not null)
             {
                 ulong id = e.Actor.SimDescription.SimDescriptionId;
-                SavedTravelOccupation occupation = null;
-                if (e.Actor.CareerManager.Occupation != null)
+                OccupationState state = e.Actor.CareerManager.Occupation switch
                 {
-                    occupation = new SavedTravelOccupation(e.Actor.CareerManager.Occupation);
-                }
+                    ArtAppraiserCareer c   => new ArtAppraiserState(c),
+                    Business c             => new BusinessState(c),
+                    Education c            => new EducationState(c),
+                    Film c                 => new FilmState(c),
+                    FortuneTellerCareer c  => new FortuneTellerState(c),
+                    Journalism c           => new JournalismState(c),
+                    LawEnforcement c       => new LawEnforcementState(c),
+                    Medical c              => new MedicalState(c),
+                    Music c                => new MusicState(c),
+                    Political c            => new PoliticalState(c),
+                    ProSports c            => new ProSportsState(c),
+                    School c               => new SchoolState(c),
+                    Science c              => new ScienceState(c),
+                    SportsAgentCareer c    => new SportsAgentState(c),
+                    Career c               => new CareerState(c),
+                    SingerCareer p         => new SingerState(p),
+                    PerformanceCareer p    => new PerformanceCareerState(p),
+                    ActiveFireFighter a    => new FireFighterState(a),
+                    Daycare a              => new DaycareState(a),
+                    Lifeguard a            => new LifeguardState(a),
+                    PrivateEye a           => new PrivateEyeState(a),
+                    ActiveCareer a         => new ActiveCareerState(a),
+                    SkillBasedCareer s     => new SkillBasedCareerState(s),
+                    _                      => null
+                };
                 if (SavedOccupationsForTravel.ContainsKey(id))
                 {
-                    SavedOccupationsForTravel[id] = occupation;
+                    SavedOccupationsForTravel[id] = state;
                 }
                 else
                 {
-                    SavedOccupationsForTravel.Add(id, occupation);
+                    SavedOccupationsForTravel.Add(id, state);
                 }
             }
             return ListenerAction.Keep;
@@ -350,7 +322,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         internal static ListenerAction OnTaskCompleted(Event e)
         {
-            if (e is OccupationTaskEvent occupationTaskEvent && occupationTaskEvent.Actor is Sim sim && sim.Occupation != null && sim.Occupation.CurrentJob != null && occupationTaskEvent.TaskId == TaskId.PickUpFood)
+            if (e is OccupationTaskEvent occupationTaskEvent && occupationTaskEvent.Actor is Sim sim && sim.Occupation?.CurrentJob is not null && occupationTaskEvent.TaskId == TaskId.PickUpFood)
             {
                 if (occupationTaskEvent.Undone)
                 {
@@ -379,7 +351,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds,
                 delegate () {
                     if (e.Actor is Sim sim && sim.IsSelectable && sim.OccupationAsCareer is Career career && !(career is School) && career.Performance >= 99f && RandomUtil.RandomChance(Settings.PromotionChance)
-                        && TwoButtonDialog.Show(LocalizeString(sim.IsFemale, "PromotionOfferDialog", new object[] { sim }), LocalizationHelper.Yes, LocalizationHelper.No))
+                        && TwoButtonDialog.Show(LocalizeString(sim.IsFemale, "PromotionOfferDialog", sim), LocalizationHelper.Yes, LocalizationHelper.No))
                     {
                         career.ShouldPromote = true;
                         career.PromoteIfShould();
@@ -454,7 +426,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     cancelIop = current;
                 }
             }
-            if (postponeIop != null)
+            if (postponeIop is not null)
             {
                 pairs.Remove(postponeIop);
                 for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
@@ -466,7 +438,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     }
                 }
             }
-            if (cancelIop != null)
+            if (cancelIop is not null)
             {
                 pairs.Remove(cancelIop);
                 for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
@@ -514,7 +486,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 }
             }
             AcademicDegreeManager degreeManager = actor.CareerManager.DegreeManager;
-            if (restrictToEarnedDegrees && degreeManager != null && degreeManager.HasCompletedAnyDegree())
+            if (restrictToEarnedDegrees && degreeManager is not null && degreeManager.HasCompletedAnyDegree())
             {
                 hasDegree = true;
             }
@@ -550,17 +522,17 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             AcademicDegreeManager degreeManager = actor.CareerManager.DegreeManager;
             if (isResume && degreeManager == null && !flag)
             {
-                return new List<OccupationEntryTuple>();
+                return new();
             }
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>();
-            List<OccupationEntryTuple> list2 = new List<OccupationEntryTuple>();
+            List<OccupationEntryTuple> list = new();
+            List<OccupationEntryTuple> list2 = new();
             GreyedOutTooltipCallback tooltipCallback = null;
             if (flag)
             {
                 Occupation dreamsAndPromisesOccupation = Career.GetDreamsAndPromisesJobWithLocation(actor);
                 if (dreamsAndPromisesOccupation is Career career && career.Locations.Count > 0 && career.CanAcceptCareer(actor.ObjectId, ref tooltipCallback) && career.CareerAgeTest(actor.SimDescription))
                 {
-                    list.Add(new OccupationEntryTuple(career, RandomUtil.GetRandomObjectFromList(career.Locations)));
+                    list.Add(new(career, RandomUtil.GetRandomObjectFromList(career.Locations)));
                 }
             }
             foreach (RabbitHole rabbitHole in GetObjects<RabbitHole>())
@@ -569,8 +541,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 {
                     if (location.Career is Career career && !(career is School) && !string.IsNullOrEmpty(location.Owner.GetLocalizedName()))
                     {
-                        OccupationEntryTuple tuple = new OccupationEntryTuple(career, location);
-                        if (isResume && degreeManager != null && degreeManager.HasCompletedDegreeForOccupation(career.Guid) && !list.Contains(tuple) && career.CanAcceptCareer(actor.ObjectId, ref tooltipCallback) && career.CareerAgeTest(actor.SimDescription))
+                        OccupationEntryTuple tuple = new(career, location);
+                        if (isResume && degreeManager is not null && degreeManager.HasCompletedDegreeForOccupation(career.Guid) && !list.Contains(tuple) && career.CanAcceptCareer(actor.ObjectId, ref tooltipCallback) && career.CareerAgeTest(actor.SimDescription))
                         {
                             list.Add(tuple);
                             continue;
@@ -583,8 +555,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             {
                 if (!current.IsAcademicCareer && ActiveCareer.GetActiveCareerStaticData(current.Guid).CanJoinCareerFromComputerOrNewspaper && IsActiveCareerAvailable(current))
                 {
-                    OccupationEntryTuple tuple = new OccupationEntryTuple(current, null);
-                    if (isResume && degreeManager != null && degreeManager.HasCompletedDegreeForOccupation(current.Guid) && !actor.SimDescription.TeenOrBelow && current.CanAcceptCareer(actor.ObjectId, ref tooltipCallback))
+                    OccupationEntryTuple tuple = new(current, null);
+                    if (isResume && degreeManager is not null && degreeManager.HasCompletedDegreeForOccupation(current.Guid) && !actor.SimDescription.TeenOrBelow && current.CanAcceptCareer(actor.ObjectId, ref tooltipCallback))
                     {
                         list.Add(tuple);
                         continue;
@@ -592,14 +564,14 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     list2.Add(tuple);
                 }
             }
-            Random randomizer = new Random(randomSeed);
-            List<OccupationEntryTuple> list3 = new List<OccupationEntryTuple>(numbJobOpps);
+            Random randomizer = new(randomSeed);
+            List<OccupationEntryTuple> list3 = new(numbJobOpps);
             int num = 0;
             int randNum = list.Count != 0 ? RandomUtil.GetInt(1, list.Count, randomizer) : 0;
             while ((num < numbJobOpps || flag) && list.Count != 0 && num != randNum)
             {
                 OccupationEntryTuple rand = RandomUtil.GetRandomObjectFromList(list, randomizer);
-                if (!(rand.OccupationEntry is Occupation occupation))
+                if (rand.OccupationEntry is not Occupation occupation)
                 {
                     continue;
                 }
@@ -618,7 +590,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             while ((num < numbJobOpps || flag) && list2.Count != 0)
             {
                 OccupationEntryTuple rand = RandomUtil.GetRandomObjectFromList(list2, randomizer);
-                if (!(rand.OccupationEntry is Occupation occupation))
+                if (rand.OccupationEntry is not Occupation occupation)
                 {
                     continue;
                 }
@@ -639,19 +611,19 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         public static void OfferJob(Sim sim, OccupationEntryTuple occupation)
         {
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1) { occupation };
+            List<OccupationEntryTuple> list = new(1) { occupation };
             UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(sim, sim.ObjectId, list);
         }
 
         public static bool IsActiveCareerAvailable(ActiveCareer career) => career is Lifeguard && IsPoolLifeguardModInstalled
-                ? LotManager.GetCommercialLots(CommercialLotSubType.kBeach) != null || LotManager.GetCommercialLots(CommercialLotSubType.kPool) != null
+                ? LotManager.GetCommercialLots(CommercialLotSubType.kBeach) is not null || LotManager.GetCommercialLots(CommercialLotSubType.kPool) is not null
                 : career.IsActiveCareerAvailable();
 
         internal static void ParseXml(XmlNode startElement)
         {
-            for (XmlNode node = startElement; node != null; node = node.NextSibling)
+            for (XmlNode node = startElement; node is not null; node = node.NextSibling)
             {
-                if (node.Attributes["value"] != null)
+                if (node.Attributes["value"] is not null)
                 {
                     SetImplicitValue(node.Name, node.Attributes["value"].Value);
                 }
@@ -659,12 +631,12 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 {
                     if (node.Name == "mInterviewSettings")
                     {
-                        Dictionary<string, InterviewSettings> dict = new Dictionary<string, InterviewSettings>();
-                        for (XmlNode node2 = node.FirstChild; node2 != null; node2 = node2.NextSibling)
+                        Dictionary<string, InterviewSettings> dict = new();
+                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
                         {
                             bool.TryParse(node2.ChildNodes.Item(0).Attributes["value"].Value, out bool val);
-                            List<string> posTraitList = new List<string>(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new char[] { ',' }));
-                            List<TraitNames> posTraits = new List<TraitNames>(posTraitList.Count);
+                            List<string> posTraitList = new(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new[] { ',' }));
+                            List<TraitNames> posTraits = new(posTraitList.Count);
                             foreach (string str in posTraitList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -685,8 +657,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                     }
                                 }
                             }
-                            List<string> negTraitList = new List<string>(node2.ChildNodes.Item(2).Attributes["value"].Value.Split(new char[] { ',' }));
-                            List<TraitNames> negTraits = new List<TraitNames>(negTraitList.Count);
+                            List<string> negTraitList = new(node2.ChildNodes.Item(2).Attributes["value"].Value.Split(new[] { ',' }));
+                            List<TraitNames> negTraits = new(negTraitList.Count);
                             foreach (string str in negTraitList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -707,8 +679,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                     }
                                 }
                             }
-                            List<string> skillList = new List<string>(node2.ChildNodes.Item(3).Attributes["value"].Value.Split(new char[] { ',' }));
-                            List<SkillNames> skills = new List<SkillNames>(skillList.Count);
+                            List<string> skillList = new(node2.ChildNodes.Item(3).Attributes["value"].Value.Split(new[] { ',' }));
+                            List<SkillNames> skills = new(skillList.Count);
                             foreach (string str in skillList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -729,7 +701,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                     }
                                 }
                             }
-                            dict.Add(node2.Name, new InterviewSettings(val, posTraits, negTraits, skills));
+                            dict.Add(node2.Name, new(val, posTraits, negTraits, skills));
                         }
                         foreach (string key in dict.Keys)
                         {
@@ -741,12 +713,12 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     }
                     else if (node.Name == "mCareerAvailabilitySettings")
                     {
-                        Dictionary<string, CareerAvailabilitySettings> dict = new Dictionary<string, CareerAvailabilitySettings>();
-                        for (XmlNode node2 = node.FirstChild; node2 != null; node2 = node2.NextSibling)
+                        Dictionary<string, CareerAvailabilitySettings> dict = new();
+                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
                         {
                             bool.TryParse(node2.ChildNodes.Item(0).Attributes["value"].Value, out bool val);
-                            List<string> degreeList = new List<string>(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new char[] { ',' }));
-                            List<AcademicDegreeNames> degrees = new List<AcademicDegreeNames>(degreeList.Count);
+                            List<string> degreeList = new(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new[] { ',' }));
+                            List<AcademicDegreeNames> degrees = new(degreeList.Count);
                             foreach (string str in degreeList)
                             {
                                 if (!string.IsNullOrEmpty(str))
@@ -767,7 +739,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                                     }
                                 }
                             }
-                            dict.Add(node2.Name.Substring(1), new CareerAvailabilitySettings(val, false, degrees));
+                            dict.Add(node2.Name.Substring(1), new(val, false, degrees));
                         }
                         foreach (string key in dict.Keys)
                         {
@@ -780,8 +752,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     }
                     else if (node.Name == "mSelfEmployedAvailabilitySettings")
                     {
-                        Dictionary<string, bool> dict = new Dictionary<string, bool>();
-                        for (XmlNode node2 = node.FirstChild; node2 != null; node2 = node2.NextSibling)
+                        Dictionary<string, bool> dict = new();
+                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
                         {
                             bool.TryParse(node2.Attributes["value"].Value, out bool val);
                             dict.Add(node2.Name.Substring(1), val);
