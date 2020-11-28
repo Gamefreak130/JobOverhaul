@@ -1,5 +1,4 @@
-﻿using Gamefreak130.JobOverhaulSpace;
-using Sims3.Gameplay.Abstracts;
+﻿using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Autonomy;
 using Sims3.Gameplay.Interactions;
@@ -23,11 +22,11 @@ namespace Gamefreak130.Common
             try
             {
                 interactionTuning = AutonomyTuning.GetTuning(newType.FullName, newTarget.FullName);
-                bool flag = interactionTuning == null;
+                bool flag = interactionTuning is null;
                 if (flag)
                 {
                     interactionTuning = AutonomyTuning.GetTuning(oldType, oldType.FullName, oldTarget);
-                    bool flag2 = interactionTuning == null;
+                    bool flag2 = interactionTuning is null;
                     if (flag2)
                     {
                         result = null;
@@ -39,7 +38,7 @@ namespace Gamefreak130.Common
                     }
                     AutonomyTuning.AddTuning(newType.FullName, newTarget.FullName, interactionTuning);
                 }
-                InteractionObjectPair.sTuningCache.Remove(new Pair<Type, Type>(newType, newTarget));
+                InteractionObjectPair.sTuningCache.Remove(new(newType, newTarget));
             }
             catch (Exception)
             {
@@ -48,7 +47,7 @@ namespace Gamefreak130.Common
             return result;
         }
 
-        private static InteractionTuning CloneTuning(InteractionTuning oldTuning) => new InteractionTuning
+        private static InteractionTuning CloneTuning(InteractionTuning oldTuning) => new()
         {
             mFlags = oldTuning.mFlags,
             ActionTopic = oldTuning.ActionTopic,
@@ -67,7 +66,7 @@ namespace Gamefreak130.Common
             ShortObjectName = oldTuning.ShortObjectName
         };
 
-        private static Tradeoff CloneTradeoff(Tradeoff old) => new Tradeoff
+        private static Tradeoff CloneTradeoff(Tradeoff old) => new()
         {
             mFlags = old.mFlags,
             mInputs = Methods.CloneList(old.mInputs),
@@ -78,7 +77,7 @@ namespace Gamefreak130.Common
             TimeEstimate = old.TimeEstimate
         };
 
-        private static Availability CloneAvailability(Availability old) => new Availability
+        private static Availability CloneAvailability(Availability old) => new()
         {
             mFlags = old.mFlags,
             AgeSpeciesAvailabilityFlags = old.AgeSpeciesAvailabilityFlags,
@@ -112,13 +111,13 @@ namespace Gamefreak130.Common
         public void LoadBuffData()
         {
             AddBuffs(null);
-            UIManager.NewHotInstallStoreBuffData += new UIManager.NewHotInstallStoreBuffCallback(AddBuffs);
+            UIManager.NewHotInstallStoreBuffData += AddBuffs;
         }
 
         public void AddBuffs(ResourceKey[] resourceKeys)
         {
             XmlDbData xmlDbData = XmlDbData.ReadData(mXmlResource);
-            if (xmlDbData != null)
+            if (xmlDbData is not null)
             {
                 BuffManager.ParseBuffData(xmlDbData, true);
             }
@@ -145,7 +144,7 @@ namespace Gamefreak130.Common
                     return;
                 }
             }
-            if (gameObject.ItemComp?.InteractionsInventory != null)
+            if (gameObject.ItemComp?.InteractionsInventory is not null)
             {
                 foreach (InteractionObjectPair iop in gameObject.ItemComp.InteractionsInventory)
                 {
@@ -161,8 +160,8 @@ namespace Gamefreak130.Common
 
         public static List<T> CloneList<T>(IEnumerable<T> old)
         {
-            bool flag = old != null;
-            List<T> result = flag ? new List<T>(old) : null;
+            bool flag = old is not null;
+            List<T> result = flag ? new(old) : null;
             return result;
         }
     }
@@ -246,59 +245,59 @@ namespace Gamefreak130.Common.UI
 
         public MenuContainer(string Title)
         {
-            mHiddenRows = new List<RowInfo>();
+            mHiddenRows = new();
             MenuDisplayName = Title;
-            mTabImage = new string[] { "" };
-            mTabText = new string[] { "" };
+            mTabImage = new[] { "" };
+            mTabText = new[] { "" };
             OnEnd = null;
-            Headers = new List<HeaderInfo>();
-            mRowInformation = new List<RowInfo>();
-            TabInformation = new List<TabInfo>();
+            Headers = new();
+            mRowInformation = new();
+            TabInformation = new();
         }
 
         public MenuContainer(string Title, string Subtitle)
         {
-            mHiddenRows = new List<RowInfo>();
+            mHiddenRows = new();
             MenuDisplayName = Title;
-            mTabImage = new string[] { "" };
-            mTabText = new string[] { Subtitle };
+            mTabImage = new[] { "" };
+            mTabText = new[] { Subtitle };
             OnEnd = null;
-            Headers = new List<HeaderInfo>();
-            mRowInformation = new List<RowInfo>();
-            TabInformation = new List<TabInfo>();
+            Headers = new();
+            mRowInformation = new();
+            TabInformation = new();
         }
 
         public MenuContainer(string Title, string[] TabImage, string[] TabName, int numSelectable, Action<List<RowInfo>> OnEndDelegate)
         {
-            mHiddenRows = new List<RowInfo>();
+            mHiddenRows = new();
             MenuDisplayName = Title;
             mTabImage = TabImage;
             mTabText = TabName;
             Selectable = numSelectable;
             OnEnd = OnEndDelegate;
-            Headers = new List<HeaderInfo>();
-            mRowInformation = new List<RowInfo>();
-            TabInformation = new List<TabInfo>();
+            Headers = new();
+            mRowInformation = new();
+            TabInformation = new();
         }
 
         public MenuContainer(string Title, string[] TabImage, string[] TabName, int numSelectable, Action<List<RowInfo>> OnEndDelegate, GenericDelegate<List<RowInfo>> RowPopulationDelegate)
         {
-            mHiddenRows = new List<RowInfo>();
+            mHiddenRows = new();
             MenuDisplayName = Title;
             mTabImage = TabImage;
             mTabText = TabName;
             Selectable = numSelectable;
             OnEnd = OnEndDelegate;
             mRowPopulationDelegate = RowPopulationDelegate;
-            Headers = new List<HeaderInfo>();
-            mRowInformation = new List<RowInfo>();
-            TabInformation = new List<TabInfo>();
+            Headers = new();
+            mRowInformation = new();
+            TabInformation = new();
             RefreshMenuObjects(0);
             if (mRowInformation.Count > 0)
             {
                 for (int i = 0; i < mRowInformation[0].ColumnInfo.Count; i++)
                 {
-                    Headers.Add(new HeaderInfo("Ui/Caption/ObjectPicker:Sim", "", 200));
+                    Headers.Add(new("Ui/Caption/ObjectPicker:Sim", "", 200));
                 }
             }
         }
@@ -308,7 +307,7 @@ namespace Gamefreak130.Common.UI
             mRowInformation = mRowPopulationDelegate();
             TabInformation = new List<TabInfo>
             {
-                new TabInfo("", mTabText[Tabnumber], mRowInformation)
+                new("", mTabText[Tabnumber], mRowInformation)
             };
         }
 
@@ -326,9 +325,9 @@ namespace Gamefreak130.Common.UI
                 {
                     MenuItem.RowInformation
                 };
-                TabInformation.Add(new TabInfo(mTabImage[0], mTabText[0], mRowInformation));
-                Headers.Add(new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 300));
-                Headers.Add(new HeaderInfo("Ui/Caption/ObjectPicker:Value", "", 100));
+                TabInformation.Add(new(mTabImage[0], mTabText[0], mRowInformation));
+                Headers.Add(new("Ui/Caption/ObjectPicker:Name", "", 300));
+                Headers.Add(new("Ui/Caption/ObjectPicker:Value", "", 100));
                 return;
             }
             TabInformation[0].RowInfo.Add(MenuItem.RowInformation);
@@ -343,7 +342,7 @@ namespace Gamefreak130.Common.UI
                 {
                     MenuItem.RowInformation
                 };
-                TabInformation.Add(new TabInfo(mTabImage[0], mTabText[0], mRowInformation));
+                TabInformation.Add(new(mTabImage[0], mTabText[0], mRowInformation));
                 Headers = headers;
                 return;
             }
@@ -359,7 +358,7 @@ namespace Gamefreak130.Common.UI
                 {
                     item
                 };
-                TabInformation.Add(new TabInfo(mTabImage[0], mTabText[0], mRowInformation));
+                TabInformation.Add(new(mTabImage[0], mTabText[0], mRowInformation));
                 Headers = headers;
                 return;
             }
@@ -381,7 +380,7 @@ namespace Gamefreak130.Common.UI
             for (int i = TabInformation[0].RowInfo.Count - 1; i >= 0; i--)
             {
                 MenuObject item = TabInformation[0].RowInfo[i].Item as MenuObject;
-                if (item.Predicate != null && !item.Predicate())
+                if (item.Predicate is not null && !item.Predicate())
                 {
                     mHiddenRows.Add(TabInformation[0].RowInfo[i]);
                     TabInformation[0].RowInfo.RemoveAt(i);
@@ -449,7 +448,7 @@ namespace Gamefreak130.Common.UI
 
         public MenuController(bool _, PauseMode __, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle) : base("UiObjectPicker", kWinExportID, true, PauseMode.PauseSimulator, null)
         {
-            if (mModalDialogWindow == null)
+            if (mModalDialogWindow is null)
             {
                 return;
             }
@@ -490,7 +489,7 @@ namespace Gamefreak130.Common.UI
 
         /*public void UpdateItems()
         {
-            if (mTable == null)
+            if (mTable is null)
             {
                 return;
             }
@@ -561,7 +560,7 @@ namespace Gamefreak130.Common.UI
             mTable.mTable.VisibleRows = (uint)num;
             mTable.mTable.GridSizeDirty = true;
             mTable.OnPopulationComplete();
-            mModalDialogWindow.Area = new Rect(mModalDialogWindow.Area.TopLeft, mModalDialogWindow.Area.TopLeft + mTable.TableArea.BottomRight + mTableOffset);
+            mModalDialogWindow.Area = new(mModalDialogWindow.Area.TopLeft, mModalDialogWindow.Area.TopLeft + mTable.TableArea.BottomRight + mTableOffset);
             Rect area2 = mModalDialogWindow.Area;
             float width2 = area2.Width;
             float height2 = area2.Height;
@@ -631,7 +630,7 @@ namespace Gamefreak130.Common.UI
                 MenuController controller = Show(container);
                 if (controller.Okay)
                 {
-                    if (controller.Result != null)
+                    if (controller.Result is not null)
                     {
                         foreach (RowInfo current in controller.Result)
                         {
@@ -656,7 +655,7 @@ namespace Gamefreak130.Common.UI
                 MenuController controller = Show(container, tab);
                 if (controller.Okay)
                 {
-                    if (controller.Result != null)
+                    if (controller.Result is not null)
                     {
                         foreach (RowInfo current in controller.Result)
                         {
@@ -675,7 +674,7 @@ namespace Gamefreak130.Common.UI
 
         private static MenuController Show(MenuContainer container)
         {
-            MenuController menuController = new MenuController(container.MenuDisplayName, Localization.LocalizeString("Ui/Caption/Global:Ok"), Localization.LocalizeString("Ui/Caption/Global:Cancel"), container.TabInformation, container.Headers, container.Selectable, true, container.OnEnd);
+            MenuController menuController = new(container.MenuDisplayName, Localization.LocalizeString("Ui/Caption/Global:Ok"), Localization.LocalizeString("Ui/Caption/Global:Cancel"), container.TabInformation, container.Headers, container.Selectable, true, container.OnEnd);
             menuController.SetTitleTextStyle(2u);
             menuController.ShowModal();
             return menuController;
@@ -684,7 +683,7 @@ namespace Gamefreak130.Common.UI
         private static MenuController Show(MenuContainer container, int tab)
         {
             Sims3.Gameplay.Gameflow.SetGameSpeed(Gameflow.GameSpeed.Pause, Sims3.Gameplay.Gameflow.SetGameSpeedContext.GameStates);
-            MenuController menuController = new MenuController(container.MenuDisplayName, Localization.LocalizeString("Ui/Caption/Global:Ok"), Localization.LocalizeString("Ui/Caption/Global:Cancel"), container.TabInformation, container.Headers, container.Selectable, true, container.OnEnd);
+            MenuController menuController = new(container.MenuDisplayName, Localization.LocalizeString("Ui/Caption/Global:Ok"), Localization.LocalizeString("Ui/Caption/Global:Cancel"), container.TabInformation, container.Headers, container.Selectable, true, container.OnEnd);
             menuController.SetTitleTextStyle(2u);
             if (tab >= 0)
             {
@@ -716,11 +715,11 @@ namespace Gamefreak130.Common.UI
 
         public MenuObject()
         {
-            mColumnInfoList = new List<ColumnInfo>();
-            mColumnActions = new List<ColumnDelegateStruct>();
+            mColumnInfoList = new();
+            mColumnActions = new();
         }
 
-        public void Fillin() => RowInformation = new RowInfo(this, mColumnInfoList);
+        public void Fillin() => RowInformation = new(this, mColumnInfoList);
 
         public void Fillin(Color TextColor)
         {
@@ -788,8 +787,8 @@ namespace Gamefreak130.Common.UI
             Predicate = predicate;
             mColumnActions = new List<ColumnDelegateStruct>
             {
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)),
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(getValue()))
+                new(ColumnType.kText, () => new TextColumn(name)),
+                new(ColumnType.kText, () => new TextColumn(getValue()))
             };
             PopulateColumnInfo();
             Fillin();
@@ -826,8 +825,8 @@ namespace Gamefreak130.Common.UI
             mToOpen = toOpen;
             mColumnActions = new List<ColumnDelegateStruct>
             {
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)),
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(""))
+                new(ColumnType.kText, () => new TextColumn(name)),
+                new(ColumnType.kText, () => new TextColumn(""))
             };
             PopulateColumnInfo();
             Fillin();
@@ -867,8 +866,8 @@ namespace Gamefreak130.Common.UI
             Predicate = test;
             mColumnActions = new List<ColumnDelegateStruct>
             {
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)), 
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(getValue()))
+                new(ColumnType.kText, () => new TextColumn(name)), 
+                new(ColumnType.kText, () => new TextColumn(getValue()))
             };
             PopulateColumnInfo();
             Fillin();
@@ -912,14 +911,14 @@ namespace Gamefreak130.Common.UI
         public SetValuePromptObject(string menuTitle, string dialogPrompt, string settingName, GenericDelegate<bool> test, IPersistedSettings settings)
         {
             mSettings = settings;
-            mSetting = typeof(PersistedSettings).GetProperty(settingName);
+            mSetting = typeof(IPersistedSettings).GetProperty(settingName);
             mMenuTitle = menuTitle;
             mDialogPrompt = dialogPrompt;
             Predicate = test;
             mColumnActions = new List<ColumnDelegateStruct>
             {
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(mMenuTitle)),
-                new ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(mSetting.GetValue(mSettings, null).ToString()))
+                new(ColumnType.kText, () => new TextColumn(mMenuTitle)),
+                new(ColumnType.kText, () => new TextColumn(mSetting.GetValue(mSettings, null).ToString()))
             };
             PopulateColumnInfo();
             Fillin();
@@ -928,7 +927,7 @@ namespace Gamefreak130.Common.UI
         public SetValuePromptObject(string menuTitle, string dialogPrompt, string settingName, GenericDelegate<bool> test, IPersistedSettings settings, List<ColumnDelegateStruct> columns)
         {
             mSettings = settings;
-            mSetting = typeof(PersistedSettings).GetProperty(settingName);
+            mSetting = typeof(IPersistedSettings).GetProperty(settingName);
             mMenuTitle = menuTitle;
             mDialogPrompt = dialogPrompt;
             Predicate = test;
@@ -942,7 +941,7 @@ namespace Gamefreak130.Common.UI
             try
             {
                 string str = StringInputDialog.Show(mMenuTitle, mDialogPrompt, mSetting.GetValue(mSettings, null).ToString());
-                MethodInfo method = typeof(T).GetMethod("TryParse", new Type[] { typeof(string), typeof(T).MakeByRefType() });
+                MethodInfo method = typeof(T).GetMethod("TryParse", new[] { typeof(string), typeof(T).MakeByRefType() });
                 object[] args = { str, null };
                 if ((bool)method.Invoke(null, args))
                 {
