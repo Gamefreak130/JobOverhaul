@@ -1,6 +1,6 @@
 ﻿using Gamefreak130.JobOverhaulSpace;
 using Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates;
-using Gamefreak130.JobOverhaulSpace.Helpers.Situations;
+using Gamefreak130.JobOverhaulSpace.Situations;
 using Gamefreak130.JobOverhaulSpace.Interactions;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;

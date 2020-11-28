@@ -1,4 +1,5 @@
-﻿using Gamefreak130.JobOverhaulSpace.Interactions;
+﻿using Gamefreak130.JobOverhaulSpace.Helpers;
+using Gamefreak130.JobOverhaulSpace.Interactions;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
@@ -22,7 +23,7 @@ using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
 using static Sims3.UI.StyledNotification;
 
-namespace Gamefreak130.JobOverhaulSpace.Helpers.UI
+namespace Gamefreak130.JobOverhaulSpace.UI
 {
     public class CareerSelectionModelEx : CareerSelectionModel
     {
@@ -617,37 +618,17 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.UI
             char[] array = workDays.ToCharArray();
             for (int i = 0; i < array.Length; i++)
             {
-                char c = array[i];
-                uint num2 = 0u;
-                char c2 = c;
-                if (c2 != 'F')
+                uint num2 = array[i] switch
                 {
-                    switch (c2)
-                    {
-                        case 'M':
-                            num2 = 107605793u;
-                            break;
-                        case 'R':
-                            num2 = 107605796u;
-                            break;
-                        case 'S':
-                            num2 = 107605798u;
-                            break;
-                        case 'T':
-                            num2 = 107605794u;
-                            break;
-                        case 'U':
-                            num2 = 107605792u;
-                            break;
-                        case 'W':
-                            num2 = 107605795u;
-                            break;
-                    }
-                }
-                else
-                {
-                    num2 = 107605797u;
-                }
+                    'U' => 107605792u,
+                    'M' => 107605793u,
+                    'T' => 107605794u,
+                    'W' => 107605795u,
+                    'R' => 107605796u,
+                    'F' => 107605797u,
+                    'S' => 107605798u,
+                    _   => 0u
+                };
                 if (num2 > 0u)
                 {
                     Text text2 = mModalDialogWindow.GetChildByID(num2, true) as Text;

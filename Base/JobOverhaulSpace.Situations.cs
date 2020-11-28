@@ -14,7 +14,7 @@ using Sims3.SimIFace;
 using System.Collections.Generic;
 using static Sims3.UI.StyledNotification;
 
-namespace Gamefreak130.JobOverhaulSpace.Helpers.Situations
+namespace Gamefreak130.JobOverhaulSpace.Situations
 {
     public class ChildDaycareChildMonitorEx : ChildDaycareChildMonitor
     {

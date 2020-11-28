@@ -1,5 +1,5 @@
 ﻿using Gamefreak130.JobOverhaulSpace.Helpers;
-using Gamefreak130.JobOverhaulSpace.Helpers.Situations;
+using Gamefreak130.JobOverhaulSpace.Situations;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
@@ -43,7 +43,6 @@ using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
 using static Sims3.UI.StyledNotification;
 using Methods = Gamefreak130.Common.Methods;
-using UI = Gamefreak130.Common.UI;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
 {
@@ -62,7 +61,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             public override bool Test(Sim actor, GameObject target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
                 mIsPhone = target is PhoneCell;
-                return (target is Computer || target is PhoneHome || (target is PhoneCell && (target as PhoneCell).IsUsableBy(actor)) || (target is Newspaper && (target as Newspaper).IsReadable)) && actor.SimDescription.TeenOrAbove && !GameUtils.IsOnVacation() && !GameUtils.IsUniversityWorld();
+                return (target is Computer or PhoneHome || (target is PhoneCell && (target as PhoneCell).IsUsableBy(actor)) || (target is Newspaper && (target as Newspaper).IsReadable)) && actor.SimDescription.TeenOrAbove && !GameUtils.IsOnVacation() && !GameUtils.IsUniversityWorld();
             }
 
             public override string[] GetPath(bool isFemale) => mIsPhone
@@ -76,33 +75,34 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
         public override bool Run()
         {
-            UI.MenuContainer container = new UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("Settings"));
-            container.AddMenuObject(new UI.SetValuePromptObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<int>(LocalizeString("MaxInterviewPostponesMenuName"), LocalizeString("MaxInterviewPostponesPrompt"), "MaxInterviewPostpones", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("ReadyForInterviewChanceChangeMenuName"), LocalizeString("ReadyForInterviewChanceChangePrompt"), "ReadyForInterviewChanceChange", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("BaseFullTimeJobChanceMenuName"), LocalizeString("BaseFullTimeJobChancePrompt"), "BaseFullTimeJobChance", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("BasePartTimeJobChanceMenuName"), LocalizeString("BasePartTimeJobChancePrompt"), "BasePartTimeJobChance", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("PostponeInterviewChanceChangeMenuName"), LocalizeString("PostponeInterviewChanceChangePrompt"), "PostponeInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("PositiveTraitInterviewChanceChangeMenuName"), LocalizeString("PositiveTraitInterviewChanceChangePrompt"), "PositiveTraitInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("NegativeTraitInterviewChanceChangeMenuName"), LocalizeString("NegativeTraitInterviewChanceChangePrompt"), "NegativeTraitInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("RequiredSkillInterviewChanceChangeMenuName"), LocalizeString("RequiredSkillInterviewChanceChangePrompt"), "RequiredSkillInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("PromotionChanceMenuName"), LocalizeString("PromotionChancePrompt"), "PromotionChance", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("InterviewTimeMenuName"), LocalizeString("InterviewTimePrompt"), "InterviewTime", null, Settings));
-            container.AddMenuObject(new UI.SetValuePromptObject<float>(LocalizeString("ApplicationTimeMenuName"), LocalizeString("ApplicationTimePrompt"), "ApplicationTime", null, Settings));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("NewspaperSelfEmployedMenuName"), () => Settings.NewspaperSelfEmployed.ToString(), 
+            Common.UI.MenuContainer container = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("Settings"));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("MaxInterviewPostponesMenuName"), LocalizeString("MaxInterviewPostponesPrompt"), "MaxInterviewPostpones", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("ReadyForInterviewChanceChangeMenuName"), LocalizeString("ReadyForInterviewChanceChangePrompt"), "ReadyForInterviewChanceChange", 
+                () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("BaseFullTimeJobChanceMenuName"), LocalizeString("BaseFullTimeJobChancePrompt"), "BaseFullTimeJobChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("BasePartTimeJobChanceMenuName"), LocalizeString("BasePartTimeJobChancePrompt"), "BasePartTimeJobChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PostponeInterviewChanceChangeMenuName"), LocalizeString("PostponeInterviewChanceChangePrompt"), "PostponeInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PositiveTraitInterviewChanceChangeMenuName"), LocalizeString("PositiveTraitInterviewChanceChangePrompt"), "PositiveTraitInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("NegativeTraitInterviewChanceChangeMenuName"), LocalizeString("NegativeTraitInterviewChanceChangePrompt"), "NegativeTraitInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("RequiredSkillInterviewChanceChangeMenuName"), LocalizeString("RequiredSkillInterviewChanceChangePrompt"), "RequiredSkillInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PromotionChanceMenuName"), LocalizeString("PromotionChancePrompt"), "PromotionChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("InterviewTimeMenuName"), LocalizeString("InterviewTimePrompt"), "InterviewTime", null, Settings));
+            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("ApplicationTimeMenuName"), LocalizeString("ApplicationTimePrompt"), "ApplicationTime", null, Settings));
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NewspaperSelfEmployedMenuName"), () => Settings.NewspaperSelfEmployed.ToString(), 
                 () => GameUtils.IsInstalled(ProductVersion.EP2) || GameUtils.IsInstalled(ProductVersion.EP3) || GameUtils.IsInstalled(ProductVersion.EP5) || GameUtils.IsInstalled(ProductVersion.EP7) || GameUtils.IsInstalled(ProductVersion.EP10) || GameUtils.IsInstalled(ProductVersion.EP11), 
                 () => Settings.NewspaperSelfEmployed = !Settings.NewspaperSelfEmployed));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("EnableGetJobInRabbitholeMenuName"), () => Settings.EnableGetJobInRabbitHole.ToString(), null, () => Settings.EnableGetJobInRabbitHole = !Settings.EnableGetJobInRabbitHole));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("EnableJoinProfessionMenuName"), () => Settings.EnableJoinProfessionInRabbitHoleOrLot.ToString(), () => CareerManager.GetActiveCareers().Count > 0, 
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("EnableGetJobInRabbitholeMenuName"), () => Settings.EnableGetJobInRabbitHole.ToString(), null, () => Settings.EnableGetJobInRabbitHole = !Settings.EnableGetJobInRabbitHole));
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("EnableJoinProfessionMenuName"), () => Settings.EnableJoinProfessionInRabbitHoleOrLot.ToString(), () => CareerManager.GetActiveCareers().Count > 0, 
                 () => Settings.EnableJoinProfessionInRabbitHoleOrLot = !Settings.EnableJoinProfessionInRabbitHoleOrLot));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("InstantGratificationMenuName"), () => Settings.InstantGratification.ToString(), null, () => Settings.InstantGratification = !Settings.InstantGratification));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("HoloComputerInstantGratificationMenuName"), () => Settings.HoloComputerInstantGratification.ToString(), () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11), 
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("InstantGratificationMenuName"), () => Settings.InstantGratification.ToString(), null, () => Settings.InstantGratification = !Settings.InstantGratification));
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("HoloComputerInstantGratificationMenuName"), () => Settings.HoloComputerInstantGratification.ToString(), () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11), 
                 () => Settings.HoloComputerInstantGratification = !Settings.HoloComputerInstantGratification));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("HoloPhoneInstantGratificationMenuName"), () => Settings.HoloPhoneInstantGratification.ToString(), 
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("HoloPhoneInstantGratificationMenuName"), () => Settings.HoloPhoneInstantGratification.ToString(), 
                 () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11) && GameUtils.IsInstalled(ProductVersion.EP9), () => Settings.HoloPhoneInstantGratification = !Settings.HoloPhoneInstantGratification));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("ClearAllInterviewsMenuName"), () => string.Empty, null,
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ClearAllInterviewsMenuName"), () => string.Empty, null,
                 delegate () {
                     if (AcceptCancelDialog.Show(LocalizeString("ClearAllInterviewsPrompt")))
                     {
@@ -113,7 +113,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         SimpleMessageDialog.Show(LocalizeString("ClearAllInterviewsMenuName"), LocalizeString("ClearAllInterviewsComplete"));
                     }
                 }));
-            container.AddMenuObject(new UI.OneShotActionObject(LocalizeString("ResetMenuName"), () => string.Empty, null,
+            container.AddMenuObject(new Common.UI.OneShotActionObject(LocalizeString("ResetMenuName"), () => string.Empty, null,
                 delegate () {
                     if (AcceptCancelDialog.Show(LocalizeString("ResetPrompt")))
                     {
@@ -123,7 +123,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     return false;
                 }));
-            container.AddMenuObject(new UI.GenericActionObject(LocalizeString("ExportMenuName"), () => string.Empty, null,
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ExportMenuName"), () => string.Empty, null,
                 delegate () {
                 CJACK_01:
                     string name = StringInputDialog.Show(LocalizeString("ExportMenuName"), LocalizeString("ExportPrompt"), "Settings");
@@ -154,7 +154,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         SimpleMessageDialog.Show(LocalizeString("ExportMenuName"), LocalizeString("ExportComplete"));
                     }
                 }));
-            container.AddMenuObject(new UI.OneShotActionObject(LocalizeString("ImportMenuName"), () => string.Empty, null,
+            container.AddMenuObject(new Common.UI.OneShotActionObject(LocalizeString("ImportMenuName"), () => string.Empty, null,
                 delegate () {
                     Sims3.Gameplay.BinModel.Singleton.PopulateExportBin();
                     List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
@@ -184,14 +184,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     return false;
                 }));
 
-            UI.MenuContainer container2 = new UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("CareerAvailabilitySettingsMenuName"));
+            Common.UI.MenuContainer container2 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("CareerAvailabilitySettingsMenuName"));
             foreach (string key in Settings.CareerAvailabilitySettings.Keys)
             {
                 CareerAvailabilitySettings settings = Settings.CareerAvailabilitySettings[key];
                 string name = settings.IsActive ? XpBasedCareer.LocalizeString(Actor.IsFemale, key) : Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
-                UI.MenuContainer jobContainer = new UI.MenuContainer(LocalizeString("MenuTitle"), name);
-                jobContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("IsAvailableMenuName"), () => settings.IsAvailable.ToString(), null, () => settings.IsAvailable = !settings.IsAvailable));
-                jobContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("RequiredDegreesMenuName"), () => string.Empty, () => GameUtils.IsInstalled(ProductVersion.EP9),
+                Common.UI.MenuContainer jobContainer = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), name);
+                jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("IsAvailableMenuName"), () => settings.IsAvailable.ToString(), null, () => settings.IsAvailable = !settings.IsAvailable));
+                jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredDegreesMenuName"), () => string.Empty, () => GameUtils.IsInstalled(ProductVersion.EP9),
                     delegate () {
                         List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
                         List<RowInfo> list2 = new List<RowInfo>();
@@ -204,7 +204,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 list2.Add(info);
                             }
                         }
-                        List<RowInfo> list3 = Helpers.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredDegreesMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> list3 = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredDegreesMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Degree", "", 250) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
                         if (list3 != null)
                         {
@@ -218,18 +218,18 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container2.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new UI.GenerateMenuObject(new List<UI.ColumnDelegateStruct>() { new UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, jobContainer));
+                container2.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new Common.UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, jobContainer));
             }
-            container.AddMenuObject(new UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), container2));
+            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), container2));
 
-            UI.MenuContainer container3 = new UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
+            Common.UI.MenuContainer container3 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
             foreach (string key in Settings.InterviewSettings.Keys)
             {
                 InterviewSettings settings = Settings.InterviewSettings[key];
                 string name = Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
-                UI.MenuContainer interviewContainer = new UI.MenuContainer(LocalizeString("MenuTitle"), name);
-                interviewContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("RequiresInterviewMenuName"), () => settings.RequiresInterview.ToString(), null, () => settings.RequiresInterview = !settings.RequiresInterview));
-                interviewContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("RequiredSkillsMenuName"), () => string.Empty, null,
+                Common.UI.MenuContainer interviewContainer = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), name);
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiresInterviewMenuName"), () => settings.RequiresInterview.ToString(), null, () => settings.RequiresInterview = !settings.RequiresInterview));
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredSkillsMenuName"), () => string.Empty, null,
                     delegate () {
                         List<HeaderInfo> list = new List<HeaderInfo>()
                         {
@@ -251,7 +251,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> skillList = Helpers.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredSkillsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> skillList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredSkillsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list2, list, list2[0].RowInfo.Count, new Vector2(-1f, -1f), false, list3, false, false);
                         if (skillList != null)
                         {
@@ -265,7 +265,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                interviewContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("PositiveTraitsMenuName"), () => string.Empty, null,
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("PositiveTraitsMenuName"), () => string.Empty, null,
                     delegate () {
                         List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
                         List<RowInfo> list2 = new List<RowInfo>();
@@ -282,7 +282,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> traitList = Helpers.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("PositiveTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("PositiveTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
                         if (traitList != null)
                         {
@@ -296,7 +296,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                interviewContainer.AddMenuObject(new UI.GenericActionObject(LocalizeString("NegativeTraitsMenuName"), () => string.Empty, null,
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NegativeTraitsMenuName"), () => string.Empty, null,
                     delegate () {
                         List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
                         List<RowInfo> list2 = new List<RowInfo>();
@@ -313,7 +313,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> traitList = Helpers.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("NegativeTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("NegativeTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
                         if (traitList != null)
                         {
@@ -327,21 +327,21 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container3.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new UI.GenerateMenuObject(new List<UI.ColumnDelegateStruct>() { new UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, interviewContainer));
+                container3.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new Common.UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, interviewContainer));
             }
-            container.AddMenuObject(new UI.GenerateMenuObject(LocalizeString("InterviewSettingsMenuName"), container3));
+            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("InterviewSettingsMenuName"), container3));
 
             if (Settings.SelfEmployedAvailabilitySettings.Count > 0)
             {
-                UI.MenuContainer container4 = new UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("SelfEmployedAvailabilitySettingsMenuName"));
+                Common.UI.MenuContainer container4 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("SelfEmployedAvailabilitySettingsMenuName"));
                 foreach (string key in Settings.SelfEmployedAvailabilitySettings.Keys)
                 {
-                    container4.AddMenuObject(new UI.GenericActionObject(XpBasedCareer.LocalizeString(Actor.IsFemale, key), () => Settings.SelfEmployedAvailabilitySettings[key].ToString(), null, 
+                    container4.AddMenuObject(new Common.UI.GenericActionObject(XpBasedCareer.LocalizeString(Actor.IsFemale, key), () => Settings.SelfEmployedAvailabilitySettings[key].ToString(), null, 
                         () => Settings.SelfEmployedAvailabilitySettings[key] = !Settings.SelfEmployedAvailabilitySettings[key]));
                 }
-                container.AddMenuObject(new UI.GenerateMenuObject(LocalizeString("SelfEmployedAvailabilitySettingsMenuName"), container4));
+                container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("SelfEmployedAvailabilitySettingsMenuName"), container4));
             }
-            UI.MenuController.ShowMenu(container);
+            Common.UI.MenuController.ShowMenu(container);
             return true;
         }
     }
@@ -853,18 +853,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 ghost.FirstName = SimUtils.GetRandomGivenName(ghost.IsMale, randomObjectFromList);
                 ghost.LastName = SimUtils.GetRandomFamilyName(randomObjectFromList);
                 ghost.SetDeathStyle(RandomUtil.GetRandomObjectFromList(sValidDeathTypes), false);
-                switch (ghost.DeathStyle)
+                TraitNames trait = ghost.DeathStyle switch
                 {
-                    case SimDescription.DeathType.Drown:
-                        ghost.TraitManager.AddHiddenElement(TraitNames.Hydrophobic);
-                        break;
-                    case SimDescription.DeathType.Electrocution:
-                        ghost.TraitManager.AddHiddenElement(TraitNames.AntiTV);
-                        break;
-                    case SimDescription.DeathType.Burn:
-                        ghost.TraitManager.AddHiddenElement(TraitNames.Pyromaniac);
-                        break;
-                }
+                    SimDescription.DeathType.Drown          => TraitNames.Hydrophobic,
+                    SimDescription.DeathType.Electrocution  => TraitNames.AntiTV,
+                    SimDescription.DeathType.Burn           => TraitNames.Pyromaniac,
+                    _                                       => TraitNames.Unknown
+                };
+                ghost.TraitManager.AddHiddenElement(trait);
             }
             List<TraitNames> list = new List<TraitNames>(GhostHunter.kAngryGhostTraits);
             while (!ghost.TraitManager.TraitsMaxed() && list.Count > 0)
@@ -1311,19 +1307,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public override bool Test(Sim a, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
-                OccupationNames occupation = OccupationNames.Undefined;
-                switch (ActionKey)
+                OccupationNames occupation = ActionKey switch
                 {
-                    case "Ask To Join Singer Career":
-                        occupation = OccupationNames.SingerCareer;
-                        break;
-                    case "Ask To Join PerformanceArtist Career":
-                        occupation = OccupationNames.PerformanceArtistCareer;
-                        break;
-                    case "Ask To Join Magician Career":
-                        occupation = OccupationNames.MagicianCareer;
-                        break;
-                }
+                    "Ask To Join Singer Career"             => OccupationNames.SingerCareer,
+                    "Ask To Join PerformanceArtist Career"  => OccupationNames.PerformanceArtistCareer,
+                    "Ask To Join Magician Career"           => OccupationNames.MagicianCareer,
+                    _                                       => OccupationNames.Undefined
+                };
                 return a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && !a.NeedsToBeGreeted(target) && target.SimDescription.AssignedRole is Proprietor && TestApplyForProfession(a, occupation, ref greyedOutTooltipCallback) && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
             }
         }
@@ -1758,7 +1748,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
             if (Settings.InstantGratification || (Settings.HoloComputerInstantGratification && Target is HoloComputer))
             {
-                Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false);
+                UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -1766,7 +1756,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
-            if (Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
+            if (UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
             {
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
@@ -1864,7 +1854,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
             if (Settings.InstantGratification)
             {
-                if (!Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false))
+                if (!UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false))
                 {
                     Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
                 }
@@ -1875,7 +1865,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
-            if (Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
+            if (UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
             {
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
@@ -1965,7 +1955,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
             if (Settings.InstantGratification || (Settings.HoloComputerInstantGratification && Target is HoloComputer))
             {
-                Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, true);
+                UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, true);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -1973,7 +1963,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
-            if (Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
+            if (UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
             {
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
@@ -2062,7 +2052,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
             if (Settings.InstantGratification || (Settings.HoloPhoneInstantGratification && Target is PhoneFuture))
             {
-                Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, true);
+                UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, true);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -2070,7 +2060,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
-            if (Helpers.UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
+            if (UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, list, false))
             {
                 Actor.AddExitReason(ExitReason.Finished);
                 return;

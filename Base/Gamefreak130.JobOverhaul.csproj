@@ -10,7 +10,7 @@
     <RootNamespace>Gamefreak130.JobOverhaul</RootNamespace>
     <AssemblyName>Gamefreak130.JobOverhaul</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-	<LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -95,8 +95,8 @@
     <Compile Include="Common.cs" />
     <Compile Include="JobOverhaulSpace.Helpers.cs" />
     <Compile Include="JobOverhaulSpace.Helpers.OccupationStates.cs" />
-    <Compile Include="JobOverhaulSpace.Helpers.Situations.cs" />
-    <Compile Include="JobOverhaulSpace.Helpers.UI.cs" />
+    <Compile Include="JobOverhaulSpace.Situations.cs" />
+    <Compile Include="JobOverhaulSpace.UI.cs" />
     <Compile Include="JobOverhaulSpace.Interactions.cs" />
     <Compile Include="JobOverhaulSpace.Interactions.Interviews.cs" />
     <Compile Include="JobOverhaulSpace.PersistedSettings.cs" />
