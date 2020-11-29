@@ -1,7 +1,9 @@
-﻿using Sims3.Gameplay.ActiveCareer;
+﻿using Sims3.Gameplay.Abstracts;
+using Sims3.Gameplay.ActiveCareer;
 using Sims3.Gameplay.ActiveCareer.ActiveCareers;
 using Sims3.Gameplay.Careers;
 using Sims3.Gameplay.CAS;
+using Sims3.Gameplay.Core;
 using Sims3.Gameplay.Seasons;
 using Sims3.SimIFace;
 using Sims3.SimIFace.CAS;
@@ -14,7 +16,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         protected OccupationNames Guid { get; }
 
-        protected CareerLocation Location { get; }
+        protected ObjectGuid LocationId { get; }
 
         protected float Xp { get; set; }
 
@@ -45,7 +47,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         public OccupationState(Occupation occupation)
         {
             Guid = occupation.Guid;
-            Location = occupation.CareerLoc;
+            LocationId = occupation.OfficeLocation.ObjectId;
             Level = occupation.Level;
             HighestLevelAchieved = occupation.HighestLevelAchieved;
             Anniversary = occupation.WorkAnniversary;
@@ -60,7 +62,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         public virtual bool AcquireOccupation(CareerManager manager)
         {
             Occupation occupation = manager.Occupation;
-            occupation.WorkAnniversary = Anniversary;
+            if (manager.mSimDescription.CreatedSim.IsSelectable && SeasonsManager.Enabled)
+            {
+                occupation.WorkAnniversary = Anniversary;
+            }
             occupation.mHighestLevelAchievedVal = HighestLevelAchieved;
             occupation.mDaysOff = DaysOff;
             occupation.mUnpaidDaysOff = UnpaidDaysOff;
@@ -99,42 +104,44 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         {
             Career career = CareerManager.GetStaticOccupation(Guid) as Career;
             OccupationNames previousOccupation = manager.Occupation.Guid;
-            CareerLocation location = Location;
-            if (manager.Occupation is not null)
+            if (GameObject.GetObject(LocationId) is RabbitHole rabbitHole && rabbitHole.CareerLocations.TryGetValue((ulong)Guid, out CareerLocation location))
             {
-                manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
-            }
-            GreyedOutTooltipCallback callback = null;
-            if (career is not null && career.CareerAgeTest(manager.mSimDescription) && career.CanAcceptCareer(manager.mSimDescription?.CreatedSim?.ObjectId ?? default, ref callback))
-            {
-                manager.QuitCareers.Remove(previousOccupation);
-                AcquireOccupationParameters parameters = new(Guid, location, false, false)
+                if (manager.Occupation is not null)
                 {
-                    JumpStartJob = true
-                };
-                career.CareerLevels.TryGetValue(CurBranch, out Dictionary<int, CareerLevel> dictionary);
-                dictionary.TryGetValue(Level, out CareerLevel level);
-                parameters.JumpStartLevel = level;
-                if (manager.AcquireOccupation(parameters))
+                    manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
+                }
+                GreyedOutTooltipCallback callback = null;
+                if (career is not null && career.CareerAgeTest(manager.mSimDescription) && career.CanAcceptCareer(manager.mSimDescription?.CreatedSim?.ObjectId ?? default, ref callback))
                 {
-                    base.AcquireOccupation(manager);
-                    career = manager.OccupationAsCareer;
-                    career.mPerformance = Xp;
-                    career.mTotalCashEarned = MoneyEarned;
-                    career.mPayPerHourExtra = ExtraPay;
-                    career.mHighestLevelAchievedBranchName = HighestBranch;
-                    career.HighestCareerLevelAchieved = career.SharedData.CareerLevels[career.mHighestLevelAchievedBranchName][career.mHighestLevelAchievedVal];
-                    SimDescription curBoss = SimDescription.Find(BossId);
-                    SimDescription formerBoss = SimDescription.Find(FormerBossId);
-                    if (curBoss is not null && career.Coworkers.Contains(curBoss))
+                    manager.QuitCareers.Remove(previousOccupation);
+                    AcquireOccupationParameters parameters = new(Guid, location, false, false)
                     {
-                        career.SetBoss(curBoss);
-                    }
-                    if (formerBoss is not null && career.Coworkers.Contains(formerBoss))
+                        JumpStartJob = true
+                    };
+                    career.CareerLevels.TryGetValue(CurBranch, out Dictionary<int, CareerLevel> dictionary);
+                    dictionary.TryGetValue(Level, out CareerLevel level);
+                    parameters.JumpStartLevel = level;
+                    if (manager.AcquireOccupation(parameters))
                     {
-                        career.FormerBoss = formerBoss;
+                        base.AcquireOccupation(manager);
+                        career = manager.OccupationAsCareer;
+                        career.mPerformance = Xp;
+                        career.mTotalCashEarned = MoneyEarned;
+                        career.mPayPerHourExtra = ExtraPay;
+                        career.mHighestLevelAchievedBranchName = HighestBranch;
+                        career.HighestCareerLevelAchieved = career.SharedData.CareerLevels[career.mHighestLevelAchievedBranchName][career.mHighestLevelAchievedVal];
+                        SimDescription curBoss = SimDescription.Find(BossId);
+                        SimDescription formerBoss = SimDescription.Find(FormerBossId);
+                        if (curBoss is not null && career.Coworkers.Contains(curBoss))
+                        {
+                            career.SetBoss(curBoss);
+                        }
+                        if (formerBoss is not null && career.Coworkers.Contains(formerBoss))
+                        {
+                            career.FormerBoss = formerBoss;
+                        }
+                        return true;
                     }
-                    return true;
                 }
             }
             return false;
@@ -474,7 +481,6 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         {
             XpBasedCareer career = CareerManager.GetStaticOccupation(Guid) as XpBasedCareer;
             OccupationNames previousOccupation = manager.Occupation.Guid;
-            CareerLocation location = Location;
             if (manager.Occupation is not null)
             {
                 manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
@@ -482,7 +488,11 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
             if (career is not null)
             {
                 manager.QuitCareers.Remove(previousOccupation);
-                AcquireOccupationParameters parameters = new(Guid, location, false, false);
+                AcquireOccupationParameters parameters = new(Guid, false, false);
+                if (GameObject.GetObject(LocationId) is Lot lot)
+                {
+                    parameters.LotId = lot.LotId;
+                }
                 if (manager.AcquireOccupation(parameters))
                 {
                     base.AcquireOccupation(manager);
