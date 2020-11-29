@@ -11,7 +11,6 @@ using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Autonomy;
 using Sims3.Gameplay.Careers;
 using Sims3.Gameplay.CAS;
-using Sims3.Gameplay.ChildAndTeenUpdates;
 using Sims3.Gameplay.Core;
 using Sims3.Gameplay.EventSystem;
 using Sims3.Gameplay.MapTags;
@@ -552,11 +551,12 @@ namespace Gamefreak130
 
         private static void FixupInterviews()
         {
-            foreach (InterviewData data in InterviewList)
+            for (int i = InterviewList.Count - 1; i >= 0; i--)
             {
-                if (ScavengerManager.GetSimFromDescriptionId(data.ActorId) is Sim sim)
+                InterviewData data = InterviewList[i];
+                if (SimDescription.Find(data.ActorId)?.CreatedSim is Sim sim && data.RabbitHole is RabbitHole rabbitHole)
                 {
-                    data.RabbitHole.AddInteraction(new DoInterview.Definition(data));
+                    rabbitHole.AddInteraction(new DoInterview.Definition(data));
                     PhoneCell phone = sim.Inventory.Find<PhoneCell>();
                     if (phone is not null)
                     {
@@ -567,7 +567,11 @@ namespace Gamefreak130
                     {
                         AddPhoneInteractions(phoneHome, data);
                     }
-                    data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, data.RabbitHole);
+                    data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, rabbitHole);
+                }
+                else
+                {
+                    data.Dispose(false);
                 }
             }
         }

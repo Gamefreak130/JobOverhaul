@@ -3,6 +3,7 @@ using Sims3.Gameplay.Actors;
 using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Autonomy;
 using Sims3.Gameplay.Careers;
+using Sims3.Gameplay.CAS;
 using Sims3.Gameplay.ChildAndTeenUpdates;
 using Sims3.Gameplay.Core;
 using Sims3.Gameplay.EventSystem;
@@ -92,7 +93,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             protected internal void OnReminderCallback()
             {
                 DoInterview.Definition definition = new DoInterview.Definition(this);
-                if (ScavengerManager.GetSimFromDescriptionId(ActorId) is Sim sim)
+                if (SimDescription.Find(ActorId)?.CreatedSim is Sim sim)
                 {
                     sim.InteractionQueue.Add(definition.CreateInstance(RabbitHole, sim, new InteractionPriority(InteractionPriorityLevel.UserDirected), true, true) as DoInterview);
                     sim.ShowTNSIfSelectable(LocalizeString(sim.IsFemale, "InterviewReminder", new object[]
@@ -114,7 +115,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             protected internal void Dispose(bool isTimeout)
             {
                 InteractionObjectPair iop = null;
-                if (ScavengerManager.GetSimFromDescriptionId(ActorId) is Sim sim)
+                if (SimDescription.Find(ActorId)?.CreatedSim is Sim sim)
                 {
                     PhoneCell phone = sim.Inventory.Find<PhoneCell>();
                     if (phone != null)
