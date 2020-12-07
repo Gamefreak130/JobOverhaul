@@ -11,8 +11,8 @@ using Sims3.Gameplay.Situations;
 using Sims3.Gameplay.Socializing;
 using Sims3.Gameplay.Utilities;
 using Sims3.SimIFace;
+using Sims3.UI;
 using System.Collections.Generic;
-using static Sims3.UI.StyledNotification;
 
 namespace Gamefreak130.JobOverhaulSpace.Situations
 {
@@ -27,9 +27,9 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
             mChildSimDescId = sim.SimDescription.SimDescriptionId;
             mDaycare = daycare;
             mDaycareSituation = daycareSituation;
-            mAlarmHandle = sim.AddAlarmRepeating(3f, TimeUnit.Minutes, new AlarmTimerCallback(Update), 3f, TimeUnit.Minutes, "Daycare Child Monitor - " + sim.Name, AlarmType.AlwaysPersisted);
+            mAlarmHandle = sim.AddAlarmRepeating(3f, TimeUnit.Minutes, Update, 3f, TimeUnit.Minutes, "Daycare Child Monitor - " + sim.Name, AlarmType.AlwaysPersisted);
             SetupStartingConditions(sim);
-            mMetricRecord = new MetricRecord(sim, GetMotiveDataDictionary());
+            mMetricRecord = new(sim, GetMotiveDataDictionary());
         }
 
         public override void SetupStartingConditions(Sim daycareChild)
@@ -79,27 +79,20 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
 
             public override void Init(VaccinationSessionSituationEx parent)
             {
-                if (Lot == null)
+                if (Lot is null)
                 {
                     Exit();
                 }
-                parent.VaccinationSessionBroadcaster = new ReactionBroadcaster(parent.Lot, parent.AskForVaccinationBroadcasterParams, new ReactionBroadcaster.BroadcastCallback(OnEnterBroadcaster));
+                parent.VaccinationSessionBroadcaster = new(parent.Lot, parent.AskForVaccinationBroadcasterParams, OnEnterBroadcaster);
                 parent.BringRandomSimsToSession(parent.NumSimsToInitiallyBring);
                 if (parent.Vaccinator.LotCurrent != parent.Lot)
                 {
                     parent.Vaccinator.InteractionQueue.CancelNthInteraction(1);
-                    InteractionInstance interactionInstance = ForceSituationSpecificInteraction(parent.Lot, parent.Vaccinator, VisitCommunityLot.Singleton, null, null, new Callback(OnVaccinatorRouteFail), new InteractionPriority(InteractionPriorityLevel.UserDirected));
-                    if (interactionInstance is ITakeSimToWorkLocation takeSimToWorkLocation)
-                    {
-                        takeSimToWorkLocation.SetTakingSimToWork();
-                    }
+                    InteractionInstance interactionInstance = ForceSituationSpecificInteraction(parent.Lot, parent.Vaccinator, VisitCommunityLot.Singleton, null, null, OnVaccinatorRouteFail, new InteractionPriority(InteractionPriorityLevel.UserDirected));
+                    (interactionInstance as ITakeSimToWorkLocation)?.SetTakingSimToWork();
                 }
-                string message = LocalizeString("Tns1GetToLocation", new object[]
-                {
-                    parent.Vaccinator,
-                    parent.Lot.Name
-                });
-                parent.Vaccinator.ShowTNSIfSelectable(message, NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, parent.Vaccinator.ObjectId);
+                string message = LocalizeString("Tns1GetToLocation", parent.Vaccinator, parent.Lot.Name);
+                parent.Vaccinator.ShowTNSIfSelectable(message, StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, parent.Vaccinator.ObjectId);
             }
 
             public bool ValidTest(Sim sim) => sim.IsNPC && !sim.SimDescription.IsGhost && !sim.SimDescription.IsMummy && !sim.SimDescription.IsFrankenstein && !sim.SimDescription.IsEP11Bot && sim != Parent.Vaccinator 
@@ -115,15 +108,10 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
                 if (!Parent.VaccinatorArrived && s == Parent.Vaccinator)
                 {
                     Parent.SetVaccinatorArrived();
-                    string message = LocalizeString(Parent.Vaccinator.IsFemale, "Tns2VaccinationSessionStarting", new object[]
-                    {
-                        Parent.Vaccinator,
-                        Parent.Lot.Name,
-                        Parent.VaccinationSessionMaxDurationInHours
-                    });
-                    Parent.Vaccinator.ShowTNSIfSelectable(message, NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, Parent.Vaccinator.ObjectId);
+                    string message = LocalizeString(Parent.Vaccinator.IsFemale, "Tns2VaccinationSessionStarting", Parent.Vaccinator, Parent.Lot.Name, Parent.VaccinationSessionMaxDurationInHours);
+                    Parent.Vaccinator.ShowTNSIfSelectable(message, StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, Parent.Vaccinator.ObjectId);
                     string name = string.Format("Vaccination Session 1 hour remaining - Vaccinator: {0}", Parent.Vaccinator);
-                    Parent.VaccinationSessionTimer = Parent.Vaccinator.AddAlarm(Parent.VaccinationSessionMaxDurationInHours - 1, TimeUnit.Hours, new AlarmTimerCallback(Parent.OnVaccinationSessionOneHourRemaining), name, AlarmType.DeleteOnReset);
+                    Parent.VaccinationSessionTimer = Parent.Vaccinator.AddAlarm(Parent.VaccinationSessionMaxDurationInHours - 1, TimeUnit.Hours, Parent.OnVaccinationSessionOneHourRemaining, name, AlarmType.DeleteOnReset);
                 }
             }
 
@@ -144,9 +132,9 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
         {
             Vaccinator = vaccinator;
             Vaccinator.AssignRole(this);
-            mLeaveConversationListener = EventTracker.AddListener(EventTypeId.kLeftConversation, new ProcessEventDelegate(OnConversationLeft), Vaccinator);
+            mLeaveConversationListener = EventTracker.AddListener(EventTypeId.kLeftConversation, OnConversationLeft, Vaccinator);
             mLot = lot;
-            mLotId = (lot != null) ? lot.LotId : 0uL;
+            mLotId = lot?.LotId ?? 0uL;
             SetState(new RouteEveryoneToLot(this));
             sAllSituations.Add(this);
         }
@@ -194,11 +182,11 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
             int num2 = 0;
             if (GameUtils.IsInstalled(ProductVersion.EP8))
             {
-                num2 = Lot.RouteRandomNPCSimsHere(num, new Lot.RouteRandomNPCSimsToLotTest(BringRandomSickSimTest), new Callback(OnVaccinateeRouteFail));
+                num2 = Lot.RouteRandomNPCSimsHere(num, BringRandomSickSimTest, OnVaccinateeRouteFail);
             }
             if (num2 != num)
             {
-                num2 = Lot.RouteRandomNPCSimsHere(num, new Lot.RouteRandomNPCSimsToLotTest(BringRandomSimTest), new Callback(OnVaccinateeRouteFail));
+                num2 = Lot.RouteRandomNPCSimsHere(num, BringRandomSimTest, OnVaccinateeRouteFail);
             }
         }
 
@@ -209,11 +197,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
                 vaccinationSessionSituation.NumVaccinations++;
                 vaccinationSessionSituation.AddToIgnoreList(target);
                 vaccinationSessionSituation.BringRandomSimsToSession(1);
-                HealthManager healthManager = target.SimDescription.HealthManager;
-                if (healthManager != null)
-                {
-                    healthManager.Vaccinate();
-                }
+                target.SimDescription.HealthManager?.Vaccinate();
             }
         }
     }
@@ -224,7 +208,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
         {
             new public class Definition : InteractionDefinition<Sim, Sim, AskForDiagnosisEx>
             {
-                public override bool Test(Sim actor, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => GetFreeClinicSessionSituation(target) != null;
+                public override bool Test(Sim actor, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => GetFreeClinicSessionSituation(target) is not null;
             }
 
             new public static InteractionDefinition Singleton = new Definition();
@@ -271,15 +255,15 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
 
         public override void AddInteraction(Sim sim)
         {
-            SituationSocial.Definition i = new SituationSocial.Definition("Diagnose", new string[0], null, false);
+            SituationSocial.Definition i = new("Diagnose", new string[0], null, false);
             AddSituationSpecificInteraction(sim, Vaccinator, i, null, null, null, "Sims3.Gameplay.Autonomy.Diagnose+Definition");
         }
 
         public override void PushAskInteraction(Sim s)
         {
             Sim.AskForDiagnosis askForDiagnosis = RetrieveAskForVaccinationState(s, out Sim.AskForVaccinationState askState, out float timeRemainingInSpecifiedAskStateOverride)
-                ? PushAskForDiagnosis(s, Vaccinator, new InteractionPriority(InteractionPriorityLevel.NonCriticalNPCBehavior, 1f), askState, timeRemainingInSpecifiedAskStateOverride)
-                : PushAskForDiagnosis(s, Vaccinator, new InteractionPriority(InteractionPriorityLevel.NonCriticalNPCBehavior, 1f), Sim.AskForVaccinationState.WaitingForVaccinatorToArrive);
+                ? PushAskForDiagnosis(s, Vaccinator, new(InteractionPriorityLevel.NonCriticalNPCBehavior, 1f), askState, timeRemainingInSpecifiedAskStateOverride)
+                : PushAskForDiagnosis(s, Vaccinator, new(InteractionPriorityLevel.NonCriticalNPCBehavior, 1f), Sim.AskForVaccinationState.WaitingForVaccinatorToArrive);
             askForDiagnosis.VaccinationSessionSituation = this;
             AddVaccinationSeeker(s);
         }
@@ -290,15 +274,13 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
             {
                 if (current is Sim.AskForDiagnosis)
                 {
-                    bool result = true;
-                    return result;
+                    return true;
                 }
                 if (current is SocialInteractionB socialInteractionB)
                 {
-                    if (socialInteractionB.InteractionDefinition is SocialInteractionB.Definition definition && definition.Key == "Diagnose")
+                    if ((socialInteractionB.InteractionDefinition as SocialInteractionB.Definition)?.Key is "Diagnose")
                     {
-                        bool result = true;
-                        return result;
+                        return true;
                     }
                 }
             }
@@ -315,25 +297,19 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
         {
         }
 
-        new public static FreeClinicSessionSituationEx Create(Sim diagnoser, Lot lot) => new FreeClinicSessionSituationEx(diagnoser, lot);
+        new public static FreeClinicSessionSituationEx Create(Sim diagnoser, Lot lot) => new(diagnoser, lot);
 
         public static AskForDiagnosisEx PushAskForDiagnosis(Sim sim, Sim diagnoser, InteractionPriority priority, Sim.AskForVaccinationState askState)
         {
             AskForDiagnosisEx askForDiagnosis = PushAskForDiagnosis(sim, diagnoser, priority);
-            if (askForDiagnosis != null)
-            {
-                askForDiagnosis.SetAskState(askState);
-            }
+            askForDiagnosis?.SetAskState(askState);
             return askForDiagnosis;
         }
 
         public static AskForDiagnosisEx PushAskForDiagnosis(Sim sim, Sim diagnoser, InteractionPriority priority, Sim.AskForVaccinationState askState, float timeRemainingInSpecifiedAskStateOverride)
         {
             AskForDiagnosisEx askForDiagnosis = PushAskForDiagnosis(sim, diagnoser, priority);
-            if (askForDiagnosis != null)
-            {
-                askForDiagnosis.SetAskState(askState, timeRemainingInSpecifiedAskStateOverride);
-            }
+            askForDiagnosis?.SetAskState(askState, timeRemainingInSpecifiedAskStateOverride);
             return askForDiagnosis;
         }
 
@@ -348,7 +324,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
         public static bool TestDiagnose(Sim actor, Sim target, ActiveTopic _, bool isAutonomous, ref GreyedOutTooltipCallback __)
         {
             FreeClinicSessionSituationEx freeClinicSessionSituation = GetFreeClinicSessionSituation(actor);
-            return freeClinicSessionSituation != null && !freeClinicSessionSituation.IsInIgnoreList(target) && (freeClinicSessionSituation.IsInSeekersList(target) || freeClinicSessionSituation.IsInInterruptedList(target)) 
+            return freeClinicSessionSituation is not null && !freeClinicSessionSituation.IsInIgnoreList(target) && (freeClinicSessionSituation.IsInSeekersList(target) || freeClinicSessionSituation.IsInInterruptedList(target)) 
                 && (!isAutonomous || actor.GetDistanceToObject(target) <= AutographSessionSituation.MaxDistanceForAutonomousSign);
         }
 
@@ -359,11 +335,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
                 freeClinicSessionSituation.NumVaccinations++;
                 freeClinicSessionSituation.AddToIgnoreList(target);
                 freeClinicSessionSituation.BringRandomSimsToSession(1);
-                HealthManager healthManager = target.SimDescription.HealthManager;
-                if (healthManager != null)
-                {
-                    healthManager.Vaccinate();
-                }
+                target.SimDescription.HealthManager?.Vaccinate();
             }
         }
     }

@@ -106,10 +106,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
             OccupationNames previousOccupation = manager.Occupation.Guid;
             if (GameObject.GetObject(LocationId) is RabbitHole rabbitHole && rabbitHole.CareerLocations.TryGetValue((ulong)Guid, out CareerLocation location))
             {
-                if (manager.Occupation is not null)
-                {
-                    manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
-                }
+                manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
                 GreyedOutTooltipCallback callback = null;
                 if (career is not null && career.CareerAgeTest(manager.mSimDescription) && career.CanAcceptCareer(manager.mSimDescription?.CreatedSim?.ObjectId ?? default, ref callback))
                 {
@@ -481,10 +478,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         {
             XpBasedCareer career = CareerManager.GetStaticOccupation(Guid) as XpBasedCareer;
             OccupationNames previousOccupation = manager.Occupation.Guid;
-            if (manager.Occupation is not null)
-            {
-                manager.Occupation.LeaveJob(false, Career.LeaveJobReason.kDebug);
-            }
+            manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
             if (career is not null)
             {
                 manager.QuitCareers.Remove(previousOccupation);
@@ -531,7 +525,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         public override bool AcquireOccupation(CareerManager manager)
         {
             ActiveCareer activeCareer = CareerManager.GetStaticOccupation(Guid) as ActiveCareer;
-            if (activeCareer is not null && activeCareer.IsActiveCareerAvailable() && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & manager.mSimDescription.Age) != CASAgeGenderFlags.None && base.AcquireOccupation(manager))
+            if (activeCareer is not null && activeCareer.IsActiveCareerAvailable() && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & manager.mSimDescription.Age) is not CASAgeGenderFlags.None && base.AcquireOccupation(manager))
             {
                 manager.OccupationAsActiveCareer.mLifetimeEarningsForPensionCalculation = MoneyEarned;
                 return true;
@@ -552,7 +546,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         {
             CompletedAJob = career.CompletedAJob;
             BeenToFireStation = career.mBeenToFireStation;
-            UpgradeProgressRemaining = career.UpgradeTracker is not null ? career.UpgradeTracker.ProgressPercentageRemaining : -1f;
+            UpgradeProgressRemaining = career.UpgradeTracker?.ProgressPercentageRemaining ?? -1f;
         }
 
         public override bool AcquireOccupation(CareerManager manager)

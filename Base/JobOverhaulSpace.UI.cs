@@ -8,7 +8,6 @@ using Sims3.Gameplay.Careers;
 using Sims3.Gameplay.ChildAndTeenUpdates;
 using Sims3.Gameplay.Core;
 using Sims3.Gameplay.Interactions;
-using Sims3.Gameplay.MapTags;
 using Sims3.Gameplay.Objects.Miscellaneous;
 using Sims3.Gameplay.Objects.RabbitHoles;
 using Sims3.Gameplay.Utilities;
@@ -21,31 +20,30 @@ using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
-using static Sims3.UI.StyledNotification;
 
 namespace Gamefreak130.JobOverhaulSpace.UI
 {
     public class CareerSelectionModelEx : CareerSelectionModel
     {
-        new public static CareerSelectionModelEx Singleton = new CareerSelectionModelEx();
+        new public static CareerSelectionModelEx Singleton = new();
 
         public List<OccupationEntryTuple> mAvailableCareersLocationsEx;
 
         public void ShowCareerSelection(Sim sim, ObjectGuid interactingObject, List<OccupationEntryTuple> careers)
         {
-            while (mSim != null)
+            while (mSim is not null)
             {
                 Simulator.Sleep(0u);
             }
             mSim = sim;
             try
             {
-                mHomeLotMapTag = new HomeLotMapTag(mSim.LotHome, mSim);
+                mHomeLotMapTag = new(mSim.LotHome, mSim);
                 CareerSelectionModel.Singleton.mHomeLotMapTag = mHomeLotMapTag;
                 mCurrentObject = interactingObject;
                 mCurrentState = CareerSelectionStates.kSeeSim;
                 CareerSelectionModel.Singleton.mCurrentState = CareerSelectionStates.kSeeSim;
-                if (CameraController.GetControllerType() == CameraControllerType.Video)
+                if (CameraController.GetControllerType() is CameraControllerType.Video)
                 {
                     CameraController.SetControllerType(CameraControllerType.Main);
                 }
@@ -57,7 +55,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 mCareerEntries.Clear();
                 foreach (OccupationEntryTuple tuple in careers)
                 {
-                    if (tuple.OccupationEntry is Career && tuple.CareerLocation == null)
+                    if (tuple is { OccupationEntry: Career, CareerLocation: null })
                     {
                         continue;
                     }
@@ -69,7 +67,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     mCareerEntries.Add(tuple.OccupationEntry);
                 }
                 IOccupationEntry occupationEntry = mCareerEntries.Count > 0 ? CareerSelectionDialogEx.Show(sim.IsFemale) : null;
-                if (occupationEntry != null && mCurrentState != CareerSelectionStates.kSelectingCareer)
+                if (occupationEntry is not null && mCurrentState is not CareerSelectionStates.kSelectingCareer)
                 {
                     Occupation occupation = occupationEntry as Occupation;
                     CareerSelectionStates careerSelectionStates = mCurrentState;
@@ -77,10 +75,10 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     CareerSelectionModel.Singleton.mCurrentState = mCurrentState;
                     if (!occupation.IsActive)
                     {
-                        if (mCurrentCareerLocation != null)
+                        if (mCurrentCareerLocation is not null)
                         {
                             Career career = occupation as Career;
-                            AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(mCurrentCareerLocation, false, true);
+                            AcquireOccupationParameters occupationParameters = new(mCurrentCareerLocation, false, true);
                             if (BoardingSchool.DidSimGraduate(mSim.SimDescription, BoardingSchool.BoardingSchoolTypes.None, false))
                             {
                                 BoardingSchool.UpdateAcquireOccupationParameters(mSim.SimDescription.BoardingSchool, career.CareerGuid, ref occupationParameters);
@@ -98,7 +96,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     }
                     else
                     {
-                        AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(occupation.Guid, false, true);
+                        AcquireOccupationParameters occupationParameters = new(occupation.Guid, false, true);
                         if (mSim.AcquireOccupation(occupationParameters))
                         {
                             string newOccupationTnsText = mSim.CareerManager.Occupation.GetNewOccupationTnsText();
@@ -111,7 +109,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     mCurrentState = careerSelectionStates;
                     CareerSelectionModel.Singleton.mCurrentState = careerSelectionStates;
                 }
-                if (mCurrentState == CareerSelectionStates.kSeeLocation)
+                if (mCurrentState is CareerSelectionStates.kSeeLocation)
                 {
                     int currentIndex = mCareerEntries.IndexOf(occupationEntry);
                     SetLocation(false, currentIndex);
@@ -125,19 +123,19 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         public bool ShowCareerSelection(Sim sim, ObjectGuid interactingObject, List<OccupationEntryTuple> careers, bool isResume)
         {
-            while (mSim != null)
+            while (mSim is not null)
             {
                 Simulator.Sleep(0u);
             }
             mSim = sim;
             try
             {
-                mHomeLotMapTag = new HomeLotMapTag(mSim.LotHome, mSim);
+                mHomeLotMapTag = new(mSim.LotHome, mSim);
                 CareerSelectionModel.Singleton.mHomeLotMapTag = mHomeLotMapTag;
                 mCurrentObject = interactingObject;
                 mCurrentState = CareerSelectionStates.kSeeSim;
                 CareerSelectionModel.Singleton.mCurrentState = CareerSelectionStates.kSeeSim;
-                if (CameraController.GetControllerType() == CameraControllerType.Video)
+                if (CameraController.GetControllerType() is CameraControllerType.Video)
                 {
                     CameraController.SetControllerType(CameraControllerType.Main);
                 }
@@ -149,7 +147,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 mCareerEntries.Clear();
                 foreach (OccupationEntryTuple tuple in careers)
                 {
-                    if (tuple.OccupationEntry is Career && tuple.CareerLocation == null)
+                    if (tuple is { OccupationEntry: Career, CareerLocation: null })
                     {
                         continue;
                     }
@@ -157,7 +155,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     mCareerEntries.Add(tuple.OccupationEntry);
                 }
                 IOccupationEntry occupationEntry = mCareerEntries.Count > 0 ? CareerSelectionDialogEx.Show(sim.IsFemale) : null;
-                if (occupationEntry != null && mCurrentState != CareerSelectionStates.kSelectingCareer)
+                if (occupationEntry is not null && mCurrentState is not CareerSelectionStates.kSelectingCareer)
                 {
                     Occupation occupation = occupationEntry as Occupation;
                     CareerSelectionStates careerSelectionStates = mCurrentState;
@@ -170,7 +168,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     }
                     if (!occupation.IsActive)
                     {
-                        if (mCurrentCareerLocation != null)
+                        if (mCurrentCareerLocation is not null)
                         {
                             if (isResume)
                             {
@@ -182,7 +180,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                                 }
                                 else
                                 {
-                                    AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(mCurrentCareerLocation, false, true);
+                                    AcquireOccupationParameters occupationParameters = new(mCurrentCareerLocation, false, true);
                                     if (BoardingSchool.DidSimGraduate(mSim.SimDescription, BoardingSchool.BoardingSchoolTypes.None, false))
                                     {
                                         BoardingSchool.UpdateAcquireOccupationParameters(mSim.SimDescription.BoardingSchool, career.CareerGuid, ref occupationParameters);
@@ -200,10 +198,10 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                             }
                             else
                             {
-                                SubmitJobApplication joinContinuation = SubmitJobApplication.Singleton.CreateInstance(mCurrentCareerLocation.Owner, mSim, new InteractionPriority(InteractionPriorityLevel.UserDirected), false, true) as SubmitJobApplication;
+                                SubmitJobApplication joinContinuation = SubmitJobApplication.Singleton.CreateInstance(mCurrentCareerLocation.Owner, mSim, new(InteractionPriorityLevel.UserDirected), false, true) as SubmitJobApplication;
                                 joinContinuation.Occupation = mCurrentCareerLocation.Career.Guid;
                                 mSim.InteractionQueue.PushAsContinuation(joinContinuation, true);
-                                mSim.ShowTNSIfSelectable(LocalizeString("SubmitJobApplicationGotoTNS", new object[] { mCurrentCareerLocation.Owner.GetLocalizedName() }), NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, ObjectGuid.InvalidObjectGuid);
+                                mSim.ShowTNSIfSelectable(LocalizeString("SubmitJobApplicationGotoTNS", mCurrentCareerLocation.Owner.GetLocalizedName()), StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, ObjectGuid.InvalidObjectGuid);
                             }
                         }
                     }
@@ -212,14 +210,14 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                         CityHall[] objects = GetObjects<CityHall>();
                         if (objects.Length > 0)
                         {
-                            JoinActiveCareerContinuation joinContinuation = JoinActiveCareerContinuation.Singleton.CreateInstance(objects[0], mSim, new InteractionPriority(InteractionPriorityLevel.UserDirected), false, true) as JoinActiveCareerContinuation;
+                            JoinActiveCareerContinuation joinContinuation = JoinActiveCareerContinuation.Singleton.CreateInstance(objects[0], mSim, new(InteractionPriorityLevel.UserDirected), false, true) as JoinActiveCareerContinuation;
                             joinContinuation.CareerToSet = occupation.Guid;
                             mSim.InteractionQueue.PushAsContinuation(joinContinuation, true);
-                            mSim.ShowTNSIfSelectable(Localization.LocalizeString("Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedGotoTNS"), NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, ObjectGuid.InvalidObjectGuid);
+                            mSim.ShowTNSIfSelectable(Localization.LocalizeString("Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedGotoTNS"), StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid, ObjectGuid.InvalidObjectGuid);
                         }
                         else
                         {
-                            AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(occupation.Guid, false, true);
+                            AcquireOccupationParameters occupationParameters = new(occupation.Guid, false, true);
                             if (mSim.AcquireOccupation(occupationParameters))
                             {
                                 string newOccupationTnsText = mSim.CareerManager.Occupation.GetNewOccupationTnsText();
@@ -234,7 +232,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     CareerSelectionModel.Singleton.mCurrentState = careerSelectionStates;
                     return true;
                 }
-                if (mCurrentState == CareerSelectionStates.kSeeLocation)
+                if (mCurrentState is CareerSelectionStates.kSeeLocation)
                 {
                     int currentIndex = mCareerEntries.IndexOf(occupationEntry);
                     SetLocation(false, currentIndex);
@@ -249,7 +247,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         public void CareerSelected(IOccupationEntry entry, int index)
         {
-            if ((!entry.IsActive && mCurrentState != CareerSelectionStates.kSelectingCareer && mAvailableCareersLocationsEx[index].CareerLocation != null) || entry.IsActive)
+            if ((!entry.IsActive && mCurrentState is not CareerSelectionStates.kSelectingCareer && mAvailableCareersLocationsEx[index].CareerLocation is not null) || entry.IsActive)
             {
                 mCurrentCareerLocation = mAvailableCareersLocationsEx[index].CareerLocation;
                 CareerSelectionModel.Singleton.mCurrentCareerLocation = mCurrentCareerLocation;
@@ -259,7 +257,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     mActiveCareerLot = LotManager.GetLot(entry.ActiveCareerLotID);
                     CareerSelectionModel.Singleton.mActiveCareerLot = mActiveCareerLot;
                 }
-                if (mCurrentState == CareerSelectionStates.kSeeLocation)
+                if (mCurrentState is CareerSelectionStates.kSeeLocation)
                 {
                     if (flag)
                     {
@@ -279,7 +277,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 mCurrentState = careerSelectionStates;
                 CareerSelectionModel.Singleton.mCurrentState = careerSelectionStates;
                 RefreshMaptags();
-                if (mCurrentState == CareerSelectionStates.kSeeLocation)
+                if (mCurrentState is CareerSelectionStates.kSeeLocation)
                 {
                     if (mCareerEntries[currentIndex].IsActive)
                     {
@@ -300,8 +298,8 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         public CareerSelectionModelEx()
         {
-            mAvailableCareersLocationsEx = new List<OccupationEntryTuple>();
-            mCareerEntries = new List<IOccupationEntry>();
+            mAvailableCareersLocationsEx = new();
+            mCareerEntries = new();
         }
     }
 
@@ -345,9 +343,9 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         private readonly bool mIsFemale;
 
-        private Color kDayTextNotWorkingColor = new Color(2155905152u);
+        private Color kDayTextNotWorkingColor = new(2155905152u);
 
-        private Color kDayTextWorkingColor = new Color(4278198336u);
+        private Color kDayTextWorkingColor = new(4278198336u);
 
         private readonly bool mWasMapview;
 
@@ -365,7 +363,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             }
             Responder.Instance.HudModel.RestoreUIVisibility();
             IOccupationEntry result;
-            using (CareerSelectionDialogEx careerSelectionDialog = new CareerSelectionDialogEx(isFemale))
+            using (CareerSelectionDialogEx careerSelectionDialog = new(isFemale))
             {
                 careerSelectionDialog.StartModal();
                 result = careerSelectionDialog.mbResult ? careerSelectionDialog.mSelectedCareer : null;
@@ -375,7 +373,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         public override bool OnEnd(uint endID)
         {
-            mbResult = endID == OkayID && mSelectedCareer != null;
+            mbResult = endID == OkayID && mSelectedCareer is not null;
             Responder.Instance.OptionsModel.UIDisableSave = false;
             mCareerSelectionModel.SetLocation(false, mCurrentIndex);
             UIManager.DarkenBackground(false);
@@ -418,15 +416,15 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             imageDrawable.Image = UIManager.GetThumbnailImage(Responder.Instance.HudModel.GetThumbnailForGameObject(mCareerSelectionModel.SimGuid));
             window.Invalidate();
             Button button = mModalDialogWindow.GetChildByID(65333248u, true) as Button;
-            button.Click += new UIEventHandler<UIButtonClickEventArgs>(OnAcceptCareer);
+            button.Click += OnAcceptCareer;
             button = mModalDialogWindow.GetChildByID(114633988u, true) as Button;
-            button.Click += new UIEventHandler<UIButtonClickEventArgs>(OnCancelButtonClick);
+            button.Click += OnCancelButtonClick;
             if (mCareerEntries.Count > 2)
             {
                 button = mModalDialogWindow.GetChildByID(114633984u, true) as Button;
-                button.Click += new UIEventHandler<UIButtonClickEventArgs>(OnCareerSelectionChanged);
+                button.Click += OnCareerSelectionChanged;
                 button = mModalDialogWindow.GetChildByID(114633985u, true) as Button;
-                button.Click += new UIEventHandler<UIButtonClickEventArgs>(OnCareerSelectionChanged);
+                button.Click += OnCareerSelectionChanged;
             }
             else
             {
@@ -436,7 +434,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 button.Visible = false;
             }
             button = mModalDialogWindow.GetChildByID(114633987u, true) as Button;
-            button.Click += new UIEventHandler<UIButtonClickEventArgs>(OnSeeLocationButtonClick);
+            button.Click += OnSeeLocationButtonClick;
             FillCareerInfo(mCareerEntries[0]);
             EnableDisableAcceptCareerButton(mCareerSelectionModel, mCareerEntries[0]);
             window = mModalDialogWindow.GetChildByID((uint)(107605808 + mHudModel.CurrentDay), true) as Window;
@@ -459,7 +457,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             mSelectedCareer = mCareerEntries[mCurrentIndex];
             FillCareerInfo(mSelectedCareer);
             EnableDisableAcceptCareerButton(mCareerSelectionModel, mSelectedCareer);
-            if (mSelectedCareer != null)
+            if (mSelectedCareer is not null)
             {
                 mCareerSelectionModel.CareerSelected(mSelectedCareer, mCurrentIndex);
                 UIManager.GetSceneWindow().MapViewModeEnabled = false;
@@ -504,12 +502,12 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         private void FillCareerInfo(IOccupationEntry entry)
         {
-            if (entry != null)
+            if (entry is not null)
             {
                 Text text;
                 Window window = mModalDialogWindow.GetChildByID(114633986u, true) as Window;
                 (window.Drawable as ImageDrawable).Image = UIManager.LoadUIImage(ResourceKey.CreatePNGKey(entry.CareerIconColored, 0u));
-                window.Position = new Vector2(80f, 130f);
+                window.Position = new(80f, 130f);
                 text = mModalDialogWindow.GetChildByID(107605765u, true) as Text;
                 text.Caption = LocalizeString("CareerOfferHeader");
                 text = mModalDialogWindow.GetChildByID(107605766u, true) as Text;
@@ -518,7 +516,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 float oldHeight = text.Area.Height;
                 if (entry.IsActive)
                 {
-                    text.Caption = entry.PayPerHourOrStipend > 0 ? Responder.Instance.LocalizationModel.LocalizeString("UI/Caption/CareerSelection:WeeklyStipend", new object[] { entry.PayPerHourOrStipend }) : string.Empty;
+                    text.Caption = entry.PayPerHourOrStipend > 0 ? Responder.Instance.LocalizationModel.LocalizeString("UI/Caption/CareerSelection:WeeklyStipend", entry.PayPerHourOrStipend) : string.Empty;
                     text.AutoSize(true);
                     text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
                     if (entry.HasOpenHours)
@@ -543,11 +541,11 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 text = mModalDialogWindow.GetChildByID(107605767u, true) as Text;
                 float offset = text.Area.Height - oldHeight;
                 text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
-                text.Position = new Vector2(text.Area.TopLeft.x, text.Area.TopLeft.y + offset);
+                text.Position = new(text.Area.TopLeft.x, text.Area.TopLeft.y + offset);
                 text = mModalDialogWindow.GetChildByID(107605769u, true) as Text;
                 text.Caption = mCareerSelectionModel.LocalizeCareerDetails(entry.CareerOfferInfo);
                 text.AutoSize(true);
-                text.Position = new Vector2(0f, 0f);
+                text.Position = new(0f, 0f);
                 ScrollWindow scrollWindow = mModalDialogWindow.GetChildByID(107605770u, true) as ScrollWindow;
                 scrollWindow.Update();
                 Button button = mModalDialogWindow.GetChildByID(114633987u, true) as Button;
@@ -564,13 +562,13 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 Sim sim = GameObject.GetObject<Sim>(model.SimGuid);
                 Button button = mModalDialogWindow.GetChildByID(65333248u, true) as Button;
                 button.Enabled = false;
-                string name = occupation is Career ? (occupation as Career).SharedData.Name.Substring(34) : occupation.Guid.ToString();
+                string name = (occupation as Career)?.SharedData.Name.Substring(34) ?? occupation.Guid.ToString();
                 if (!occupation.CanAcceptCareer(model.SimGuid, ref greyedOutTooltipCallback))
                 {
-                    button.TooltipText = greyedOutTooltipCallback != null ? greyedOutTooltipCallback() : LocalizeString("NotCorrectAgeForOccupation");
-                    if (button.TooltipText == Localization.LocalizeString(sim.IsFemale, "Gameplay/Occupation:GreyedOutUiTooltipAlreadyHasOccupation", new object[] { sim.SimDescription }))
+                    button.TooltipText = greyedOutTooltipCallback is not null ? greyedOutTooltipCallback() : LocalizeString("NotCorrectAgeForOccupation");
+                    if (button.TooltipText == Localization.LocalizeString(sim.IsFemale, "Gameplay/Occupation:GreyedOutUiTooltipAlreadyHasOccupation", sim.SimDescription))
                     {
-                        if ((!occupation.IsActive && mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation is CareerLocation location && sim.CareerLocation == location.Owner) || occupation.IsActive)
+                        if ((!occupation.IsActive && mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation?.Owner == sim.CareerLocation) || occupation.IsActive)
                         {
                             return;
                         }
@@ -594,7 +592,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 {
                     foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
                     {
-                        if (sim.DegreeManager == null || !sim.DegreeManager.HasCompletedDegree(degree))
+                        if (sim.DegreeManager is null || !sim.DegreeManager.HasCompletedDegree(degree))
                         {
                             button.TooltipText = LocalizeString(sim.IsFemale, "DoesNotHaveRequiredDegrees");
                             return;
@@ -632,7 +630,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 if (num2 > 0u)
                 {
                     Text text2 = mModalDialogWindow.GetChildByID(num2, true) as Text;
-                    if (text2 != null)
+                    if (text2 is not null)
                     {
                         text2.TextColor = kDayTextWorkingColor;
                     }
@@ -654,7 +652,8 @@ namespace Gamefreak130.JobOverhaulSpace.UI
     // In which case an empty RowInfo list is returned
     public class ObjectPickerDialogEx : ObjectPickerDialog
     {
-        public ObjectPickerDialogEx(bool modal, PauseMode pauseMode, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, Vector2 position, bool viewTypeToggle, List<RowInfo> preSelectedRows, bool showHeadersAndToggle, bool disableCloseButton) : base(modal, pauseMode, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, position, viewTypeToggle, preSelectedRows, showHeadersAndToggle, disableCloseButton)
+        public ObjectPickerDialogEx(bool modal, PauseMode pauseMode, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, Vector2 position, bool viewTypeToggle, List<RowInfo> preSelectedRows, bool showHeadersAndToggle, bool disableCloseButton) 
+            : base(modal, pauseMode, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, position, viewTypeToggle, preSelectedRows, showHeadersAndToggle, disableCloseButton)
         {
             mOkayButton.Enabled = true;
             mTable.ObjectTable.TableChanged -= OnTableChanged;
@@ -667,7 +666,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         new public static List<RowInfo> Show(bool modal, PauseMode pauseType, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, Vector2 position, bool viewTypeToggle, List<RowInfo> preSelectedRows, bool showHeadersAndToggle, bool disableCloseButton)
         {
-            using (ObjectPickerDialogEx objectPickerDialog = new ObjectPickerDialogEx(modal, pauseType, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, position, viewTypeToggle, preSelectedRows, showHeadersAndToggle, disableCloseButton))
+            using (ObjectPickerDialogEx objectPickerDialog = new(modal, pauseType, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, position, viewTypeToggle, preSelectedRows, showHeadersAndToggle, disableCloseButton))
             {
                 objectPickerDialog.StartModal();
                 return objectPickerDialog.Result;
@@ -682,7 +681,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 {
                     return false;
                 }
-                mResult = mTable.Selected ?? new List<RowInfo>();
+                mResult = mTable.Selected ?? new();
             }
             else
             {

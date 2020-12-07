@@ -200,11 +200,11 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public float ApplicationTime { get => mApplicationTime; set => mApplicationTime = value; }
 
-        public Dictionary<string, InterviewSettings> InterviewSettings { get; set; } = new Dictionary<string, InterviewSettings>();
+        public Dictionary<string, InterviewSettings> InterviewSettings { get; set; } = new();
 
-        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings { get; set; } = new Dictionary<string, CareerAvailabilitySettings>();
+        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings { get; set; } = new();
 
-        public Dictionary<string, bool> SelfEmployedAvailabilitySettings { get; set; } = new Dictionary<string, bool>();
+        public Dictionary<string, bool> SelfEmployedAvailabilitySettings { get; set; } = new();
 
         public PersistedSettings()
         {
@@ -212,7 +212,7 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public string Export()
         {
-            StringBuilder text = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<JobOverhaulSettings>\n");
+            StringBuilder text = new("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<JobOverhaulSettings>\n");
             foreach (var field in typeof(PersistedSettings).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (field.GetValue(this) is Dictionary<string, InterviewSettings> dict)
@@ -221,9 +221,9 @@ namespace Gamefreak130.JobOverhaulSpace
                     foreach (KeyValuePair<string, InterviewSettings> pair in dict)
                     {
                         InterviewSettings settings = pair.Value;
-                        List<string> posTraits = new List<string>();
-                        List<string> negTraits = new List<string>();
-                        List<string> skills = new List<string>();
+                        List<string> posTraits = new();
+                        List<string> negTraits = new();
+                        List<string> skills = new();
                         foreach (TraitNames trait in settings.PositiveTraits)
                         {
                             posTraits.Add(trait.ToString());
@@ -251,7 +251,7 @@ namespace Gamefreak130.JobOverhaulSpace
                     foreach (KeyValuePair<string, CareerAvailabilitySettings> pair in dict2)
                     {
                         CareerAvailabilitySettings settings = pair.Value;
-                        List<string> list = new List<string>();
+                        List<string> list = new();
                         foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
                         {
                             list.Add(degree.ToString());

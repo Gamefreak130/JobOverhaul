@@ -93,36 +93,36 @@ namespace Gamefreak130
             VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingSingleton = singleton2;
             foreach (string key in SocialRuleRHS.sDictionary.Keys)
             {
-                if (key == "Vaccinate")
+                if (key is "Vaccinate")
                 {
                     SocialRuleRHS.sDictionary[key][0].mProceduralEffectBeforeUpdate = typeof(VaccinationSessionSituationEx).GetMethod("BeforeVaccinate");
                 }
-                if (key == "Diagnose")
+                if (key is "Diagnose")
                 {
                     ActionData.sData[key].ProceduralTest = typeof(FreeClinicSessionSituationEx).GetMethod("TestDiagnosis");
                     SocialRuleRHS.sDictionary[key][0].mProceduralEffectBeforeUpdate = typeof(FreeClinicSessionSituationEx).GetMethod("BeforeDiagnose");
                 }
-                if (key == "Ask To Join PerformanceArtist Career" || key == "Ask To Join Magician Career" || key == "Ask To Join Singer Career")
+                if (key is "Ask To Join PerformanceArtist Career" or "Ask To Join Magician Career" or "Ask To Join Singer Career")
                 {
                     SocialRuleRHS.sDictionary[key][0].mProceduralEffectAfterUpdate = typeof(AskToJoinPerformanceCareerEx).GetMethod("OnRequestFinish");
                 }
-                if (key == "Join Stylist Active Career")
+                if (key is "Join Stylist Active Career")
                 {
                     SocialRuleRHS.sDictionary[key][0].mProceduralEffectAfterUpdate = typeof(JoinActiveCareerStylistSocialEx).GetMethod("OnRequestFinish");
                 }
             }
             foreach (Opportunity opportunity in GenericManager<OpportunityNames, Opportunity, Opportunity>.sDictionary.Values)
             {
-                if (opportunity.ProductVersion == ProductVersion.BaseGame || opportunity.ProductVersion == ProductVersion.EP2 || opportunity.ProductVersion == ProductVersion.EP3 || opportunity.ProductVersion == ProductVersion.EP4 || (opportunity.ProductVersion == ProductVersion.EP11 && opportunity.IsCareer))
+                if (opportunity is { ProductVersion: ProductVersion.BaseGame or ProductVersion.EP2 or ProductVersion.EP3 or ProductVersion.EP4 } or { ProductVersion: ProductVersion.EP11, IsCareer: true })
                 {
                     if (!(opportunity.Guid.ToString().Contains("HandinessSkill_FixRestaurant") || opportunity.Guid.ToString().Contains("HandinessSkill_Upgrade") || opportunity.Guid.ToString().Contains("HandinessSkill_Repair")))
                     {
                         opportunity.mSharedData.mTargetWorldRequired = WorldName.Undefined;
                     }
                 }
-                if (opportunity.ProductVersion == ProductVersion.EP7 && opportunity.Guid.ToString().Contains("FortuneTellerCareer"))
+                if (opportunity.ProductVersion is ProductVersion.EP7 && opportunity.Guid.ToString().Contains("FortuneTellerCareer"))
                 {
-                    Opportunity.OpportunitySharedData.RequirementInfo requirement = new Opportunity.OpportunitySharedData.RequirementInfo
+                    Opportunity.OpportunitySharedData.RequirementInfo requirement = new()
                     {
                         mType = RequirementType.Career,
                         mGuid = (ulong)OccupationNames.FortuneTeller,
@@ -131,9 +131,9 @@ namespace Gamefreak130
                     };
                     opportunity.mSharedData.mRequirementList.Add(requirement);
                 }
-                if (opportunity.ProductVersion == ProductVersion.EP9 && opportunity.Guid.ToString().Contains("Academics"))
+                if (opportunity.ProductVersion is ProductVersion.EP9 && opportunity.Guid.ToString().Contains("Academics"))
                 {
-                    Opportunity.OpportunitySharedData.RequirementInfo requirement = new Opportunity.OpportunitySharedData.RequirementInfo
+                    Opportunity.OpportunitySharedData.RequirementInfo requirement = new()
                     {
                         mType = RequirementType.Career,
                         mGuid = (ulong)OccupationNames.AcademicCareer,
@@ -171,7 +171,7 @@ namespace Gamefreak130
         {
             Methods.InjectInteraction<RabbitHole>(ref GetJobInRabbitHole.Singleton, new GetJobInRabbitHoleEx.Definition(), true);
             Methods.InjectInteraction<Newspaper>(ref GetNewspaperChooser.Singleton, new GetNewspaperChooserEx.Definition(), true);
-            ReadSomethingInInventoryEx.Definition singleton = new ReadSomethingInInventoryEx.Definition();
+            ReadSomethingInInventoryEx.Definition singleton = new();
             Common.Tunings.Inject(Sim.ReadSomethingInInventory.Singleton.GetType(), typeof(Sim), singleton.GetType(), typeof(Sim), true);
             Sim.ReadSomethingInInventory.Singleton = singleton;
             Methods.InjectInteraction<RabbitHole>(ref CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton, new AttendResumeAndInterviewClass.Definition(), true);
@@ -285,7 +285,7 @@ namespace Gamefreak130
             List<string> newCareers = new();
             foreach (Career career in CareerManager.CareerList)
             {
-                if (GameUtils.IsInstalled(career.SharedData.ProductVersion) && !(career is School))
+                if (GameUtils.IsInstalled(career.SharedData.ProductVersion) && career is not School)
                 {
                     career.mAvailableInFuture = true;
                     string name = career.SharedData.Name.Substring(34);
@@ -493,7 +493,7 @@ namespace Gamefreak130
                     newCareers.Remove(name);
                     if (!Settings.InterviewSettings.ContainsKey(name))
                     {
-                        Settings.InterviewSettings.Add(name, new(true, new List<TraitNames>() { TraitNames.Ambitious }, new List<TraitNames>() { TraitNames.Loser }, new()));
+                        Settings.InterviewSettings.Add(name, new(true, new() { TraitNames.Ambitious }, new() { TraitNames.Loser }, new()));
                     }
                     if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
                     {
@@ -590,7 +590,7 @@ namespace Gamefreak130
                         {
                             foreach (Opportunity.OpportunitySharedData.EventInfo info in opportunity.EventList)
                             {
-                                if (info.mEventId == EventTypeId.kSimEnteredVacationWorld || info.mEventId == EventTypeId.kSimReturnedFromVacationWorld)
+                                if (info.mEventId is EventTypeId.kSimEnteredVacationWorld || info.mEventId is EventTypeId.kSimReturnedFromVacationWorld)
                                 {
                                     goto CJACK_01;
                                 }
@@ -651,7 +651,7 @@ namespace Gamefreak130
             RandomNewspaperSeeds.Keys.CopyTo(keys, 0);
             foreach (ObjectGuid id in keys)
             {
-                if (GameObject.GetObject(id) == null || (GameObject.GetObject(id) is Newspaper newspaper && newspaper.IsOld))
+                if (GameObject.GetObject(id) is Newspaper { IsOld: true } or null)
                 {
                     RandomNewspaperSeeds.Remove(id);
                 }
@@ -683,17 +683,7 @@ namespace Gamefreak130
         [PersistableStatic]
         private static PersistedSettings sSettings;
 
-        public static PersistedSettings Settings
-        {
-            get
-            {
-                if (sSettings == null)
-                {
-                    sSettings = new();
-                }
-                return sSettings;
-            }
-        }
+        public static PersistedSettings Settings => sSettings ??= new();
 
         internal static void ResetSettings()
         {

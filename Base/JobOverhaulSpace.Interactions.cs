@@ -17,6 +17,7 @@ using Sims3.Gameplay.Interfaces;
 using Sims3.Gameplay.Objects;
 using Sims3.Gameplay.Objects.Electronics;
 using Sims3.Gameplay.Objects.Miscellaneous;
+using Sims3.Gameplay.Objects.Plumbing;
 using Sims3.Gameplay.Objects.RabbitHoles;
 using Sims3.Gameplay.Roles;
 using Sims3.Gameplay.Seasons;
@@ -41,7 +42,6 @@ using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation
 using static Sims3.Gameplay.GlobalFunctions;
 using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
-using static Sims3.UI.StyledNotification;
 using Methods = Gamefreak130.Common.Methods;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
@@ -53,20 +53,17 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             private bool mIsPhone;
 
-            public override string GetInteractionName(Sim actor, GameObject target, InteractionObjectPair iop)
-            {
-                return LocalizeString("ChangeSettingsName");
-            }
+            public override string GetInteractionName(Sim actor, GameObject target, InteractionObjectPair iop) => LocalizeString("ChangeSettingsName");
 
             public override bool Test(Sim actor, GameObject target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
                 mIsPhone = target is PhoneCell;
-                return (target is Computer or PhoneHome || (target is PhoneCell && (target as PhoneCell).IsUsableBy(actor)) || (target is Newspaper && (target as Newspaper).IsReadable)) && actor.SimDescription.TeenOrAbove && !GameUtils.IsOnVacation() && !GameUtils.IsUniversityWorld();
+                return (target is Computer or PhoneHome or Newspaper { IsReadable: true } || (mIsPhone && (target as PhoneCell).IsUsableBy(actor))) && actor.SimDescription.TeenOrAbove && !GameUtils.IsOnVacation() && !GameUtils.IsUniversityWorld();
             }
 
             public override string[] GetPath(bool isFemale) => mIsPhone
-                    ? (new string[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis })
-                    : (new string[] { Computer.LocalizeString("JobsAndProfessions") });
+                    ? (new[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis })
+                    : (new[] { Computer.LocalizeString("JobsAndProfessions") });
         }
 
         public static readonly InteractionDefinition Singleton = new Definition();
@@ -75,7 +72,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
         public override bool Run()
         {
-            Common.UI.MenuContainer container = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("Settings"));
+            Common.UI.MenuContainer container = new(LocalizeString("MenuTitle"), LocalizeString("Settings"));
             container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
             container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
             container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
@@ -118,7 +115,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     if (AcceptCancelDialog.Show(LocalizeString("ResetPrompt")))
                     {
                         ResetSettings();
-                        Show(new Format(LocalizeString("ResetComplete"), NotificationStyle.kSystemMessage));
+                        StyledNotification.Show(new(LocalizeString("ResetComplete"), StyledNotification.NotificationStyle.kSystemMessage));
                         return true;
                     }
                     return false;
@@ -134,7 +131,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         foreach (IExportBinContents current in Sims3.Gameplay.BinModel.Singleton.ExportBinContents)
                         {
                             Sims3.Gameplay.ExportBinContents contents = current as Sims3.Gameplay.ExportBinContents;
-                            if (contents.HouseholdName != null && contents.HouseholdName == name)
+                            if (contents?.HouseholdName == name)
                             {
                                 if (AcceptCancelDialog.Show(LocalizeString("ExportFileOverwritePrompt")))
                                 {
@@ -157,12 +154,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             container.AddMenuObject(new Common.UI.OneShotActionObject(LocalizeString("ImportMenuName"), () => string.Empty, null,
                 delegate () {
                     Sims3.Gameplay.BinModel.Singleton.PopulateExportBin();
-                    List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
+                    List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
                     foreach (IExportBinContents current in Sims3.Gameplay.BinModel.Singleton.ExportBinContents)
                     {
-                        if (current.HouseholdName != null && current.HouseholdName.Contains("Gamefreak130.JobOverhaul."))
+                        if (current.HouseholdName is not null && current.HouseholdName.Contains("Gamefreak130.JobOverhaul."))
                         {
-                            RowInfo info = new RowInfo(current, new List<ColumnInfo>() { new TextColumn(current.HouseholdName.Substring(25)) });
+                            RowInfo info = new(current, new() { new TextColumn(current.HouseholdName.Substring(25)) });
                             list[0].RowInfo.Add(info);
                         }
                     }
@@ -172,10 +169,10 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         return false;
                     }
                     List<RowInfo> list2 = ObjectPickerDialog.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("ImportMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
-                        list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, 1, new Vector2(-1f, -1f), false, null, false, false);
-                    if (list2 != null)
+                        list, new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, 1, new(-1f, -1f), false, null, false, false);
+                    if (list2 is not null)
                     {
-                        XmlDocument xml = new XmlDocument();
+                        XmlDocument xml = new();
                         xml.LoadXml(((IExportBinContents)list2[0].Item).HouseholdBio);
                         ParseXml(xml.DocumentElement.FirstChild);
                         SimpleMessageDialog.Show(LocalizeString("ImportMenuName"), LocalizeString("ImportComplete"));
@@ -184,20 +181,20 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     return false;
                 }));
 
-            Common.UI.MenuContainer container2 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("CareerAvailabilitySettingsMenuName"));
+            Common.UI.MenuContainer container2 = new(LocalizeString("MenuTitle"), LocalizeString("CareerAvailabilitySettingsMenuName"));
             foreach (string key in Settings.CareerAvailabilitySettings.Keys)
             {
                 CareerAvailabilitySettings settings = Settings.CareerAvailabilitySettings[key];
                 string name = settings.IsActive ? XpBasedCareer.LocalizeString(Actor.IsFemale, key) : Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
-                Common.UI.MenuContainer jobContainer = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), name);
+                Common.UI.MenuContainer jobContainer = new(LocalizeString("MenuTitle"), name);
                 jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("IsAvailableMenuName"), () => settings.IsAvailable.ToString(), null, () => settings.IsAvailable = !settings.IsAvailable));
                 jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredDegreesMenuName"), () => string.Empty, () => GameUtils.IsInstalled(ProductVersion.EP9),
                     delegate () {
-                        List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
-                        List<RowInfo> list2 = new List<RowInfo>();
+                        List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
+                        List<RowInfo> list2 = new();
                         foreach (AcademicDegreeNames degree in GenericManager<AcademicDegreeNames, AcademicDegreeStaticData, AcademicDegree>.sDictionary.Keys)
                         {
-                            RowInfo info = new RowInfo(degree, new List<ColumnInfo>() { new TextColumn(AcademicDegreeManager.GetStaticElement(degree).DegreeName) });
+                            RowInfo info = new(degree, new() { new TextColumn(AcademicDegreeManager.GetStaticElement(degree).DegreeName) });
                             list[0].RowInfo.Add(info);
                             if (settings.RequiredDegrees.Contains(degree))
                             {
@@ -205,8 +202,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                         List<RowInfo> list3 = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredDegreesMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
-                            list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Degree", "", 250) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
-                        if (list3 != null)
+                            list, new() { new("Ui/Caption/ObjectPicker:Degree", "", 250) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
+                        if (list3 is not null)
                         {
                             settings.RequiredDegrees.Clear();
                             if (list3.Count > 0)
@@ -218,32 +215,32 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container2.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new Common.UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, jobContainer));
+                container2.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, jobContainer));
             }
             container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), container2));
 
-            Common.UI.MenuContainer container3 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
+            Common.UI.MenuContainer container3 = new(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
             foreach (string key in Settings.InterviewSettings.Keys)
             {
                 InterviewSettings settings = Settings.InterviewSettings[key];
                 string name = Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
-                Common.UI.MenuContainer interviewContainer = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), name);
+                Common.UI.MenuContainer interviewContainer = new(LocalizeString("MenuTitle"), name);
                 interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiresInterviewMenuName"), () => settings.RequiresInterview.ToString(), null, () => settings.RequiresInterview = !settings.RequiresInterview));
                 interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredSkillsMenuName"), () => string.Empty, null,
                     delegate () {
-                        List<HeaderInfo> list = new List<HeaderInfo>()
+                        List<HeaderInfo> list = new()
                         {
-                            new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250),
-                            new HeaderInfo("Product Version", "")
+                            new("Ui/Caption/ObjectPicker:Name", "", 250),
+                            new("Product Version", "")
                         };
-                        List<TabInfo> list2 = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
-                        List<RowInfo> list3 = new List<RowInfo>();
+                        List<TabInfo> list2 = new() { new("shop_all_r2", string.Empty, new()) };
+                        List<RowInfo> list3 = new();
                         foreach (SkillNames skill in GenericManager<SkillNames, Skill, Skill>.sDictionary.Keys)
                         {
                             Skill staticSkill = SkillManager.GetStaticSkill(skill);
-                            if (((staticSkill.AvailableAgeSpecies & CASAGSAvailabilityFlags.HumanAdult) != CASAGSAvailabilityFlags.None) && (!staticSkill.IsHiddenSkill(CASAGSAvailabilityFlags.HumanTeen | CASAGSAvailabilityFlags.HumanAdult) || staticSkill.IsHiddenWithSkillProgress))
+                            if (((staticSkill.AvailableAgeSpecies & CASAGSAvailabilityFlags.HumanAdult) is not CASAGSAvailabilityFlags.None) && (!staticSkill.IsHiddenSkill(CASAGSAvailabilityFlags.HumanTeen | CASAGSAvailabilityFlags.HumanAdult) || staticSkill.IsHiddenWithSkillProgress))
                             {
-                                RowInfo info = new RowInfo(skill, new List<ColumnInfo>() { new TextColumn(Skill.GetLocalizedSkillName(skill, Actor.SimDescription)), new TextColumn(SkillManager.GetStaticSkill(skill).NonPersistableData.SkillProductVersion.ToString()) });
+                                RowInfo info = new(skill, new() { new TextColumn(Skill.GetLocalizedSkillName(skill, Actor.SimDescription)), new TextColumn(SkillManager.GetStaticSkill(skill).NonPersistableData.SkillProductVersion.ToString()) });
                                 list2[0].RowInfo.Add(info);
                                 if (settings.RequiredSkills.Contains(skill))
                                 {
@@ -252,8 +249,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                         List<RowInfo> skillList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredSkillsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
-                            list2, list, list2[0].RowInfo.Count, new Vector2(-1f, -1f), false, list3, false, false);
-                        if (skillList != null)
+                            list2, list, list2[0].RowInfo.Count, new(-1f, -1f), false, list3, false, false);
+                        if (skillList is not null)
                         {
                             settings.RequiredSkills.Clear();
                             if (skillList.Count > 0)
@@ -267,14 +264,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }));
                 interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("PositiveTraitsMenuName"), () => string.Empty, null,
                     delegate () {
-                        List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
-                        List<RowInfo> list2 = new List<RowInfo>();
+                        List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
+                        List<RowInfo> list2 = new();
                         foreach (TraitNames trait in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
                         {
                             Trait staticTrait = TraitManager.GetTraitFromDictionary(trait);
-                            if (staticTrait.IsVisible && (staticTrait.AgeSpeciesAvailabiltiyFlag & CASAGSAvailabilityFlags.HumanAdult) != CASAGSAvailabilityFlags.None)
+                            if (staticTrait.IsVisible && (staticTrait.AgeSpeciesAvailabiltiyFlag & CASAGSAvailabilityFlags.HumanAdult) is not CASAGSAvailabilityFlags.None)
                             {
-                                RowInfo info = new RowInfo(trait, new List<ColumnInfo>() { new ThumbAndTextColumn(new ThumbnailKey(staticTrait.IconKey, ThumbnailSize.ExtraLarge), staticTrait.ToString()) });
+                                RowInfo info = new(trait, new() { new ThumbAndTextColumn(new ThumbnailKey(staticTrait.IconKey, ThumbnailSize.ExtraLarge), staticTrait.ToString()) });
                                 list[0].RowInfo.Add(info);
                                 if (settings.PositiveTraits.Contains(trait))
                                 {
@@ -283,8 +280,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                         List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("PositiveTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
-                            list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
-                        if (traitList != null)
+                            list, new() { new("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
+                        if (traitList is not null)
                         {
                             settings.PositiveTraits.Clear();
                             if (traitList.Count > 0)
@@ -298,14 +295,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }));
                 interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NegativeTraitsMenuName"), () => string.Empty, null,
                     delegate () {
-                        List<TabInfo> list = new List<TabInfo>() { new TabInfo("shop_all_r2", string.Empty, new List<RowInfo>()) };
-                        List<RowInfo> list2 = new List<RowInfo>();
+                        List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
+                        List<RowInfo> list2 = new();
                         foreach (TraitNames trait in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
                         {
                             Trait staticTrait = TraitManager.GetTraitFromDictionary(trait);
-                            if (staticTrait.IsVisible && (staticTrait.AgeSpeciesAvailabiltiyFlag & CASAGSAvailabilityFlags.HumanAdult) != CASAGSAvailabilityFlags.None)
+                            if (staticTrait.IsVisible && (staticTrait.AgeSpeciesAvailabiltiyFlag & CASAGSAvailabilityFlags.HumanAdult) is not CASAGSAvailabilityFlags.None)
                             {
-                                RowInfo info = new RowInfo(trait, new List<ColumnInfo>() { new ThumbAndTextColumn(new ThumbnailKey(staticTrait.IconKey, ThumbnailSize.ExtraLarge), staticTrait.ToString()) });
+                                RowInfo info = new(trait, new() { new ThumbAndTextColumn(new ThumbnailKey(staticTrait.IconKey, ThumbnailSize.ExtraLarge), staticTrait.ToString()) });
                                 list[0].RowInfo.Add(info);
                                 if (settings.NegativeTraits.Contains(trait))
                                 {
@@ -314,8 +311,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                         List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("NegativeTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
-                            list, new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new Vector2(-1f, -1f), false, list2, false, false);
-                        if (traitList != null)
+                            list, new() { new("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
+                        if (traitList is not null)
                         {
                             settings.NegativeTraits.Clear();
                             if (traitList.Count > 0)
@@ -327,13 +324,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container3.AddMenuObject(new List<HeaderInfo>() { new HeaderInfo("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new Common.UI.ColumnDelegateStruct(ColumnType.kText, () => new TextColumn(name)) }, interviewContainer));
+                container3.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, interviewContainer));
             }
             container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("InterviewSettingsMenuName"), container3));
 
             if (Settings.SelfEmployedAvailabilitySettings.Count > 0)
             {
-                Common.UI.MenuContainer container4 = new Common.UI.MenuContainer(LocalizeString("MenuTitle"), LocalizeString("SelfEmployedAvailabilitySettingsMenuName"));
+                Common.UI.MenuContainer container4 = new(LocalizeString("MenuTitle"), LocalizeString("SelfEmployedAvailabilitySettingsMenuName"));
                 foreach (string key in Settings.SelfEmployedAvailabilitySettings.Keys)
                 {
                     container4.AddMenuObject(new Common.UI.GenericActionObject(XpBasedCareer.LocalizeString(Actor.IsFemale, key), () => Settings.SelfEmployedAvailabilitySettings[key].ToString(), null, 
@@ -363,7 +360,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 return false;
             }
-            if (Actor.LotCurrent.LatestNewspaper != null)
+            if (Actor.LotCurrent.LatestNewspaper is not null)
             {
                 Actor.LotCurrent.LatestNewspaper.MakeOld();
                 RandomNewspaperSeeds.Remove(Actor.LotCurrent.LatestNewspaper.ObjectId);
@@ -372,7 +369,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (num > (long)(ulong)kMaxNumPapers)
             {
                 string titleText = Localization.LocalizeString("Gameplay/Services/NewspaperDelivery:TooManyPapers");
-                Show(new Format(titleText, actor.ObjectId, NotificationStyle.kSimTalking));
+                StyledNotification.Show(new(titleText, actor.ObjectId, StyledNotification.NotificationStyle.kSimTalking));
                 return true;
             }
             Newspaper newspaper = (Newspaper)CreateObject("Newspaper", Vector3.OutOfWorld, 0, Vector3.UnitZ);
@@ -383,7 +380,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             CarrySystem.PutDownOnFloor(actor);
             Actor.LotCurrent.LatestNewspaper = newspaper;
             Household household = Target.LotCurrent.Household;
-            if (household != null)
+            if (household is not null)
             {
                 foreach (Sim current in household.Sims)
                 {
@@ -432,13 +429,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public void Add(InteractionDefinition interactionDefinition, Sim actor, Newspaper target, List<InteractionObjectPair> results)
             {
-                List<InteractionObjectPair> list = new List<InteractionObjectPair>();
-                InteractionObjectPair interactionObjectPair = new InteractionObjectPair(interactionDefinition, target);
+                List<InteractionObjectPair> list = new();
+                InteractionObjectPair interactionObjectPair = new(interactionDefinition, target);
                 interactionDefinition.AddInteractions(interactionObjectPair, actor, list);
                 foreach (InteractionObjectPair current in list)
                 {
-                    GetNewspaperChooser.Definition interaction = new GetNewspaperChooser.Definition(current.InteractionDefinition);
-                    interactionObjectPair = new InteractionObjectPair(interaction, target);
+                    GetNewspaperChooser.Definition interaction = new(current.InteractionDefinition);
+                    interactionObjectPair = new(interaction, target);
                     results.Add(interactionObjectPair);
                 }
             }
@@ -447,7 +444,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public override string GetInteractionName(Sim a, Newspaper target, InteractionObjectPair interaction) => IntDef.GetInteractionName(a, target, interaction);
 
-            public ResourceKey GetTraitIcon(Sim actor, GameObject target) => IntDef is IHasTraitIcon hasTraitIcon ? hasTraitIcon.GetTraitIcon(actor, target) : ResourceKey.kInvalidResourceKey;
+            public ResourceKey GetTraitIcon(Sim actor, GameObject target) => (IntDef as IHasTraitIcon)?.GetTraitIcon(actor, target) ?? ResourceKey.kInvalidResourceKey;
 
             public override bool Test(Sim a, Newspaper target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
@@ -455,9 +452,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     return false;
                 }
-                if (IntDef != null)
+                if (IntDef is not null)
                 {
-                    InteractionInstanceParameters interactionInstanceParameters = new InteractionInstanceParameters(new InteractionObjectPair(IntDef, target), a, new InteractionPriority(InteractionPriorityLevel.UserDirected), isAutonomous, true);
+                    InteractionInstanceParameters interactionInstanceParameters = new(new(IntDef, target), a, new(InteractionPriorityLevel.UserDirected), isAutonomous, true);
                     return InteractionDefinitionUtilities.IsPass(IntDef.Test(ref interactionInstanceParameters, ref greyedOutTooltipCallback));
                 }
                 return true;
@@ -489,7 +486,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         new public class Definition : SoloSimInteractionDefinition<ReadSomethingInInventoryEx>
         {
             public override bool Test(Sim actor, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => isAutonomous && !actor.LotCurrent.IsWorldLot 
-                && (!SeasonsManager.Enabled || (SeasonsManager.CurrentWeather != Weather.Rain && SeasonsManager.CurrentWeather != Weather.Hail) || SeasonsManager.IsShelteredFromPrecipitation(actor)) && base.Test(actor, target, isAutonomous, ref greyedOutTooltipCallback);
+                && (!SeasonsManager.Enabled || (SeasonsManager.CurrentWeather is not Weather.Rain and not Weather.Hail) || SeasonsManager.IsShelteredFromPrecipitation(actor)) && base.Test(actor, target, isAutonomous, ref greyedOutTooltipCallback);
         }
 
         public override bool Run()
@@ -498,9 +495,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 if (IsOnceReadInstalled)
                 {
-                    List<Book> books = new List<Book>();
+                    List<Book> books = new();
                     MethodInfo method = Type.GetType("NRaas.OnceReadSpace.Interactions.ReadSomethingInInventoryEx, NRaasOnceRead").GetMethod("ChooseBook", BindingFlags.Static | BindingFlags.Public);
-                    if (Actor.Inventory != null)
+                    if (Actor.Inventory is not null)
                     {
                         foreach (Sims3.Gameplay.InventoryStack current in Actor.Inventory.mItems.Values)
                         {
@@ -542,15 +539,15 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         public bool DoReadNewspaperEx()
         {
             INewspaper newspaper = Actor.Inventory.Find<INewspaper>();
-            if (newspaper == null)
+            if (newspaper is null)
             {
                 newspaper = CreateObjectOutOfWorld("Newspaper") as INewspaper;
                 Actor.Inventory.TryToAdd(newspaper);
             }
-            if (newspaper != null)
+            if (newspaper is not null)
             {
                 newspaper.SetFromReadSomethingInInventory();
-                InteractionInstance readInteraction = GetNewspaperChooser.Singleton.CreateInstance(newspaper, Actor, new InteractionPriority(InteractionPriorityLevel.Autonomous), true, true);
+                InteractionInstance readInteraction = GetNewspaperChooser.Singleton.CreateInstance(newspaper, Actor, new(InteractionPriorityLevel.Autonomous), true, true);
                 (readInteraction.InteractionDefinition as GetNewspaperChooserEx.Definition).IntDef = CheckCurrentEvents.Singleton;
                 BeginCommodityUpdates();
                 bool flag = readInteraction.RunInteraction();
@@ -577,14 +574,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
         public override bool InRabbitHole()
         {
-            TimedStage timedStage = new TimedStage(GetInteractionName(), Settings.ApplicationTime, false, false, true);
-            Stages = new List<Stage>(new Stage[] { timedStage });
+            TimedStage timedStage = new(GetInteractionName(), Settings.ApplicationTime, false, false, true);
+            Stages = new() { timedStage };
             StartStages();
             bool flag = DoLoop(ExitReason.Default);
             if (flag && Actor.IsSelectable && CareerManager.GetStaticOccupation(CareerToSet) is ActiveCareer activeCareer && !Actor.SimDescription.TeenOrBelow && ActiveCareer.CanAddActiveCareer(Actor.SimDescription, CareerToSet) 
                 && ActiveCareer.GetActiveCareerStaticData(activeCareer.Guid).CanJoinCareerFromComputerOrNewspaper && IsActiveCareerAvailable(activeCareer))
             {
-                AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(CareerToSet, false, true);
+                AcquireOccupationParameters occupationParameters = new(CareerToSet, false, true);
                 if (Actor.AcquireOccupation(occupationParameters))
                 {
                     string newOccupationTnsText = Actor.CareerManager.Occupation.GetNewOccupationTnsText();
@@ -614,8 +611,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
         public override bool InRabbitHole()
         {
-            TimedStage timedStage = new TimedStage(GetInteractionName(), Settings.ApplicationTime, false, false, true);
-            Stages = new List<Stage>(new Stage[] { timedStage });
+            TimedStage timedStage = new(GetInteractionName(), Settings.ApplicationTime, false, false, true);
+            Stages = new() { timedStage };
             StartStages();
             bool flag = DoLoop(ExitReason.Default);
             GreyedOutTooltipCallback tooltipCallback = null;
@@ -628,7 +625,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         foreach (AcademicDegreeNames degree in availabilitySettings.RequiredDegrees)
                         {
-                            if (Actor.DegreeManager == null || !Actor.DegreeManager.HasCompletedDegree(degree))
+                            if (Actor.DegreeManager is null || !Actor.DegreeManager.HasCompletedDegree(degree))
                             {
                                 return false;
                             }
@@ -640,7 +637,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     else
                     {
-                        AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(careerLocation, false, true);
+                        AcquireOccupationParameters occupationParameters = new(careerLocation, false, true);
                         if (BoardingSchool.DidSimGraduate(Actor.SimDescription, BoardingSchool.BoardingSchoolTypes.None, false))
                         {
                             BoardingSchool.UpdateAcquireOccupationParameters(Actor.SimDescription.BoardingSchool, careerLocation.Career.CareerGuid, ref occupationParameters);
@@ -680,7 +677,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (job is MedicalJob medicalJob)
             {
                 TaskCreationStaticData[] staticTasks = medicalJob.StaticTasks;
-                if (staticTasks != null)
+                if (staticTasks is not null)
                 {
                     TaskCreationStaticData[] array = staticTasks;
                     for (int i = 0; i < array.Length; i++)
@@ -695,23 +692,23 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    if (medicalJob.mTasks != null && medicalJob.mPendingTasks == null)
+                    if (medicalJob.mTasks is not null && medicalJob.mPendingTasks is null)
                     {
-                        medicalJob.mPendingTasks = new List<TaskId>(medicalJob.mTasks);
+                        medicalJob.mPendingTasks = new(medicalJob.mTasks);
                     }
                 }
                 if (medicalJob.mTasks == null || medicalJob.mTasks.Count == 0)
                 {
                     return false;
                 }
-                CameraController.OnCameraMapViewEnabledCallback += new CameraController.CameraMapViewEnabledHandler(medicalJob.OnCameraMapViewEnabledCallback);
+                CameraController.OnCameraMapViewEnabledCallback += medicalJob.OnCameraMapViewEnabledCallback;
                 medicalJob.StartMusic();
                 SetupRabbitholeJobTns(medicalJob);
-                if (medicalJob.Id == JobId.Innoculation)
+                if (medicalJob.Id is JobId.Innoculation)
                 {
                     medicalJob.mSituation = VaccinationSessionSituationEx.Create(medicalJob.Occupation.OwnerDescription.CreatedSim, medicalJob.Specification.mLot);
                 }
-                if (medicalJob.Id == JobId.FreeClinic)
+                if (medicalJob.Id is JobId.FreeClinic)
                 {
                     medicalJob.mSituation = FreeClinicSessionSituationEx.Create(medicalJob.Occupation.OwnerDescription.CreatedSim, medicalJob.Specification.mLot);
                 }
@@ -723,46 +720,35 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         public static void SetupRabbitholeJobTns(MedicalJob job)
         {
             RabbitholeTnsInfo rabbitholeTnsInfo = null;
-            if (job.Id != JobId.GenericMedicalRabbitHoleJob)
+            if (job.Id is not JobId.GenericMedicalRabbitHoleJob)
             {
-                if (job.RabbitHole is CityHall)
+                rabbitholeTnsInfo = job.RabbitHole switch
                 {
-                    rabbitholeTnsInfo = Medical.sRabbitholeJobTnsInfo["CityHall"];
-                }
-                if (job.RabbitHole is Hideout)
-                {
-                    rabbitholeTnsInfo = Medical.sRabbitholeJobTnsInfo["Hideout"];
-                }
-                if (job.RabbitHole is ScienceLab)
-                {
-                    rabbitholeTnsInfo = Medical.sRabbitholeJobTnsInfo["ScienceLab"];
-                }
+                    CityHall    => Medical.sRabbitholeJobTnsInfo["CityHall"],
+                    Hideout     => Medical.sRabbitholeJobTnsInfo["Hideout"],
+                    ScienceLab  => Medical.sRabbitholeJobTnsInfo["ScienceLab"],
+                    _           => null
+                };
             }
-            if (rabbitholeTnsInfo == null)
-            {
-                rabbitholeTnsInfo = Medical.sRabbitholeJobTnsInfo["Generic"];
-            }
-            if (rabbitholeTnsInfo != null)
-            {
-                job.mStartTnsKey = rabbitholeTnsInfo.StartTns;
-                job.mUpdateTnsKey = rabbitholeTnsInfo.UpdateTnsKey + RandomUtil.GetInt(rabbitholeTnsInfo.NumUpdateTns - 1);
-            }
+            rabbitholeTnsInfo ??= Medical.sRabbitholeJobTnsInfo["Generic"];
+            job.mStartTnsKey = rabbitholeTnsInfo.StartTns;
+            job.mUpdateTnsKey = rabbitholeTnsInfo.UpdateTnsKey + RandomUtil.GetInt(rabbitholeTnsInfo.NumUpdateTns - 1);
         }
 
         public override bool Run()
         {
             Job job = (InteractionDefinition as GoToOccupationJobLocation.Definition).GetJobForLot(Actor, GetInteractionParameters());
-            if (job == null)
+            if (job is null)
             {
                 return false;
             }
             job.GetInteractionDefinitionAndTargetToGoToWork(out InteractionDefinition interactionDefinition, out GameObject gameObject);
-            if (interactionDefinition == null || gameObject == null)
+            if (interactionDefinition is null || gameObject is null)
             {
                 return false;
             }
             InteractionInstance interactionInstance = interactionDefinition.CreateInstance(gameObject, Actor, GetPriority(), Autonomous, CancellableByPlayer);
-            if (!(interactionInstance is ITakeSimToWorkLocation takeSimToWorkLocation))
+            if (interactionInstance is not ITakeSimToWorkLocation takeSimToWorkLocation)
             {
                 return false;
             }
@@ -777,7 +763,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 return false;
             }
-            if (!(interactionInstance is TerrainInteraction))
+            if (interactionInstance is not TerrainInteraction)
             {
                 job.CloseNewJobNotification();
                 job.OnSimActivatedJob(Actor);
@@ -802,7 +788,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
     public class GhostHunterEx
     {
-        private static readonly SimDescription.DeathType[] sValidDeathTypes = new SimDescription.DeathType[]
+        private static readonly SimDescription.DeathType[] sValidDeathTypes = new[]
         {
             SimDescription.DeathType.OldAge,
             SimDescription.DeathType.Drown,
@@ -833,7 +819,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (position == Vector3.Invalid)
             {
                 IGameObject gameObject = job.CreateGhostJig();
-                if (gameObject == null)
+                if (gameObject is null)
                 {
                     return false;
                 }
@@ -844,12 +830,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             IUrnstone urnstone = CreateObjectOutOfWorld("UrnstoneHuman") as IUrnstone;
             if (GameUtils.IsFutureWorld() && RandomUtil.CoinFlip())
             {
-                ghost = OccultRobot.MakeRobot(CASAgeGenderFlags.Adult, RandomUtil.CoinFlip() ? CASAgeGenderFlags.Male : CASAgeGenderFlags.Female, RandomUtil.CoinFlip() ? RobotForms.Hovering : RobotForms.Humanoid);
+                ghost = OccultRobot.MakeRobot(CASAgeGenderFlags.Adult, (CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), (RobotForms)Methods.CoinFlipSelect(RobotForms.Hovering, RobotForms.Humanoid));
                 ghost.SetDeathStyle(SimDescription.DeathType.Robot, false);
             }
             else
             {
-                ghost = Genetics.MakeSim(RandomUtil.CoinFlip() ? CASAgeGenderFlags.Adult : CASAgeGenderFlags.Elder, RandomUtil.CoinFlip() ? CASAgeGenderFlags.Male : CASAgeGenderFlags.Female, randomObjectFromList, 4294967295u);
+                ghost = Genetics.MakeSim((CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Adult, CASAgeGenderFlags.Elder), (CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), randomObjectFromList, 4294967295u);
                 ghost.FirstName = SimUtils.GetRandomGivenName(ghost.IsMale, randomObjectFromList);
                 ghost.LastName = SimUtils.GetRandomFamilyName(randomObjectFromList);
                 ghost.SetDeathStyle(RandomUtil.GetRandomObjectFromList(sValidDeathTypes), false);
@@ -862,7 +848,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 };
                 ghost.TraitManager.AddHiddenElement(trait);
             }
-            List<TraitNames> list = new List<TraitNames>(GhostHunter.kAngryGhostTraits);
+            List<TraitNames> list = new(GhostHunter.kAngryGhostTraits);
             while (!ghost.TraitManager.TraitsMaxed() && list.Count > 0)
             {
                 TraitNames randomObjectFromList2 = RandomUtil.GetRandomObjectFromList(list);
@@ -885,7 +871,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             ActiveTopic.AddToSim(ghost.CreatedSim, "Angry Ghost");
             Relationship relationship = ghost.GetRelationship(job.Occupation.OwnerDescription, true);
             relationship.LTR.UpdateLiking(GhostHunter.kAngryGhostRelationshipLevelWithGhostHunter);
-            if (job.Lot.Household != null)
+            if (job.Lot.Household is not null)
             {
                 foreach (SimDescription current in job.Lot.Household.AllSimDescriptions)
                 {
@@ -896,14 +882,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (ghost.IsHuman && RandomUtil.RandomChance01(GhostHunter.kAngryGhostAncientOutfitChance))
             {
                 string name = string.Format("{0}{1}{2}", OutfitUtils.GetAgePrefix(ghost.Age), OutfitUtils.GetGenderPrefix(ghost.Gender), RandomUtil.GetRandomStringFromList(GhostHunter.GhostHunterJob.sAncientCasOutfits));
-                SimOutfit uniform = new SimOutfit(ResourceKey.CreateOutfitKeyFromProductVersion(name, ProductVersion.EP2));
+                SimOutfit uniform = new(ResourceKey.CreateOutfitKeyFromProductVersion(name, ProductVersion.EP2));
                 if (OutfitUtils.TryApplyUniformToOutfit(ghost.GetOutfit(OutfitCategories.Everyday, 0), uniform, ghost, "GhostHunter.CreateAngryGhost", out SimOutfit outfit))
                 {
                     ghost.AddOutfit(outfit, OutfitCategories.Everyday, true);
                     ghost.CreatedSim.SwitchToOutfitWithoutSpin(OutfitCategories.Everyday);
                 }
             }
-            job.mSims = job.mSims ?? new List<Sim>();
+            job.mSims ??= new();
             job.mSims.Add(ghost.CreatedSim);
             job.AddToManagedObjectList((GameObject)urnstone);
             return true;
@@ -917,15 +903,15 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     Lot lotAtPoint = LotManager.GetLotAtPoint(parameters.Hit.mPoint);
                     Sim sim = (Sim)parameters.Actor;
-                    if (!(sim.Occupation is GhostHunter ghostHunter))
+                    if (sim.Occupation is not GhostHunter ghostHunter)
                     {
                         return InteractionTestResult.Def_TestFailed;
                     }
-                    Job job = ghostHunter.CurrentJob as GhostHunter.GhostHunterJob;
-                    if (job == null || job.Lot != lotAtPoint || job.Id != JobId.GhostlyPresence)
+                    Job job = ghostHunter.CurrentJob;
+                    if (job?.Lot != lotAtPoint || job?.Id is not JobId.GhostlyPresence)
                     {
                         job = ghostHunter.FindJobForLot(lotAtPoint, true);
-                        if (job == null || !job.HasBeenSetup || job.Id != JobId.GhostlyPresence)
+                        if (job is null or { HasBeenSetup: false } or { Id: not JobId.GhostlyPresence })
                         {
                             return InteractionTestResult.Def_TestFailed;
                         }
@@ -978,7 +964,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         if (UnhideGhostsInRoom(Actor.RoomId))
                         {
-                            Actor.ShowTNSIfSelectable(GhostHunter.LocalizeString("GhostsUnhidden"), NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid);
+                            Actor.ShowTNSIfSelectable(GhostHunter.LocalizeString("GhostsUnhidden"), StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid);
                         }
                         else
                         {
@@ -992,7 +978,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                     break;
                                 }
                             }
-                            Actor.ShowTNSIfSelectable(GhostHunter.LocalizeString(name), NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid);
+                            Actor.ShowTNSIfSelectable(GhostHunter.LocalizeString(name), StyledNotification.NotificationStyle.kGameMessagePositive, ObjectGuid.InvalidObjectGuid);
                         }
                     }
                 }
@@ -1012,58 +998,54 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 public override bool Test(Sim actor, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => actor.OccupationAsActiveCareer is GhostHunter;
             }
 
-            public bool SetupTask(GhostHunter.GhostHunterJob job, TaskId id) => id == TaskId.EvictGhost
+            public bool SetupTask(GhostHunter.GhostHunterJob job, TaskId id) => id is TaskId.EvictGhost
                     ? CreateAngryGhost(job, Vector3.Invalid, out SimDescription _)
                     : job.SetupTask(id);
 
             public override void Init(ref InteractionInstanceParameters parameters)
             {
                 base.Init(ref parameters);
-                if (!(Actor.Occupation.FindJobForLot(Target, true) is GhostHunter.GhostHunterJob ghostHunterJob) || ghostHunterJob.HasBeenSetup)
+                if (Actor.Occupation.FindJobForLot(Target, true) is GhostHunter.GhostHunterJob { HasBeenSetup: false } ghostHunterJob)
                 {
-                    return;
-                }
-                TaskCreationStaticData[] staticTasks = ghostHunterJob.StaticTasks;
-                if (staticTasks != null)
-                {
-                    TaskCreationStaticData[] array = staticTasks;
-                    for (int i = 0; i < array.Length; i++)
+                    TaskCreationStaticData[] staticTasks = ghostHunterJob.StaticTasks;
+                    if (staticTasks is not null)
                     {
-                        TaskCreationStaticData taskCreationStaticData = array[i];
-                        int @int = RandomUtil.GetInt(taskCreationStaticData.LowerBound, taskCreationStaticData.UpperBound);
-                        for (int j = 0; j < @int; j++)
+                        TaskCreationStaticData[] array = staticTasks;
+                        for (int i = 0; i < array.Length; i++)
                         {
-                            if (SetupTask(ghostHunterJob, taskCreationStaticData.Id))
+                            TaskCreationStaticData taskCreationStaticData = array[i];
+                            int @int = RandomUtil.GetInt(taskCreationStaticData.LowerBound, taskCreationStaticData.UpperBound);
+                            for (int j = 0; j < @int; j++)
                             {
-                                ghostHunterJob.AddTask(taskCreationStaticData.Id);
+                                if (SetupTask(ghostHunterJob, taskCreationStaticData.Id))
+                                {
+                                    ghostHunterJob.AddTask(taskCreationStaticData.Id);
+                                }
                             }
                         }
+                        if (ghostHunterJob.mTasks is not null && ghostHunterJob.mPendingTasks is null)
+                        {
+                            ghostHunterJob.mPendingTasks = new(ghostHunterJob.mTasks);
+                        }
                     }
-                    if (ghostHunterJob.mTasks != null && ghostHunterJob.mPendingTasks == null)
+                    if (ghostHunterJob.mTasks == null || ghostHunterJob.mTasks.Count == 0)
                     {
-                        ghostHunterJob.mPendingTasks = new List<TaskId>(ghostHunterJob.mTasks);
+                        return;
                     }
-                }
-                if (ghostHunterJob.mTasks == null || ghostHunterJob.mTasks.Count == 0)
-                {
-                    return;
-                }
-                CameraController.OnCameraMapViewEnabledCallback += new CameraController.CameraMapViewEnabledHandler(ghostHunterJob.OnCameraMapViewEnabledCallback);
-                ghostHunterJob.StartMusic();
-                ghostHunterJob.CreateFogEmitters();
-                ghostHunterJob.EnableSpiritLighting();
-                ghostHunterJob.Occupation.OwnerDescription.CreatedSim.Motives.CreateMotive(CommodityKind.BeAGhostHunter);
-                AlarmHandle handle = AlarmManager.Global.AddAlarmRepeating(10f, TimeUnit.Minutes, new AlarmTimerCallback(ghostHunterJob.VerifyConsistency), 10f, TimeUnit.Minutes, "Ghost Hunter - Verify Consistency", AlarmType.AlwaysPersisted, ghostHunterJob);
-                AlarmManager.Global.AlarmWillYield(handle);
-                if (ghostHunterJob.Id == JobId.GhostlyPresence)
-                {
-                    GhostHunter.ScanForGhosts.NumberOfInstances++;
-                    Terrain.Singleton.RemoveInteractionByType(GhostHunter.ScanForGhosts.Singleton);
-                    Terrain.Singleton.AddInteraction(GhostHunter.ScanForGhosts.Singleton);
-                }
-                if (ghostHunterJob.Lot != null)
-                {
-                    ghostHunterJob.Lot.RefreshObjectCacheUsers();
+                    CameraController.OnCameraMapViewEnabledCallback += ghostHunterJob.OnCameraMapViewEnabledCallback;
+                    ghostHunterJob.StartMusic();
+                    ghostHunterJob.CreateFogEmitters();
+                    ghostHunterJob.EnableSpiritLighting();
+                    ghostHunterJob.Occupation.OwnerDescription.CreatedSim.Motives.CreateMotive(CommodityKind.BeAGhostHunter);
+                    AlarmHandle handle = AlarmManager.Global.AddAlarmRepeating(10f, TimeUnit.Minutes, ghostHunterJob.VerifyConsistency, 10f, TimeUnit.Minutes, "Ghost Hunter - Verify Consistency", AlarmType.AlwaysPersisted, ghostHunterJob);
+                    AlarmManager.Global.AlarmWillYield(handle);
+                    if (ghostHunterJob.Id is JobId.GhostlyPresence)
+                    {
+                        GhostHunter.ScanForGhosts.NumberOfInstances++;
+                        Terrain.Singleton.RemoveInteractionByType(GhostHunter.ScanForGhosts.Singleton);
+                        Terrain.Singleton.AddInteraction(GhostHunter.ScanForGhosts.Singleton);
+                    }
+                    ghostHunterJob.Lot?.RefreshObjectCacheUsers();
                 }
             }
         }
@@ -1079,19 +1061,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             public override bool Test(Sim a, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => true;
         }
 
-        public override bool ShouldDeliverSucceed()
-        {
-            if (IsLotInValidState())
-            {
-                InteriorDesigner.Renovation.ReportTone reportTone = Renovation.GenerateReport();
-                return reportTone != InteriorDesigner.Renovation.ReportTone.Bad;
-            }
-            return false;
-        }
+        public override bool ShouldDeliverSucceed() => IsLotInValidState() && Renovation.GenerateReport() is not InteriorDesigner.Renovation.ReportTone.Bad;
 
         public override void PreExit()
         {
-            if (VisitSituation.FindVisitSituationInvolvingGuest(Target) == null)
+            if (VisitSituation.FindVisitSituationInvolvingGuest(Target) is null)
             {
                 VisitSituation.Create(Target, Actor.LotHome);
             }
@@ -1118,7 +1092,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 return false;
             }
-            if (CountObjects<IShower>(Renovation.Lot) < 1u && CountObjects<IBathtub>(Renovation.Lot) < 1u && CountObjects<Sims3.Gameplay.Objects.Plumbing.SonicShower>(Renovation.Lot) < 1u)
+            if (CountObjects<IShower>(Renovation.Lot) < 1u && CountObjects<IBathtub>(Renovation.Lot) < 1u && CountObjects<SonicShower>(Renovation.Lot) < 1u)
             {
                 return false;
             }
@@ -1137,15 +1111,16 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 }
             }
             int num2 = 0;
-            IBed[] objects = GetObjects<IBed>(Renovation.Lot);
-            for (int i = 0; i < objects.Length; i++)
+            foreach (IBed bed in GetObjects<IBed>(Renovation.Lot))
             {
-                IBed bed = objects[i];
                 if (bed is IBotBed)
                 {
                     hasBotBed = true;
                 }
-                num2 += bed.NumberOfSpots();
+                else
+                {
+                    num2 += bed.NumberOfSpots();
+                }
             }
             return num2 >= num && (!requiresBotBed || hasBotBed);
         }
@@ -1172,11 +1147,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 return false;
             }
-            if (!(DaycareSituation.GetDaycareSituationForSim(Actor) is DaycareTransportSituation daycareSituation))
-            {
-                return false;
-            }
-            if (!(daycareSituation.Daycare.OwnerSim is Sim ownerSim))
+            if (DaycareSituation.GetDaycareSituationForSim(Actor) is not DaycareTransportSituation daycareSituation || daycareSituation.Daycare?.OwnerSim is not Sim ownerSim)
             {
                 return false;
             }
@@ -1205,7 +1176,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 VisitSituation.OnInvitedIn(childSim);
                 childSim.SocialComponent.SetInvitedOver(arriveSituation.Daycare.OwnerDescription.LotHome);
                 DaycareWorkdaySituation daycareWorkdaySituationForLot = DaycareWorkdaySituation.GetDaycareWorkdaySituationForLot(arriveSituation.Daycare.OwnerDescription.LotHome);
-                if (daycareWorkdaySituationForLot != null)
+                if (daycareWorkdaySituationForLot is not null)
                 {
                     arriveSituation.RemovePerson(childSim);
                     AddChild(childSim, daycareWorkdaySituationForLot);
@@ -1216,7 +1187,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     arriveSituation.AddDebugEventLogEntry("child arrive situation on greeted (workday situation was null, child not added)");
                 }
                 InteractionInstance interactionInstance = childSim.Autonomy.FindBestAction();
-                if (interactionInstance != null)
+                if (interactionInstance is not null)
                 {
                     childSim.InteractionQueue.PushAsContinuation(interactionInstance, true);
                 }
@@ -1233,9 +1204,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             sim.AssignRole(situation);
             situation.mSimDescIds.Add(sim.SimDescription.SimDescriptionId);
             situation.AddAgeUpListenerIfChild(sim.SimDescription);
-            DaycareChildMonitor value = sim.SimDescription.Age == CASAgeGenderFlags.Toddler
+            DaycareChildMonitor value = sim.SimDescription.Age is CASAgeGenderFlags.Toddler
                 ? new ToddlerDaycareChildMonitor(sim, situation.Daycare, situation)
-                : (DaycareChildMonitor)new ChildDaycareChildMonitorEx(sim, situation.Daycare, situation);
+                : new ChildDaycareChildMonitorEx(sim, situation.Daycare, situation);
             situation.mChildMonitors.Add(sim.SimDescription.SimDescriptionId, value);
             if (Daycare.IsProblemChildStatic(sim.SimDescription.SimDescriptionId))
             {
@@ -1245,7 +1216,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     SimDescription parentSimDesc = daycareChildManagerProblemChild.GetParentSimDesc();
                     if (daycareChildManagerProblemChild.FirstDaycareDay)
                     {
-                        ownerSim.ShowTNSAndPlayStingIfSelectable(Daycare.LocalizeDaycareString("TnsMessage_FirstDayProblemChild", parentSimDesc, sim.SimDescription, ownerSim.SimDescription), NotificationStyle.kSystemMessage, parentSimDesc, ownerSim.SimDescription, string.Empty);
+                        ownerSim.ShowTNSAndPlayStingIfSelectable(Daycare.LocalizeDaycareString("TnsMessage_FirstDayProblemChild", parentSimDesc, sim.SimDescription, ownerSim.SimDescription), StyledNotification.NotificationStyle.kSystemMessage, parentSimDesc, ownerSim.SimDescription, string.Empty);
                         daycareChildManagerProblemChild.FirstDaycareDay = false;
                     }
                 }
@@ -1267,7 +1238,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             Actor.LoopIdle();
             BeginCommodityUpdates();
             EnterStateMachine("StylistActiveCareer", "Enter", "y");
-            DoLoop(ExitReason.Default, new InsideLoopFunction(StylistLoop), mCurrentStateMachine);
+            DoLoop(ExitReason.Default, StylistLoop, mCurrentStateMachine);
             SkillLevel stylerReactionType = Styling.GetStylerReactionType(StyleeReactionType);
             SetParameter("stylistReactionType", stylerReactionType);
             if (Actor.OnlyHasExitReason(ExitReason.Finished))
@@ -1293,16 +1264,16 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public const string kProprietorJoinCareerInteractionsPathKey = "Gameplay/Roles/RoleProprietor:JoinCareer";
 
-            public Definition(string text, string path) : base(text, new string[] { path }, null, false)
+            public Definition(string text, string path) : base(text, new[] { path }, null, false)
             {
             }
 
             public override void AddInteractions(InteractionObjectPair iop, Sim actor, Sim target, List<InteractionObjectPair> results)
             {
                 string path = Localization.LocalizeString("Gameplay/Roles/RoleProprietor:JoinCareer") + Localization.Ellipsis;
-                results.Add(new InteractionObjectPair(new Definition("Ask To Join Singer Career", path), iop.Target));
-                results.Add(new InteractionObjectPair(new Definition("Ask To Join PerformanceArtist Career", path), iop.Target));
-                results.Add(new InteractionObjectPair(new Definition("Ask To Join Magician Career", path), iop.Target));
+                results.Add(new(new Definition("Ask To Join Singer Career", path), iop.Target));
+                results.Add(new(new Definition("Ask To Join PerformanceArtist Career", path), iop.Target));
+                results.Add(new(new Definition("Ask To Join Magician Career", path), iop.Target));
             }
 
             public override bool Test(Sim a, Sim target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
@@ -1314,29 +1285,24 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     "Ask To Join Magician Career"           => OccupationNames.MagicianCareer,
                     _                                       => OccupationNames.Undefined
                 };
-                return a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && !a.NeedsToBeGreeted(target) && target.SimDescription.AssignedRole is Proprietor && TestApplyForProfession(a, occupation, ref greyedOutTooltipCallback) && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
+                return a.Posture.AllowsNormalSocials() && target.Posture.AllowsNormalSocials() && !a.NeedsToBeGreeted(target) && target.SimDescription.AssignedRole is Proprietor 
+                    && TestApplyForProfession(a, occupation, ref greyedOutTooltipCallback) && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
             }
         }
 
         public static void OnRequestFinish(Sim actor, Sim _, string interaction, ActiveTopic __, InteractionInstance ___)
         {
-            OccupationNames occupationNames = OccupationNames.Undefined;
-            if (interaction.Equals("Ask To Join Magician Career"))
+            OccupationNames occupationNames = interaction switch
             {
-                occupationNames = OccupationNames.MagicianCareer;
-            }
-            else if (interaction.Equals("Ask To Join PerformanceArtist Career"))
-            {
-                occupationNames = OccupationNames.PerformanceArtistCareer;
-            }
-            else if (interaction.Equals("Ask To Join Singer Career"))
-            {
-                occupationNames = OccupationNames.SingerCareer;
-            }
+                "Ask To Join Magician Career"           => OccupationNames.MagicianCareer,
+                "Ask To Join PerformanceArtist Career"  => OccupationNames.PerformanceArtistCareer,
+                "Ask To Join Singer Career"             => OccupationNames.SingerCareer,
+                _                                       => OccupationNames.Undefined
+            };
             if (ActiveCareer.CanAddActiveCareer(actor.SimDescription, occupationNames))
             {
                 Occupation occupation = CareerManager.GetStaticOccupation(occupationNames);
-                OfferJob(actor, new OccupationEntryTuple(occupation, null));
+                OfferJob(actor, new(occupation, null));
             }
         }
     }
@@ -1357,7 +1323,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         public static void OnRequestFinish(Sim actor, Sim _, string __, ActiveTopic ___, InteractionInstance ____)
         {
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.Stylist);
-            OfferJob(actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(actor, new(occupation, null));
         }
     }
 
@@ -1367,7 +1333,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public override string GetInteractionName(Sim actor, Lot target, InteractionObjectPair iop) => Localization.LocalizeString("Gameplay/Excel/Socializing/Action:JoinStylistActiveCareer");
 
-            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType == CommercialLotSubType.kEP2_Salon && TestApplyForProfession(a, OccupationNames.Stylist, ref greyedOutTooltipCallback);
+            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType is CommercialLotSubType.kEP2_Salon && TestApplyForProfession(a, OccupationNames.Stylist, ref greyedOutTooltipCallback);
         }
 
         public override bool Run()
@@ -1387,7 +1353,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (Actor.LotCurrent == Target)
             {
                 Sim npc = GetNpc();
-                if (npc != null)
+                if (npc is not null)
                 {
                     InteractionInstance instance = Styling.StylistRole.JoinActiveCareerStylistSocial.Singleton.CreateInstance(npc, Actor, GetPriority(), Autonomous, CancellableByPlayer);
                     if (Actor.InteractionQueue.PushAsContinuation(instance, true))
@@ -1401,7 +1367,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationName);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1412,7 +1378,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public override string GetInteractionName(Sim actor, Lot target, InteractionObjectPair iop) => Localization.LocalizeString(actor.IsFemale, "Gameplay/Excel/Socializing/Action:JoinFirefighterActiveCareer");
 
-            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType == CommercialLotSubType.kEP2_FireStation && TestApplyForProfession(a, OccupationNames.Firefighter, ref greyedOutTooltipCallback);
+            public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType is CommercialLotSubType.kEP2_FireStation && TestApplyForProfession(a, OccupationNames.Firefighter, ref greyedOutTooltipCallback);
         }
 
         public override bool Run()
@@ -1434,7 +1400,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationName);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1454,11 +1420,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             TryDisablingCameraFollow(Actor);
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.Daycare);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
 
-        public override ThumbnailKey GetIconKey() => new ThumbnailKey(new ResourceKey(ResourceUtils.HashString64("w_daycare_career_large"), 796721156u, ResourceUtils.ProductVersionToGroupId(ProductVersion.BaseGame)), ThumbnailSize.Medium);
+        public override ThumbnailKey GetIconKey() => new(new(ResourceUtils.HashString64("w_daycare_career_large"), 796721156u, ResourceUtils.ProductVersionToGroupId(ProductVersion.BaseGame)), ThumbnailSize.Medium);
     }
 
     public class JoinActiveCareerPrivateEyeEx : PoliceStation.JoinActiveCareerPrivateEye
@@ -1472,7 +1438,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             TryDisablingCameraFollow(Actor);
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.PrivateEye);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1488,7 +1454,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             TryDisablingCameraFollow(Actor);
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.GhostHunter);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1504,7 +1470,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             TryDisablingCameraFollow(Actor);
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.InteriorDesigner);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1520,7 +1486,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             TryDisablingCameraFollow(Actor);
             Occupation occupation = CareerManager.GetStaticOccupation(OccupationNames.Lifeguard);
-            OfferJob(Actor, new OccupationEntryTuple(occupation, null));
+            OfferJob(Actor, new(occupation, null));
             return true;
         }
     }
@@ -1545,22 +1511,18 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public override void AddInteractions(InteractionObjectPair iop, Sim actor, RabbitHole target, List<InteractionObjectPair> results)
             {
-                if (actor == null)
+                if (actor is not null)
                 {
-                    return;
-                }
-                foreach (CareerLocation current in target.CareerLocations.Values)
-                {
-                    if (actor.Occupation == null || (actor.Occupation.CareerLoc != current && actor.Occupation.Guid != current.Career.Guid))
+                    foreach (CareerLocation current in target.CareerLocations.Values)
                     {
-                        results.Add(new InteractionObjectPair(new Definition(LocalizeString(actor.IsFemale, "JoinCareer" + current.Career.Guid.ToString(), new object[]
+                        if (actor.Occupation?.CareerLoc != current && actor.Occupation?.Guid != current.Career.Guid)
                         {
-                            current.Career.Name
-                        }), current), target));
-                    }
-                    else if (actor.Occupation.CareerLoc != current && actor.Occupation.Guid == current.Career.Guid)
-                    {
-                        results.Add(new InteractionObjectPair(new Definition(LocalizeString(actor.IsFemale, "TransferJob"), current), target));
+                            results.Add(new(new Definition(LocalizeString(actor.IsFemale, "JoinCareer" + current.Career.Guid.ToString(), current.Career.Name), current), target));
+                        }
+                        else if (actor.Occupation.CareerLoc != current && actor.Occupation.Guid == current.Career.Guid)
+                        {
+                            results.Add(new(new Definition(LocalizeString(actor.IsFemale, "TransferJob"), current), target));
+                        }
                     }
                 }
             }
@@ -1579,19 +1541,19 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 if (career is School)
                 {
                     return career is SchoolElementary
-                        ? simDescription.Child && a.School == null
-                        : career is SchoolHigh && simDescription.Teen && a.School == null;
+                        ? simDescription.Child && a.School is null
+                        : career is SchoolHigh && simDescription.Teen && a.School is null;
                 }
                 else
                 {
                     GreyedOutTooltipCallback greyedOutTooltipCallback2 = CreateTooltipCallback("NOT USED");
                     Settings.InterviewSettings.TryGetValue(career.SharedData.Name.Substring(34), out InterviewSettings interviewSettings);
                     Settings.CareerAvailabilitySettings.TryGetValue(career.SharedData.Name.Substring(34), out CareerAvailabilitySettings availabilitySettings);
-                    if (interviewSettings == null || availabilitySettings == null || !Settings.EnableGetJobInRabbitHole || !availabilitySettings.IsAvailable || interviewSettings.RequiresInterview || !career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback2))
+                    if (interviewSettings is null || availabilitySettings is null || !Settings.EnableGetJobInRabbitHole || !availabilitySettings.IsAvailable || interviewSettings.RequiresInterview || !career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback2))
                     {
                         return false;
                     }
-                    if (careerLocation == null || !career.CareerAgeTest(simDescription))
+                    if (careerLocation is null || !career.CareerAgeTest(simDescription))
                     {
                         return false;
                     }
@@ -1603,15 +1565,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         foreach (AcademicDegreeNames degree in availabilitySettings.RequiredDegrees)
                         {
-                            if (a.DegreeManager == null || !a.DegreeManager.HasCompletedDegree(degree))
+                            if (a.DegreeManager is null || !a.DegreeManager.HasCompletedDegree(degree))
                             {
                                 greyedOutTooltipCallback = CreateTooltipCallback(Helpers.Methods.LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
                                 return false;
                             }
                         }
                     }
-                    Career occupationAsCareer = a.OccupationAsCareer;
-                    return occupationAsCareer == null || occupationAsCareer.CareerLoc != careerLocation;
+                    return a.OccupationAsCareer?.CareerLoc != careerLocation;
                 }
             }
         }
@@ -1619,12 +1580,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         public override bool InRabbitHole()
         {
             CareerLocation careerLocation = GetCareerLocation(Target, (InteractionDefinition as Definition).CareerGuid);
-            if (careerLocation == null)
+            if (careerLocation is null)
             {
                 return false;
             }
             TryDisablingCameraFollow(Actor);
-            OfferJob(Actor, new OccupationEntryTuple(careerLocation.Career, careerLocation));
+            OfferJob(Actor, new(careerLocation.Career, careerLocation));
             return true;
         }
     }
@@ -1636,7 +1597,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             public override bool Test(Sim a, RabbitHole target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => a.FamilyFunds >= CollegeOfBusiness.kCostOfResumeInterviewClass && SimClock.IsTimeBetweenTimes(kStartAvailibilityTime, kEndAvailibilityTime);
 
             public override string GetInteractionName(ref InteractionInstanceParameters parameters) 
-                => Localization.LocalizeString("Gameplay/Abstracts/ScriptObject/AttendResumeWritingAndInterviewTechniquesClass:InteractionName", new object[] { CollegeOfBusiness.kCostOfResumeInterviewClass });
+                => Localization.LocalizeString("Gameplay/Abstracts/ScriptObject/AttendResumeWritingAndInterviewTechniquesClass:InteractionName", CollegeOfBusiness.kCostOfResumeInterviewClass);
         }
 
         public override bool InRabbitHole()
@@ -1651,10 +1612,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (flag)
             {
                 Actor.BuffManager.AddElement(kReadyForInterviewGuid, Target is CollegeOfBusiness ? Origin.FromCollegeOfBusinessRabbitHole : Origin.FromSchool);
-                Actor.ShowTNSIfSelectable(CollegeOfBusiness.LocalizeString(Actor.IsFemale, "InterviewResume", new object[]
-                {
-                    Actor
-                }), NotificationStyle.kGameMessagePositive);
+                Actor.ShowTNSIfSelectable(CollegeOfBusiness.LocalizeString(Actor.IsFemale, "InterviewResume", Actor), StyledNotification.NotificationStyle.kGameMessagePositive);
             }
             return flag;
         }
@@ -1664,9 +1622,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : CallDefinition<CallToCancelSteadyGigEx>
         {
-            public override string[] GetPath(bool isFemale) => new string[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
+            public override string[] GetPath(bool isFemale) => new[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
 
-            public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.IsUsableBy(a) && a.OccupationAsPerformanceCareer != null && a.OccupationAsPerformanceCareer.GetSteadyGigProprietors().Count != 0 
+            public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.IsUsableBy(a) && a.OccupationAsPerformanceCareer is PerformanceCareer pc && pc.GetSteadyGigProprietors().Count != 0 
                 && base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
 
             public override void PopulatePieMenuPicker(ref InteractionInstanceParameters parameters, out List<TabInfo> listObjs, out List<HeaderInfo> headers, out int NumSelectableRows)
@@ -1699,7 +1657,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             return false;
                         }
                     }
-                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager != null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
+                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
                     }
@@ -1711,14 +1669,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
 
-            public override string[] GetPath(bool isFemale) => new string[] { Computer.LocalizeString("JobsAndProfessions") };
+            public override string[] GetPath(bool isFemale) => new[] { Computer.LocalizeString("JobsAndProfessions") };
 
             public override string GetInteractionName(Sim actor, Computer target, InteractionObjectPair iop) => LocalizeString("FindJobComputerName");
         }
 
         private AlarmHandle EventAlarm = AlarmHandle.kInvalidHandle;
 
-        private List<OccupationEntryTuple> OccupationEntries = new List<OccupationEntryTuple>();
+        private List<OccupationEntryTuple> OccupationEntries = new();
 
         public override bool Run()
         {
@@ -1731,7 +1689,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             Target.StartVideo(Computer.VideoType.Browse);
             AnimateSim("GenericTyping");
             OccupationEntries = GetRandomJobs(Actor, Target.ComputerTuning.FindJobNumJobOpportunies, false, RandomComputerSeed + SimClock.ElapsedCalendarDays());
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
             DoLoop(ExitReason.Default);
             Target.StopComputing(this, Computer.StopComputingAction.TurnOff, false);
             StandardExit();
@@ -1742,7 +1700,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             if (OccupationEntries.Count == 0)
             {
-                Show(new Format(LocalizeString("JobsExhausted"), NotificationStyle.kGameMessagePositive));
+                StyledNotification.Show(new(LocalizeString("JobsExhausted"), StyledNotification.NotificationStyle.kGameMessagePositive));
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -1752,7 +1710,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1);
+            List<OccupationEntryTuple> list = new(1);
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
@@ -1762,7 +1720,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return;
             }
             AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
         }
 
         public override void Cleanup()
@@ -1784,14 +1742,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         if (data.ActorId == actor.SimDescription.SimDescriptionId)
                         {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", new object[]
-                            {
-                                actor
-                            }));
+                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
                             return false;
                         }
                     }
-                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager != null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
+                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
                     }
@@ -1803,14 +1758,14 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
 
-            public override string[] GetPath(bool isFemale) => new string[] { Computer.LocalizeString("JobsAndProfessions") };
+            public override string[] GetPath(bool isFemale) => new[] { Computer.LocalizeString("JobsAndProfessions") };
 
             public override string GetInteractionName(Sim a, Newspaper target, InteractionObjectPair interaction) => LocalizeString("FindJobNewspaperName");
         }
 
         private AlarmHandle EventAlarm = AlarmHandle.kInvalidHandle;
 
-        private List<OccupationEntryTuple> OccupationEntries = new List<OccupationEntryTuple>();
+        private List<OccupationEntryTuple> OccupationEntries = new();
 
         internal bool mFromInventory;
 
@@ -1838,7 +1793,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             SetActor("x", Actor);
             AnimateSim("ReadNewspaper");
             OccupationEntries = GetRandomJobs(Actor, Newspaper.FindJobNumJobsOpportunitiesPerDay, false, RandomNewspaperSeeds[Target.ObjectId]);
-            EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
             DoLoop(ExitReason.Default);
             return Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
         }
@@ -1847,7 +1802,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             if (OccupationEntries.Count == 0)
             {
-                Show(new Format(LocalizeString("JobsExhausted"), NotificationStyle.kGameMessagePositive));
+                StyledNotification.Show(new(LocalizeString("JobsExhausted"), StyledNotification.NotificationStyle.kGameMessagePositive));
                 Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
@@ -1861,7 +1816,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1);
+            List<OccupationEntryTuple> list = new(1);
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
@@ -1871,7 +1826,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return;
             }
             AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
         }
 
         public override void Cleanup()
@@ -1895,15 +1850,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         if (data.ActorId == actor.SimDescription.SimDescriptionId)
                         {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", new object[]
-                            {
-                                actor
-                            }));
+                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
                             return false;
                         }
                     }
                     bool flag = false;
-                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager != null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
+                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
                         return false;
@@ -1920,12 +1872,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
 
-            public override string[] GetPath(bool isFemale) => new string[] { Computer.LocalizeString("JobsAndProfessions") };
+            public override string[] GetPath(bool isFemale) => new[] { Computer.LocalizeString("JobsAndProfessions") };
         }
 
         private AlarmHandle EventAlarm = AlarmHandle.kInvalidHandle;
 
-        private List<OccupationEntryTuple> OccupationEntries = new List<OccupationEntryTuple>();
+        private List<OccupationEntryTuple> OccupationEntries = new();
 
         public override bool Run()
         {
@@ -1938,7 +1890,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             Target.StartVideo(Computer.VideoType.Browse);
             AnimateSim("GenericTyping");
             OccupationEntries = GetRandomJobs(Actor, Target.ComputerTuning.FindJobNumJobOpportunies, true, RandomComputerSeed + SimClock.ElapsedCalendarDays());
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
             DoLoop(ExitReason.Default);
             Target.StopComputing(this, Computer.StopComputingAction.TurnOff, false);
             StandardExit();
@@ -1949,7 +1901,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             if (OccupationEntries.Count == 0)
             {
-                Show(new Format(LocalizeString("JobsExhausted"), NotificationStyle.kGameMessagePositive));
+                StyledNotification.Show(new(LocalizeString("JobsExhausted"), StyledNotification.NotificationStyle.kGameMessagePositive));
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -1959,7 +1911,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1);
+            List<OccupationEntryTuple> list = new(1);
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
@@ -1969,7 +1921,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return;
             }
             AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
         }
 
         public override void Cleanup()
@@ -1985,21 +1937,18 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public override bool Test(Sim actor, PhoneSmart target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
-                if (target.IsUsableBy(actor) && actor.Inventory.Find<PhoneSmart>() != null)
+                if (target.IsUsableBy(actor) && actor.Inventory.Find<PhoneSmart>() is not null)
                 {
                     foreach (InterviewData data in InterviewList)
                     {
                         if (data.ActorId == actor.SimDescription.SimDescriptionId)
                         {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", new object[]
-                            {
-                                actor
-                            }));
+                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
                             return false;
                         }
                     }
                     bool flag = false;
-                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager != null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
+                    if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
                         return false;
@@ -2016,12 +1965,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return false;
             }
 
-            public override string[] GetPath(bool isFemale) => new string[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
+            public override string[] GetPath(bool isFemale) => new[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
         }
 
         private AlarmHandle EventAlarm = AlarmHandle.kInvalidHandle;
 
-        private List<OccupationEntryTuple> OccupationEntries = new List<OccupationEntryTuple>();
+        private List<OccupationEntryTuple> OccupationEntries = new();
 
         public override bool RunFromInventory() => Run();
 
@@ -2033,7 +1982,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             AnimateSim("BrowseTheWeb");
             BeginCommodityUpdates();
             OccupationEntries = GetRandomJobs(Actor, Phone.UploadResume.FindJobNumJobOpportunies, true, RandomComputerSeed + SimClock.ElapsedCalendarDays());
-            EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
             DoLoop(ExitReason.Default);
             EndCommodityUpdates(true);
             AnimateSim("NormalExit");
@@ -2046,7 +1995,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             if (OccupationEntries.Count == 0)
             {
-                Show(new Format(LocalizeString("JobsExhausted"), NotificationStyle.kGameMessagePositive));
+                StyledNotification.Show(new(LocalizeString("JobsExhausted"), StyledNotification.NotificationStyle.kGameMessagePositive));
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
@@ -2056,7 +2005,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            List<OccupationEntryTuple> list = new List<OccupationEntryTuple>(1);
+            List<OccupationEntryTuple> list = new(1);
             OccupationEntryTuple entry = OccupationEntries[0];
             list.Add(entry);
             OccupationEntries.Remove(entry);
@@ -2066,7 +2015,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 return;
             }
             AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, new AlarmTimerCallback(FindJobAlarmCallback), "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
         }
 
         public override void Cleanup()
@@ -2080,8 +2029,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         private static List<SkillBasedCareer.ValidSkillBasedCareerEntry> GetSkillBasedCareerList(Sim sim)
         {
-            List<SkillBasedCareer.ValidSkillBasedCareerEntry> list = new List<SkillBasedCareer.ValidSkillBasedCareerEntry>();
-            if (sim.SkillManager != null)
+            List<SkillBasedCareer.ValidSkillBasedCareerEntry> list = new();
+            if (sim.SkillManager is not null)
             {
                 foreach (Occupation current in CareerManager.OccupationList)
                 {
@@ -2092,9 +2041,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         {
                             int skillLevel = sim.SkillManager.GetSkillLevel(staticData.CorrespondingSkillName);
                             SkillBasedCareer occupationAsSkillBasedCareer = sim.OccupationAsSkillBasedCareer;
-                            if (occupationAsSkillBasedCareer == null || occupationAsSkillBasedCareer.Guid != current.Guid)
+                            if (occupationAsSkillBasedCareer?.Guid != current.Guid)
                             {
-                                list.Add(new SkillBasedCareer.ValidSkillBasedCareerEntry
+                                list.Add(new()
                                 {
                                     Occupation = current.Guid,
                                     SkillLevelMet = skillLevel >= staticData.MinimumSkillLevel,
@@ -2121,7 +2070,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     return base.CreateInstance(ref parameters);
                 }
 
-                public override string[] GetPath(bool isFemale) => new string[] { Localization.LocalizeString(isFemale, "Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedPathName") };
+                public override string[] GetPath(bool isFemale) => new[] { Localization.LocalizeString(isFemale, "Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedPathName") };
 
                 public override string GetInteractionName(Sim actor, CityHall target, InteractionObjectPair iop) => Occupation.GetLocalizedCareerName(OccupationEntry.Occupation, actor.SimDescription);
 
@@ -2133,11 +2082,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     if (!OccupationEntry.SkillLevelMet)
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString(a.IsFemale, "Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedMinimumSkillNotMet", new object[]
-                        {
-                            a,
-                            OccupationEntry.MinimumSkillLevel
-                        }));
+                        greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString(a.IsFemale, "Gameplay/Objects/RabbitHoles/CityHall:RegisterAsSelfEmployedMinimumSkillNotMet", a, OccupationEntry.MinimumSkillLevel));
                         return false;
                     }
                     return true;
@@ -2147,11 +2092,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     foreach (SkillBasedCareer.ValidSkillBasedCareerEntry current in GetSkillBasedCareerList(actor))
                     {
-                        Definition definition = new Definition();
+                        Definition definition = new();
                         definition.OccupationEntry.Occupation = current.Occupation;
                         definition.OccupationEntry.MinimumSkillLevel = current.MinimumSkillLevel;
                         definition.OccupationEntry.SkillLevelMet = current.SkillLevelMet;
-                        results.Add(new InteractionObjectPair(definition, target));
+                        results.Add(new(definition, target));
                     }
                 }
             }
@@ -2159,7 +2104,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             public override void ConfigureInteraction()
             {
                 CareerToSet = (InteractionDefinition as Definition).OccupationEntry.Occupation;
-                mDisplayGotoCityHallTNS = CareerToSet == OccupationNames.Undefined;
+                mDisplayGotoCityHallTNS = CareerToSet is OccupationNames.Undefined;
             }
 
             public override bool InRabbitHole()
@@ -2168,8 +2113,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     return false;
                 }
-                TimedStage timedStage = new TimedStage(GetInteractionName(), Settings.ApplicationTime, false, false, true);
-                Stages = new List<Stage>(new Stage[] { timedStage });
+                TimedStage timedStage = new(GetInteractionName(), Settings.ApplicationTime, false, false, true);
+                Stages = new() { timedStage };
                 StartStages();
                 bool flag = DoLoop(ExitReason.Default);
                 if (!flag)
@@ -2194,7 +2139,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     OpportunityDialog.DescriptionBackgroundType.StaticBackground, Actor.IsFemale, false);
                 if (flag2)
                 {
-                    AcquireOccupationParameters occupationParameters = new AcquireOccupationParameters(CareerToSet, true, true);
+                    AcquireOccupationParameters occupationParameters = new(CareerToSet, true, true);
                     return Actor.AcquireOccupation(occupationParameters);
                 }
                 return flag2;
@@ -2208,7 +2153,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 internal SkillBasedCareer.ValidSkillBasedCareerEntry OccupationEntry;
 
                 public override string[] GetPath(bool isFemale) 
-                    => new string[]
+                    => new[]
                     {
                         Localization.LocalizeString("Gameplay/Objects/Miscellaneous/Newspaper:JobsAndProfessions"),
                         Localization.LocalizeString("Gameplay/Objects/Miscellaneous/Newspaper/RegisterAsSelfEmployed:PathName")
@@ -2224,11 +2169,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     if (!OccupationEntry.SkillLevelMet)
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString(a.IsFemale, "Gameplay/Objects/Miscellaneous/Newspaper/RegisterAsSelfEmployed:MinimumSkillNotMet", new object[]
-                        {
-                            a,
-                            OccupationEntry.MinimumSkillLevel
-                        }));
+                        greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString(a.IsFemale, "Gameplay/Objects/Miscellaneous/Newspaper/RegisterAsSelfEmployed:MinimumSkillNotMet", a, OccupationEntry.MinimumSkillLevel));
                         return false;
                     }
                     return true;
@@ -2238,11 +2179,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     foreach (SkillBasedCareer.ValidSkillBasedCareerEntry current in GetSkillBasedCareerList(actor))
                     {
-                        Definition definition = new Definition();
+                        Definition definition = new();
                         definition.OccupationEntry.Occupation = current.Occupation;
                         definition.OccupationEntry.MinimumSkillLevel = current.MinimumSkillLevel;
                         definition.OccupationEntry.SkillLevelMet = current.SkillLevelMet;
-                        results.Add(new InteractionObjectPair(definition, target));
+                        results.Add(new(definition, target));
                     }
                 }
             }
@@ -2281,7 +2222,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 internal SkillBasedCareer.ValidSkillBasedCareerEntry OccupationEntry;
 
                 public override string[] GetPath(bool isFemale) 
-                    => new string[]
+                    => new[]
                     {
                         Phone.LocalizeString(isFemale, "JobsAndOffers")  + Localization.Ellipsis,
                         Phone.LocalizeString(isFemale, "RegisterAsSelfEmployedPathName")
@@ -2297,11 +2238,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     if (!OccupationEntry.SkillLevelMet)
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(Phone.LocalizeString("RegisterAsSelfEmployedMinimumSkillNotMet", new object[]
-                        {
-                            a,
-                            OccupationEntry.MinimumSkillLevel
-                        }));
+                        greyedOutTooltipCallback = CreateTooltipCallback(Phone.LocalizeString("RegisterAsSelfEmployedMinimumSkillNotMet", a, OccupationEntry.MinimumSkillLevel));
                         return false;
                     }
                     return true;
@@ -2312,11 +2249,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     List<SkillBasedCareer.ValidSkillBasedCareerEntry> skillBasedCareerList = GetSkillBasedCareerList(actor);
                     foreach (SkillBasedCareer.ValidSkillBasedCareerEntry current in skillBasedCareerList)
                     {
-                        Definition definition = new Definition();
+                        Definition definition = new();
                         definition.OccupationEntry.Occupation = current.Occupation;
                         definition.OccupationEntry.MinimumSkillLevel = current.MinimumSkillLevel;
                         definition.OccupationEntry.SkillLevelMet = current.SkillLevelMet;
-                        results.Add(new InteractionObjectPair(definition, target));
+                        results.Add(new(definition, target));
                     }
                 }
             }
@@ -2341,7 +2278,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 internal SkillBasedCareer.ValidSkillBasedCareerEntry OccupationEntry;
 
                 public override string[] GetPath(bool isFemale) 
-                    => new string[]
+                    => new[]
                     {
                         Computer.LocalizeString(isFemale, "JobsAndProfessions"),
                         Computer.LocalizeString(isFemale, "RegisterAsSelfEmployedPathName")
@@ -2357,11 +2294,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     if (!OccupationEntry.SkillLevelMet)
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(Computer.LocalizeString(a.IsFemale, "RegisterAsSelfEmployedMinimumSkillNotMet", new object[]
-                        {
-                            a,
-                            OccupationEntry.MinimumSkillLevel
-                        }));
+                        greyedOutTooltipCallback = CreateTooltipCallback(Computer.LocalizeString(a.IsFemale, "RegisterAsSelfEmployedMinimumSkillNotMet", a, OccupationEntry.MinimumSkillLevel));
                         return false;
                     }
                     return true;
@@ -2372,11 +2305,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     List<SkillBasedCareer.ValidSkillBasedCareerEntry> skillBasedCareerList = GetSkillBasedCareerList(actor);
                     foreach (SkillBasedCareer.ValidSkillBasedCareerEntry current in skillBasedCareerList)
                     {
-                        Definition definition = new Definition();
+                        Definition definition = new();
                         definition.OccupationEntry.Occupation = current.Occupation;
                         definition.OccupationEntry.MinimumSkillLevel = current.MinimumSkillLevel;
                         definition.OccupationEntry.SkillLevelMet = current.SkillLevelMet;
-                        results.Add(new InteractionObjectPair(definition, target));
+                        results.Add(new(definition, target));
                     }
                 }
             }
