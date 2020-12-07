@@ -1,6 +1,7 @@
 ﻿using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Autonomy;
+using Sims3.Gameplay.Core;
 using Sims3.Gameplay.Interactions;
 using Sims3.Gameplay.Interfaces;
 using Sims3.Gameplay.Utilities;
@@ -22,15 +23,12 @@ namespace Gamefreak130.Common
             try
             {
                 interactionTuning = AutonomyTuning.GetTuning(newType.FullName, newTarget.FullName);
-                bool flag = interactionTuning is null;
-                if (flag)
+                if (interactionTuning is null)
                 {
                     interactionTuning = AutonomyTuning.GetTuning(oldType, oldType.FullName, oldTarget);
-                    bool flag2 = interactionTuning is null;
-                    if (flag2)
+                    if (interactionTuning is null)
                     {
-                        result = null;
-                        return result;
+                        return null;
                     }
                     if (clone)
                     {
@@ -116,8 +114,7 @@ namespace Gamefreak130.Common
 
         public void AddBuffs(ResourceKey[] resourceKeys)
         {
-            XmlDbData xmlDbData = XmlDbData.ReadData(mXmlResource);
-            if (xmlDbData is not null)
+            if (XmlDbData.ReadData(mXmlResource) is XmlDbData xmlDbData)
             {
                 BuffManager.ParseBuffData(xmlDbData, true);
             }
@@ -158,12 +155,9 @@ namespace Gamefreak130.Common
             gameObject.AddInventoryInteraction(singleton);
         }
 
-        public static List<T> CloneList<T>(IEnumerable<T> old)
-        {
-            bool flag = old is not null;
-            List<T> result = flag ? new(old) : null;
-            return result;
-        }
+        public static List<T> CloneList<T>(IEnumerable<T> old) => old is not null ? new(old) : null;
+
+        public static object CoinFlipSelect(object obj1, object obj2) => RandomUtil.CoinFlip() ? obj1 : obj2;
     }
 
     public delegate T GenericDelegate<T>();
@@ -305,7 +299,7 @@ namespace Gamefreak130.Common.UI
         public void RefreshMenuObjects(int Tabnumber)
         {
             mRowInformation = mRowPopulationDelegate();
-            TabInformation = new List<TabInfo>
+            TabInformation = new()
             {
                 new("", mTabText[Tabnumber], mRowInformation)
             };
@@ -321,7 +315,7 @@ namespace Gamefreak130.Common.UI
         {
             if (TabInformation.Count < 1)
             {
-                mRowInformation = new List<RowInfo>
+                mRowInformation = new()
                 {
                     MenuItem.RowInformation
                 };
@@ -338,7 +332,7 @@ namespace Gamefreak130.Common.UI
 
             if (TabInformation.Count < 1)
             {
-                mRowInformation = new List<RowInfo>
+                mRowInformation = new()
                 {
                     MenuItem.RowInformation
                 };
@@ -354,7 +348,7 @@ namespace Gamefreak130.Common.UI
         {
             if (TabInformation.Count < 1)
             {
-                mRowInformation = new List<RowInfo>
+                mRowInformation = new()
                 {
                     item
                 };
@@ -395,10 +389,7 @@ namespace Gamefreak130.Common.UI
             {
                 foreach (RowInfo current2 in current.RowInfo)
                 {
-                    if (current2.Item is MenuObject)
-                    {
-                        (current2.Item as MenuObject).UpdateMenuObject();
-                    }
+                    (current2.Item as MenuObject)?.UpdateMenuObject();
                 }
             }
         }
@@ -448,32 +439,31 @@ namespace Gamefreak130.Common.UI
 
         public MenuController(bool _, PauseMode __, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle) : base("UiObjectPicker", kWinExportID, true, PauseMode.PauseSimulator, null)
         {
-            if (mModalDialogWindow is null)
+            if (mModalDialogWindow is not null)
             {
-                return;
+                Text text = mModalDialogWindow.GetChildByID(99576787u, false) as Text;
+                text.Caption = title;
+                mTable = mModalDialogWindow.GetChildByID(99576784u, false) as ObjectPicker;
+                mTable.SelectionChanged += OnRowClicked;
+                mTabsContainer = mTable.mTabs;
+                mTable.mTable.mPopulationCompletedCallback += ResizeWindow;
+                mOkayButton = mModalDialogWindow.GetChildByID(99576785u, false) as Button;
+                mOkayButton.TooltipText = buttonTrue;
+                mOkayButton.Enabled = true;
+                mOkayButton.Click += OnOkayButtonClick;
+                OkayID = mOkayButton.ID;
+                SelectedID = mOkayButton.ID;
+                mCloseButton = mModalDialogWindow.GetChildByID(99576786u, false) as Button;
+                mCloseButton.TooltipText = buttonFalse;
+                mCloseButton.Click += OnCloseButtonClick;
+                CancelID = mCloseButton.ID;
+                mTableOffset = mModalDialogWindow.Area.BottomRight - mModalDialogWindow.Area.TopLeft - (mTable.Area.BottomRight - mTable.Area.TopLeft);
+                mTable.ShowHeaders = showHeadersAndToggle;
+                mTable.ViewTypeToggle = false;
+                mTable.ShowToggle = false;
+                mTable.Populate(listObjs, headers, numSelectableRows);
+                ResizeWindow();
             }
-            Text text = mModalDialogWindow.GetChildByID(99576787u, false) as Text;
-            text.Caption = title;
-            mTable = mModalDialogWindow.GetChildByID(99576784u, false) as ObjectPicker;
-            mTable.SelectionChanged += OnRowClicked;
-            mTabsContainer = mTable.mTabs;
-            mTable.mTable.mPopulationCompletedCallback += ResizeWindow;
-            mOkayButton = mModalDialogWindow.GetChildByID(99576785u, false) as Button;
-            mOkayButton.TooltipText = buttonTrue;
-            mOkayButton.Enabled = true;
-            mOkayButton.Click += OnOkayButtonClick;
-            OkayID = mOkayButton.ID;
-            SelectedID = mOkayButton.ID;
-            mCloseButton = mModalDialogWindow.GetChildByID(99576786u, false) as Button;
-            mCloseButton.TooltipText = buttonFalse;
-            mCloseButton.Click += OnCloseButtonClick;
-            CancelID = mCloseButton.ID;
-            mTableOffset = mModalDialogWindow.Area.BottomRight - mModalDialogWindow.Area.TopLeft - (mTable.Area.BottomRight - mTable.Area.TopLeft);
-            mTable.ShowHeaders = showHeadersAndToggle;
-            mTable.ViewTypeToggle = false;
-            mTable.ShowToggle = false;
-            mTable.Populate(listObjs, headers, numSelectableRows);
-            ResizeWindow();
         }
 
         public void PopulateMenu(List<TabInfo> tabinfo, List<HeaderInfo> headers, int numSelectableRows) => mTable.Populate(tabinfo, headers, numSelectableRows);
@@ -785,7 +775,7 @@ namespace Gamefreak130.Common.UI
         {
             mCallback = action;
             Predicate = predicate;
-            mColumnActions = new List<ColumnDelegateStruct>
+            mColumnActions = new()
             {
                 new(ColumnType.kText, () => new TextColumn(name)),
                 new(ColumnType.kText, () => new TextColumn(getValue()))
@@ -823,7 +813,7 @@ namespace Gamefreak130.Common.UI
         public GenerateMenuObject(string name, MenuContainer toOpen)
         {
             mToOpen = toOpen;
-            mColumnActions = new List<ColumnDelegateStruct>
+            mColumnActions = new()
             {
                 new(ColumnType.kText, () => new TextColumn(name)),
                 new(ColumnType.kText, () => new TextColumn(""))
@@ -864,7 +854,7 @@ namespace Gamefreak130.Common.UI
         {
             mCallback = action;
             Predicate = test;
-            mColumnActions = new List<ColumnDelegateStruct>
+            mColumnActions = new()
             {
                 new(ColumnType.kText, () => new TextColumn(name)), 
                 new(ColumnType.kText, () => new TextColumn(getValue()))
@@ -911,11 +901,11 @@ namespace Gamefreak130.Common.UI
         public SetValuePromptObject(string menuTitle, string dialogPrompt, string settingName, GenericDelegate<bool> test, IPersistedSettings settings)
         {
             mSettings = settings;
-            mSetting = typeof(IPersistedSettings).GetProperty(settingName);
+            mSetting = mSettings.GetType().GetProperty(settingName);
             mMenuTitle = menuTitle;
             mDialogPrompt = dialogPrompt;
             Predicate = test;
-            mColumnActions = new List<ColumnDelegateStruct>
+            mColumnActions = new()
             {
                 new(ColumnType.kText, () => new TextColumn(mMenuTitle)),
                 new(ColumnType.kText, () => new TextColumn(mSetting.GetValue(mSettings, null).ToString()))
@@ -927,7 +917,7 @@ namespace Gamefreak130.Common.UI
         public SetValuePromptObject(string menuTitle, string dialogPrompt, string settingName, GenericDelegate<bool> test, IPersistedSettings settings, List<ColumnDelegateStruct> columns)
         {
             mSettings = settings;
-            mSetting = typeof(IPersistedSettings).GetProperty(settingName);
+            mSetting = mSettings.GetType().GetProperty(settingName);
             mMenuTitle = menuTitle;
             mDialogPrompt = dialogPrompt;
             Predicate = test;
