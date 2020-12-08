@@ -58,7 +58,6 @@ namespace Gamefreak130
             // TO ACCOUNT FOR DAYCARE VISITLOT WORKAROUND
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
-            //TODO Add not enough celebrity level string for PT Film
             //CONSIDER Custom degrees for jobs?
             //CONSIDER Audition string?
             //CONSIDER Random amount of jobs per day from specified min to max?

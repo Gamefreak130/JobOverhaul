@@ -5,6 +5,7 @@ using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
 using Sims3.Gameplay.Actors;
 using Sims3.Gameplay.Careers;
+using Sims3.Gameplay.CelebritySystem;
 using Sims3.Gameplay.ChildAndTeenUpdates;
 using Sims3.Gameplay.Core;
 using Sims3.Gameplay.Interactions;
@@ -580,7 +581,9 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 }
                 if (entry is Career career && !career.CareerAgeTest(sim.SimDescription))
                 {
-                    button.TooltipText = LocalizeString(sim.IsFemale, "NotCorrectAgeForOccupation");
+                    button.TooltipText = entry is PTFilm && sim.SimDescription.CelebrityLevel < CelebrityManager.LowestVisibleLevel
+                        ? LocalizeString(sim.IsFemale, "NeedsCelebrityLevel")
+                        : LocalizeString(sim.IsFemale, "NotCorrectAgeForOccupation");
                     return;
                 }
                 if (entry is ActiveCareer && sim.SimDescription.TeenOrBelow)
