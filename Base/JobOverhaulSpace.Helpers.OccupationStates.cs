@@ -7,6 +7,7 @@ using Sims3.Gameplay.Core;
 using Sims3.Gameplay.Seasons;
 using Sims3.SimIFace;
 using Sims3.SimIFace.CAS;
+using System;
 using System.Collections.Generic;
 
 namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
@@ -77,6 +78,21 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         }
     }
 
+    // Persistable dictionaries drop keys with null values
+    // So we use a NullState instead to represent no saved occupation
+    public class NullState : OccupationState
+    {
+        public NullState()
+        {
+        }
+
+        public override bool AcquireOccupation(CareerManager manager)
+        {
+            Methods.DropOccupation(manager);
+            return true;
+        }
+    }
+
     public class CareerState : OccupationState
     {
         private string CurBranch { get; }
@@ -106,15 +122,13 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         public override bool AcquireOccupation(CareerManager manager)
         {
-            Career career = CareerManager.GetStaticOccupation(Guid) as Career;
-            OccupationNames previousOccupation = manager.Occupation?.Guid ?? default;
+            Methods.DropOccupation(manager);
             if (GameObject.GetObject(LocationId) is RabbitHole rabbitHole && rabbitHole.CareerLocations.TryGetValue((ulong)Guid, out CareerLocation location))
             {
-                manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
+                Career career = CareerManager.GetStaticOccupation(Guid) as Career;
                 GreyedOutTooltipCallback callback = null;
                 if (career is not null && career.CareerAgeTest(manager.mSimDescription) && career.CanAcceptCareer(manager.mSimDescription?.CreatedSim?.ObjectId ?? default, ref callback))
                 {
-                    manager.QuitCareers.Remove(previousOccupation);
                     AcquireOccupationParameters parameters = new(Guid, location, false, false)
                     {
                         JumpStartJob = true
@@ -542,21 +556,23 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         public override bool AcquireOccupation(CareerManager manager)
         {
-            XpBasedCareer career = CareerManager.GetStaticOccupation(Guid) as XpBasedCareer;
-            OccupationNames previousOccupation = manager.Occupation?.Guid ?? default;
-            manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
-            if (career is not null)
+            if (CareerManager.GetStaticOccupation(Guid) is XpBasedCareer)
             {
-                manager.QuitCareers.Remove(previousOccupation);
                 AcquireOccupationParameters parameters = new(Guid, false, false);
                 if (GameObject.GetObject(LocationId) is Lot lot)
                 {
                     parameters.LotId = lot.LotId;
                 }
+                if (JobOverhaul.IsCareersInstalled)
+                {
+                    Career career = Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer").GetConstructor(new Type[0]).Invoke(null) as Career;
+                    career.mCareerGuid = Guid;
+                    parameters.Location = new() { Career = career };
+                }
                 if (manager.AcquireOccupation(parameters))
                 {
                     base.AcquireOccupation(manager);
-                    career = manager.Occupation as XpBasedCareer;
+                    XpBasedCareer career = manager.Occupation as XpBasedCareer;
                     career.mLevel = Level;
                     career.mOvermaxLevel = OverMaxLevel;
                     career.mXp = Xp;
@@ -579,6 +595,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         public override bool AcquireOccupation(CareerManager manager)
         {
+            Methods.DropOccupation(manager);
             if (base.AcquireOccupation(manager))
             {
                 manager.OccupationAsSkillBasedCareer.mMoneyEarned = MoneyEarned;
@@ -598,6 +615,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         public override bool AcquireOccupation(CareerManager manager)
         {
+            Methods.DropOccupation(manager);
             ActiveCareer activeCareer = CareerManager.GetStaticOccupation(Guid) as ActiveCareer;
             if (activeCareer is not null && activeCareer.IsActiveCareerAvailable() && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & manager.mSimDescription.Age) is not CASAgeGenderFlags.None && base.AcquireOccupation(manager))
             {

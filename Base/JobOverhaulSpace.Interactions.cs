@@ -2140,6 +2140,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 if (flag2)
                 {
                     AcquireOccupationParameters occupationParameters = new(CareerToSet, true, true);
+                    if (IsCareersInstalled)
+                    {
+                        Career career = Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer").GetConstructor(new Type[0]).Invoke(null) as Career;
+                        career.mCareerGuid = CareerToSet;
+                        occupationParameters.Location = new() { Career = career };
+                    }
                     return Actor.AcquireOccupation(occupationParameters);
                 }
                 return flag2;

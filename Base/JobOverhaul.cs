@@ -58,11 +58,30 @@ namespace Gamefreak130
             // TO ACCOUNT FOR DAYCARE VISITLOT WORKAROUND
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
-            //CONSIDER Custom degrees for jobs?
-            //CONSIDER Audition string?
-            //CONSIDER Random amount of jobs per day from specified min to max?
+            //CONSIDER Move QuitWork?
+            //TODO Try to integrate Careers
+            //TODO Custom degrees for jobs?
+            //TODO Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
             //CONSIDER Multiple interviews, job offers at one time?
+
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly assembly in assemblies)
+            {
+                if (assembly.FullName.Contains("icarusallsorts.PoolLifeguard"))
+                {
+                    IsPoolLifeguardModInstalled = true;
+                }
+                if (assembly.FullName.Contains("NRaasOnceRead"))
+                {
+                    IsOnceReadInstalled = true;
+                }
+                if (assembly.FullName.Contains("NRaasCareer"))
+                {
+                    IsCareersInstalled = true;
+                }
+            }
+
             new Common.BuffBooter("Gamefreak130_InterviewBuffs").LoadBuffData();
             Methods.InjectInteraction<Computer>(ref Computer.FindJob.Singleton, new FindJobComputer.Definition(), true);
             Methods.InjectInteraction<Computer>(ref Computer.UploadResume.Singleton, new UploadResumeComputer.Definition(), true);
@@ -72,7 +91,6 @@ namespace Gamefreak130
             Methods.InjectInteraction<PhoneSmart>(ref Phone.UploadResume.Singleton, new UploadResumePhone.Definition(), true);
             Methods.InjectInteraction<Phone>(ref Phone.CallRegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedPhone.Definition(), true);
             Methods.InjectInteraction<Phone>(ref Phone.CallToCancelSteadyGig.Singleton, new CallToCancelSteadyGigEx.Definition(), true);
-            Methods.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
             Methods.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerInteriorDesigner.Singleton, new JoinActiveCareerInteriorDesignerEx.Definition(), true);
             Methods.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerLifeguard.Singleton, new JoinActiveCareerLifeguardEx.Definition(), true);
             Methods.InjectInteraction<ScienceLab>(ref ScienceLab.JoinActiveCareerGhostHunter.Singleton, new JoinActiveCareerGhostHunterEx.Definition(), true);
@@ -86,6 +104,10 @@ namespace Gamefreak130
             Methods.InjectInteraction<Sim>(ref Styling.StylistRole.JoinActiveCareerStylistSocial.Singleton, new JoinActiveCareerStylistSocialEx.Definition("Join Stylist Active Career"), true);
             Methods.InjectInteraction<Sim>(ref Stylist.FinishGiveFashionAdvice.Singleton, new FinishGiveFashionAdviceEx.Definition(), true);
             Methods.InjectInteraction<Sim>(ref Proprietor.AskToJoinPerformanceCareer.Singleton, new AskToJoinPerformanceCareerEx.Definition("Ask To Join Performance Career", ""), true);
+            if (!IsCareersInstalled)
+            {
+                Methods.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
+            }
             GoToOccupationJobLocation.Singleton = new GoToOccupationJobLocationEx.Definition();
             VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingDefinition singleton2 = new VisitLotAndWaitForDaycareGreetingEx.VisitLotAndWaitForDaycareGreetingDefinitionEx();
             Common.Tunings.Inject(VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingSingleton.GetType(), typeof(Lot), singleton2.GetType(), typeof(Lot), true);
@@ -152,24 +174,16 @@ namespace Gamefreak130
                     data2.CommercialLotSubTypes[data2.CommercialLotSubTypes.Length - 1] = CommercialLotSubType.kEP11_FutureBar;
                 }
             }
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in assemblies)
-            {
-                if (assembly.FullName.Contains("icarusallsorts.PoolLifeguard"))
-                {
-                    IsPoolLifeguardModInstalled = true;
-                }
-                if (assembly.FullName.Contains("NRaasOnceRead"))
-                {
-                    IsOnceReadInstalled = true;
-                }
-            }
         }
 
         private static void OnPostLoad()
         {
             Methods.InjectInteraction<RabbitHole>(ref GetJobInRabbitHole.Singleton, new GetJobInRabbitHoleEx.Definition(), true);
             Methods.InjectInteraction<Newspaper>(ref GetNewspaperChooser.Singleton, new GetNewspaperChooserEx.Definition(), true);
+            if (IsCareersInstalled)
+            {
+                Methods.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
+            }
             ReadSomethingInInventoryEx.Definition singleton = new();
             Common.Tunings.Inject(Sim.ReadSomethingInInventory.Singleton.GetType(), typeof(Sim), singleton.GetType(), typeof(Sim), true);
             Sim.ReadSomethingInInventory.Singleton = singleton;
@@ -179,7 +193,7 @@ namespace Gamefreak130
 
         private static void OnWorldQuit(object sender, EventArgs e)
         {
-            SavedOccupationsForTravel.Clear();
+            sSavedOccupationsForTravel = null;
             InterviewList.Clear();
             RandomNewspaperSeeds.Clear();
             RandomNewspaperSeed = RandomUtil.GetInt(32767);
@@ -258,7 +272,7 @@ namespace Gamefreak130
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupInterviews, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupCareerOpportunities, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupNewspaperSeeds, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
-            AlarmManager.Global.AddAlarm(2f, TimeUnit.Seconds, FixupOccupations, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
+            AlarmManager.Global.AddAlarm(2f, TimeUnit.Seconds, FixupLifeguard, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             World.OnObjectPlacedInLotEventHandler += OnObjectPlacedInLot;
             EventTracker.AddListener(EventTypeId.kInventoryObjectAdded, OnObjectChanged);
             EventTracker.AddListener(EventTypeId.kObjectStateChanged, OnObjectChanged);
@@ -614,32 +628,13 @@ namespace Gamefreak130
             }
         }
 
-        private static void FixupOccupations()
+        private static void FixupLifeguard()
         {
             foreach (Sim sim in GetObjects<Sim>())
             {
-                if (sim.CareerManager is CareerManager manager)
+                if (sim.CareerManager is CareerManager { OccupationAsActiveCareer: Lifeguard lifeguard } manager && !IsActiveCareerAvailable(lifeguard))
                 {
-                    ulong id = sim.SimDescription.SimDescriptionId;
-                    if (SavedOccupationsForTravel.ContainsKey(id))
-                    {
-                        if (SavedOccupationsForTravel[id] is not null)
-                        {
-                            OccupationState state = SavedOccupationsForTravel[id];
-                            state.AcquireOccupation(manager);
-                        }
-                        else if (manager.Occupation is not null)
-                        {
-                            manager.Occupation.Cleanup();
-                            manager.mJob = null;
-                        }
-                        SavedOccupationsForTravel.Remove(id);
-                    }
-                    if ((GameUtils.IsFutureWorld() && Sims3.Gameplay.GameStates.IsNewGame) || (manager.OccupationAsActiveCareer is Lifeguard lifeguardCareer && !IsActiveCareerAvailable(lifeguardCareer)))
-                    {
-                        manager.Occupation.Cleanup();
-                        manager.mJob = null;
-                    }
+                    DropOccupation(manager);
                 }
             }
         }
@@ -663,12 +658,11 @@ namespace Gamefreak130
 
         public const ulong kBadInterviewGuid = 0x552A7AD84AF2FA7E;
 
-        public static bool IsPoolLifeguardModInstalled;
+        public static bool IsPoolLifeguardModInstalled { get; private set; }
 
-        public static bool IsOnceReadInstalled;
+        public static bool IsOnceReadInstalled { get; private set; }
 
-        [PersistableStatic]
-        public static Dictionary<ulong, OccupationState> SavedOccupationsForTravel = new();
+        public static bool IsCareersInstalled { get; private set; }
 
         [PersistableStatic]
         public static int RandomNewspaperSeed;
@@ -680,7 +674,12 @@ namespace Gamefreak130
         public static int RandomComputerSeed;
 
         [PersistableStatic]
+        private static Dictionary<ulong, OccupationState> sSavedOccupationsForTravel;
+
+        [PersistableStatic]
         private static PersistedSettings sSettings;
+
+        public static Dictionary<ulong, OccupationState> SavedOccupationsForTravel => sSavedOccupationsForTravel ??= new();
 
         public static PersistedSettings Settings => sSettings ??= new();
 

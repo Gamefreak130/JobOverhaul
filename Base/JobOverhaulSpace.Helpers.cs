@@ -259,9 +259,9 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         internal static ListenerAction OnTravelComplete(Event e)
         {
-            if (e.Actor is not null)
+            if (e.Actor is Sim sim)
             {
-                foreach (Sims3.Gameplay.InventoryStack stack in e.Actor.Inventory.InventoryItems.Values)
+                foreach (Sims3.Gameplay.InventoryStack stack in sim.Inventory.InventoryItems.Values)
                 {
                     foreach (Sims3.Gameplay.InventoryItem item in stack.List)
                     {
@@ -270,6 +270,21 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                             newspaper.MakeOld();
                             RandomNewspaperSeeds.Remove(newspaper.ObjectId);
                         }
+                    }
+                }
+
+                if (sim.CareerManager is CareerManager manager && (GameUtils.IsFutureWorld() || !GameUtils.IsAnyTravelBasedWorld()))
+                {
+                    ulong id = sim.SimDescription.SimDescriptionId;
+                    if (SavedOccupationsForTravel.ContainsKey(id))
+                    {
+                        OccupationState state = SavedOccupationsForTravel[id];
+                        state.AcquireOccupation(manager);
+                        SavedOccupationsForTravel.Remove(id);
+                    }
+                    else if (GameUtils.IsFutureWorld())
+                    {
+                        DropOccupation(manager);
                     }
                 }
             }
@@ -306,8 +321,9 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     PrivateEye a           => new PrivateEyeState(a),
                     ActiveCareer a         => new ActiveCareerState(a),
                     SkillBasedCareer s     => new SkillBasedCareerState(s),
-                    _                      => null
+                    _                      => new NullState()
                 };
+
                 if (SavedOccupationsForTravel.ContainsKey(id))
                 {
                     SavedOccupationsForTravel[id] = state;
@@ -607,6 +623,13 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         {
             List<OccupationEntryTuple> list = new(1) { occupation };
             UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(sim, sim.ObjectId, list);
+        }
+
+        public static void DropOccupation(CareerManager manager)
+        {
+            OccupationNames previousOccupation = manager.Occupation?.Guid ?? default;
+            manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kNone);
+            manager.QuitCareers.Remove(previousOccupation);
         }
 
         public static bool IsActiveCareerAvailable(ActiveCareer career) => career is Lifeguard && IsPoolLifeguardModInstalled
