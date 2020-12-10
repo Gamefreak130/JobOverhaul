@@ -40,14 +40,14 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private string StageName { get; }
 
-        private OccupationState()
+        protected OccupationState()
         {
         }
 
         public OccupationState(Occupation occupation)
         {
             Guid = occupation.Guid;
-            LocationId = occupation.OfficeLocation.ObjectId;
+            LocationId = occupation.OfficeLocation?.ObjectId ?? default;
             Level = occupation.Level;
             HighestLevelAchieved = occupation.HighestLevelAchieved;
             Anniversary = occupation.WorkAnniversary;
@@ -89,6 +89,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private ulong FormerBossId { get; }
 
+        protected CareerState()
+        {
+        }
+
         public CareerState(Career career) : base(career)
         {
             Xp = career.Performance;
@@ -96,14 +100,14 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
             ExtraPay = career.mPayPerHourExtra;
             CurBranch = career.CurLevelBranchName;
             HighestBranch = career.mHighestLevelAchievedBranchName;
-            BossId = career.Boss.SimDescriptionId;
-            FormerBossId = career.FormerBoss.SimDescriptionId;
+            BossId = career.Boss?.SimDescriptionId ?? 0;
+            FormerBossId = career.FormerBoss?.SimDescriptionId ?? 0;
         }
 
         public override bool AcquireOccupation(CareerManager manager)
         {
             Career career = CareerManager.GetStaticOccupation(Guid) as Career;
-            OccupationNames previousOccupation = manager.Occupation.Guid;
+            OccupationNames previousOccupation = manager.Occupation?.Guid ?? default;
             if (GameObject.GetObject(LocationId) is RabbitHole rabbitHole && rabbitHole.CareerLocations.TryGetValue((ulong)Guid, out CareerLocation location))
             {
                 manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
@@ -149,6 +153,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int NumArtWorkScanned { get; }
 
+        protected ArtAppraiserState()
+        {
+        }
+
         public ArtAppraiserState(ArtAppraiserCareer career) : base(career) => NumArtWorkScanned = career.NumArtWorkScanned;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -168,6 +176,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int MeetingsHeldToday { get; }
 
         private int[] MeetingsHeldLastNDays { get; }
+
+        protected BusinessState()
+        {
+        }
 
         public BusinessState(Business career) : base(career)
         {
@@ -193,6 +205,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int LecturesHeldToday { get; }
 
         private int[] LecturesHeldLastNDays { get; }
+
+        protected EducationState()
+        {
+        }
 
         public EducationState(Education career) : base(career)
         {
@@ -221,6 +237,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private List<string> AwardsToCollect { get; }
 
+        protected FilmState()
+        {
+        }
+
         public FilmState(Film career) : base(career)
         {
             DaysInCostume = career.mDaysInCostume;
@@ -246,6 +266,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int PrivateReadingsPerformed { get; }
 
+        protected FortuneTellerState()
+        {
+        }
+
         public FortuneTellerState(FortuneTellerCareer career) : base(career) => PrivateReadingsPerformed = career.PrivateReadingsPerfomed;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -265,6 +289,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int StoriesWrittenToday { get; }
 
         private int[] StoriesWrittenLastNDays { get; }
+
+        protected JournalismState()
+        {
+        }
 
         public JournalismState(Journalism career) : base(career)
         {
@@ -292,6 +320,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int[] ReportsWrittenLastNDays { get; }
 
         private ulong PartnerId { get; }
+
+        protected LawEnforcementState()
+        {
+        }
 
         public LawEnforcementState(LawEnforcement career) : base(career)
         {
@@ -321,6 +353,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int NumMedicalJournalsRead { get; }
 
+        protected MedicalState()
+        {
+        }
+
         public MedicalState(Medical career) : base(career) => NumMedicalJournalsRead = career.mNumMedicalJournalsRead;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -339,6 +375,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int NumConcertsPerformed { get; }
 
+        protected MusicState()
+        {
+        }
+
         public MusicState(Music career) : base(career) => NumConcertsPerformed = career.ConcertsPerformed;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -356,6 +396,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     public class PoliticalState : CareerState
     {
         private int CampaignMoneyRaised { get; }
+
+        protected PoliticalState()
+        {
+        }
 
         public PoliticalState(Political career) : base(career) => CampaignMoneyRaised = career.CampaignMoneyRaised;
 
@@ -381,10 +425,16 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private int TotalLosses { get; }
 
+        protected ProSportsState()
+        {
+        }
+
         public ProSportsState(ProSports career) : base(career)
         {
             WinRecord = career.mWinRecord;
             LossRecord = career.mLossRecord;
+            TotalWins = career.mTotalWins;
+            TotalLosses = career.mTotalLoss;
         }
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -406,6 +456,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int ConsecutiveDaysWithA { get; }
 
+        protected SchoolState()
+        {
+        }
+
         public SchoolState(School school) : base(school) => ConsecutiveDaysWithA = school.ConsecutiveDaysWithA;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -423,6 +477,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     public class ScienceState : CareerState
     {
         private string LastPromotionRewardAsSeed { get; }
+
+        protected ScienceState()
+        {
+        }
 
         public ScienceState(Science career) : base(career) => LastPromotionRewardAsSeed = career.mLastPromotionRewardAsSeed;
 
@@ -443,6 +501,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int NumContractsNegotiated { get; }
 
         private int NumAnalyzeStatistics { get; }
+
+        protected SportsAgentState()
+        {
+        }
 
         public SportsAgentState(SportsAgentCareer career) : base(career)
         {
@@ -467,6 +529,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int OverMaxLevel { get; }
 
+        protected XpBasedCareerState()
+        {
+        }
+
         public XpBasedCareerState(XpBasedCareer career) : base(career)
         {
             Xp = career.mXp;
@@ -477,7 +543,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         public override bool AcquireOccupation(CareerManager manager)
         {
             XpBasedCareer career = CareerManager.GetStaticOccupation(Guid) as XpBasedCareer;
-            OccupationNames previousOccupation = manager.Occupation.Guid;
+            OccupationNames previousOccupation = manager.Occupation?.Guid ?? default;
             manager.Occupation?.LeaveJob(false, Career.LeaveJobReason.kDebug);
             if (career is not null)
             {
@@ -503,6 +569,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
     public class SkillBasedCareerState : XpBasedCareerState
     {
+        protected SkillBasedCareerState()
+        {
+        }
+
         public SkillBasedCareerState(SkillBasedCareer career) : base(career)
         {
         }
@@ -520,6 +590,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
     public class ActiveCareerState : XpBasedCareerState
     {
+        protected ActiveCareerState()
+        {
+        }
+
         public ActiveCareerState(ActiveCareer career) : base(career) => MoneyEarned = career.mLifetimeEarningsForPensionCalculation;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -541,6 +615,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private bool BeenToFireStation { get; }
 
         private float UpgradeProgressRemaining { get; }
+
+        protected FireFighterState()
+        {
+        }
 
         public FireFighterState(ActiveFireFighter career) : base(career)
         {
@@ -576,6 +654,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private int NumSuspensions { get; }
 
+        protected DaycareState()
+        {
+        }
+
         public DaycareState(Daycare career) : base(career)
         {
             HasHadAfterschoolChildBefore = career.mHasHadAfterschoolChildBefore;
@@ -603,6 +685,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     {
         private int NumRescues { get; }
 
+        protected LifeguardState()
+        {
+        }
+
         public LifeguardState(Lifeguard career) : base(career) => NumRescues = career.mNumRescues;
 
         public override bool AcquireOccupation(CareerManager manager)
@@ -624,6 +710,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         private int NumStakeoutsDone { get; }
 
         private int ReportsToWrite { get; }
+
+        protected PrivateEyeState()
+        {
+        }
 
         public PrivateEyeState(PrivateEye career) : base(career)
         {
@@ -652,6 +742,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
 
         private PerformanceCareer.PerformanceTrickSkill[] TrickSkills { get; }
 
+        protected PerformanceCareerState()
+        {
+        }
+
         public PerformanceCareerState(PerformanceCareer career) : base(career)
         {
             SteadyGigs = career.mSteadyGigs;
@@ -674,6 +768,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     public class SingerState : PerformanceCareerState
     {
         private bool HasShownSingagramIntro { get; }
+
+        protected SingerState()
+        {
+        }
 
         public SingerState(SingerCareer career) : base(career) => HasShownSingagramIntro = career.mHasShownSingagramIntroTNS;
 
