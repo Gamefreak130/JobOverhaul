@@ -54,7 +54,7 @@ namespace Gamefreak130.Common
             CodeVersion = oldTuning.CodeVersion,
             FullInteractionName = oldTuning.FullInteractionName,
             FullObjectName = oldTuning.FullObjectName,
-            mChecks = Methods.CloneList(oldTuning.mChecks),
+            mChecks = Helpers.CloneList(oldTuning.mChecks),
             mTradeoff = CloneTradeoff(oldTuning.mTradeoff),
             PosturePreconditions = oldTuning.PosturePreconditions,
             ScoringFunction = oldTuning.ScoringFunction,
@@ -67,10 +67,10 @@ namespace Gamefreak130.Common
         private static Tradeoff CloneTradeoff(Tradeoff old) => new()
         {
             mFlags = old.mFlags,
-            mInputs = Methods.CloneList(old.mInputs),
+            mInputs = Helpers.CloneList(old.mInputs),
             mName = old.mName,
             mNumParameters = old.mNumParameters,
-            mOutputs = Methods.CloneList(old.mOutputs),
+            mOutputs = Helpers.CloneList(old.mOutputs),
             mVariableRestrictions = old.mVariableRestrictions,
             TimeEstimate = old.TimeEstimate
         };
@@ -81,22 +81,22 @@ namespace Gamefreak130.Common
             AgeSpeciesAvailabilityFlags = old.AgeSpeciesAvailabilityFlags,
             CareerThresholdType = old.CareerThresholdType,
             CareerThresholdValue = old.CareerThresholdValue,
-            ExcludingBuffs = Methods.CloneList(old.ExcludingBuffs),
-            ExcludingTraits = Methods.CloneList(old.ExcludingTraits),
+            ExcludingBuffs = Helpers.CloneList(old.ExcludingBuffs),
+            ExcludingTraits = Helpers.CloneList(old.ExcludingTraits),
             MoodThresholdType = old.MoodThresholdType,
             MoodThresholdValue = old.MoodThresholdValue,
             MotiveThresholdType = old.MotiveThresholdType,
             MotiveThresholdValue = old.MotiveThresholdValue,
-            RequiredBuffs = Methods.CloneList(old.RequiredBuffs),
-            RequiredTraits = Methods.CloneList(old.RequiredTraits),
+            RequiredBuffs = Helpers.CloneList(old.RequiredBuffs),
+            RequiredTraits = Helpers.CloneList(old.RequiredTraits),
             SkillThresholdType = old.SkillThresholdType,
             SkillThresholdValue = old.SkillThresholdValue,
             WorldRestrictionType = old.WorldRestrictionType,
             OccultRestrictions = old.OccultRestrictions,
             OccultRestrictionType = old.OccultRestrictionType,
             SnowLevelValue = old.SnowLevelValue,
-            WorldRestrictionWorldNames = Methods.CloneList(old.WorldRestrictionWorldNames),
-            WorldRestrictionWorldTypes = Methods.CloneList(old.WorldRestrictionWorldTypes)
+            WorldRestrictionWorldNames = Helpers.CloneList(old.WorldRestrictionWorldNames),
+            WorldRestrictionWorldTypes = Helpers.CloneList(old.WorldRestrictionWorldTypes)
         };
     }
 
@@ -121,7 +121,7 @@ namespace Gamefreak130.Common
         }
     }
 
-    public static class Methods
+    public static class Helpers
     {
         public static void InjectInteraction<Target>(ref InteractionDefinition singleton, InteractionDefinition newSingleton, bool requiresTuning) where Target : IGameObject
         {
@@ -158,6 +158,79 @@ namespace Gamefreak130.Common
         public static List<T> CloneList<T>(IEnumerable<T> old) => old is not null ? new(old) : null;
 
         public static object CoinFlipSelect(object obj1, object obj2) => RandomUtil.CoinFlip() ? obj1 : obj2;
+    }
+
+    public static class Reflection
+    {
+        public static void StaticInvoke(string assemblyQualifiedTypeName, string methodName, object[] args, Type[] argTypes) => StaticInvoke(Type.GetType(assemblyQualifiedTypeName), methodName, args, argTypes);
+
+        public static void StaticInvoke(Type type, string methodName, object[] args, Type[] argTypes)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException("Null type");
+            }
+            if (type.GetMethod(methodName, argTypes) is not MethodInfo method)
+            {
+                throw new ArgumentException("No method found in type with specified name and args");
+            }
+            method.Invoke(null, args);
+        }
+
+        public static T StaticInvoke<T>(string assemblyQualifiedTypeName, string methodName, object[] args, Type[] argTypes) => StaticInvoke<T>(Type.GetType(assemblyQualifiedTypeName), methodName, args, argTypes);
+
+        public static T StaticInvoke<T>(Type type, string methodName, object[] args, Type[] argTypes)
+            => type is null
+            ? throw new ArgumentNullException("Null type")
+            : type.GetMethod(methodName, argTypes) is not MethodInfo method
+            ? throw new ArgumentException("No method found in type with specified name and args")
+            : (T)method.Invoke(null, args);
+
+        public static void InstanceInvoke(string assemblyQualifiedTypeName, object[] ctorArgs, Type[] ctorArgTypes, string methodName, object[] methodArgs, Type[] methodArgTypes)
+            => InstanceInvoke(Type.GetType(assemblyQualifiedTypeName), ctorArgs, ctorArgTypes, methodName, methodArgs, methodArgTypes);
+
+        public static void InstanceInvoke(Type type, object[] ctorArgs, Type[] ctorArgTypes, string methodName, object[] methodArgs, Type[] methodArgTypes)
+        {
+            if (type is null)
+            {
+                throw new ArgumentNullException("Null type");
+            }
+            if (type.GetConstructor(ctorArgTypes) is not ConstructorInfo ctor)
+            {
+                throw new ArgumentException("No type constructor found with specified args");
+            }
+            InstanceInvoke(ctor.Invoke(ctorArgs), methodName, methodArgs, methodArgTypes);
+        }
+
+        public static void InstanceInvoke(object obj, string methodName, object[] args, Type[] argTypes)
+        {
+            if (obj is null)
+            {
+                throw new ArgumentNullException("Instance object is null");
+            }
+            if (obj.GetType().GetMethod(methodName, argTypes) is not MethodInfo method)
+            {
+                throw new ArgumentException("No method found in instance with specified name and args");
+            }
+            method.Invoke(obj, args);
+        }
+
+        public static T InstanceInvoke<T>(string assemblyQualifiedTypeName, object[] ctorArgs, Type[] ctorArgTypes, string methodName, object[] methodArgs, Type[] methodArgTypes) 
+            => InstanceInvoke<T>(Type.GetType(assemblyQualifiedTypeName), ctorArgs, ctorArgTypes, methodName, methodArgs, methodArgTypes);
+
+        public static T InstanceInvoke<T>(Type type, object[] ctorArgs, Type[] ctorArgTypes, string methodName, object[] methodArgs, Type[] methodArgTypes)
+            => type is null
+            ? throw new ArgumentNullException("Null type")
+            : type.GetConstructor(ctorArgTypes) is not ConstructorInfo ctor
+            ? throw new ArgumentException("No type constructor found with specified args")
+            : InstanceInvoke<T>(ctor.Invoke(ctorArgs), methodName, methodArgs, methodArgTypes);
+
+        public static T InstanceInvoke<T>(object obj, string methodName, object[] args, Type[] argTypes) 
+            => obj is null 
+            ? throw new ArgumentNullException("Instance object is null")
+            : obj.GetType().GetMethod(methodName, argTypes) is not MethodInfo method
+            ? throw new ArgumentException("No method found in instance with specified name and args")
+            : (T)method.Invoke(obj, args);
     }
 
     public delegate T GenericDelegate<T>();
@@ -931,9 +1004,8 @@ namespace Gamefreak130.Common.UI
             try
             {
                 string str = StringInputDialog.Show(mMenuTitle, mDialogPrompt, mSetting.GetValue(mSettings, null).ToString());
-                MethodInfo method = typeof(T).GetMethod("TryParse", new[] { typeof(string), typeof(T).MakeByRefType() });
                 object[] args = { str, null };
-                if ((bool)method.Invoke(null, args))
+                if (Reflection.StaticInvoke<bool>(typeof(T), "TryParse", args, new[] { typeof(string), typeof(T).MakeByRefType() }))
                 {
                     mSetting.SetValue(mSettings, args[1], null);
                 }

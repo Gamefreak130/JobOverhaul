@@ -74,7 +74,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 GameObject @object = GameObject.GetObject(onObjectPlacedInLotEventArgs.ObjectId);
                 if (@object is Computer or Phone or Newspaper)
                 {
-                    Common.Methods.AddInteraction(@object, ChangeSettings.Singleton);
+                    Common.Helpers.AddInteraction(@object, ChangeSettings.Singleton);
                 }
                 if (@object is Computer computer)
                 {
@@ -114,11 +114,11 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 }
                 if (@object is SchoolRabbitHole school)
                 {
-                    Common.Methods.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
+                    Common.Helpers.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
                 }
                 if (@object is CityHall cityHall)
                 {
-                    Common.Methods.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
+                    Common.Helpers.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
                 }
                 if (@object is LifeguardChair chair)
                 {
@@ -131,7 +131,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         {
             if (e.TargetObject is Computer or Phone or Newspaper)
             {
-                Common.Methods.AddInteraction((GameObject)e.TargetObject, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction((GameObject)e.TargetObject, ChangeSettings.Singleton);
             }
             if (e.TargetObject is Computer computer)
             {
@@ -171,11 +171,11 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             }
             if (e.TargetObject is SchoolRabbitHole school)
             {
-                Common.Methods.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
+                Common.Helpers.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
             }
             if (e.TargetObject is CityHall cityHall)
             {
-                Common.Methods.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
+                Common.Helpers.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
             }
             if (e.TargetObject is LifeguardChair chair)
             {
@@ -381,8 +381,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
     {
         public static bool TestApplyForProfession(Sim sim, OccupationNames profession, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
         {
-            Settings.CareerAvailabilitySettings.TryGetValue(profession.ToString(), out CareerAvailabilitySettings settings);
-            if (!settings.IsAvailable)
+            if (!Settings.CareerAvailabilitySettings.TryGetValue(profession.ToString(), out CareerAvailabilitySettings settings) || !settings.IsAvailable)
             {
                 return false;
             }

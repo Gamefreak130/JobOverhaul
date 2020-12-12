@@ -565,7 +565,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
                 }
                 if (JobOverhaul.IsCareersInstalled)
                 {
-                    Career career = Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer").GetConstructor(new Type[0]).Invoke(null) as Career;
+                    Career career = Activator.CreateInstance(Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer")) as Career;
                     career.mCareerGuid = Guid;
                     parameters.Location = new() { Career = career };
                 }

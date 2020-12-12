@@ -32,7 +32,6 @@ using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation;
 using static Sims3.Gameplay.Queries;
-using Methods = Gamefreak130.Common.Methods;
 
 namespace Gamefreak130
 {
@@ -58,10 +57,11 @@ namespace Gamefreak130
             // TO ACCOUNT FOR DAYCARE VISITLOT WORKAROUND
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
-            //CONSIDER Move QuitWork?
-            //TODO Try to integrate Careers
-            //TODO Custom degrees for jobs?
+            //TEST In-place upgrade
             //TODO Random amount of jobs per day from specified min to max?
+            //TODO Commonify Export/Import
+            //TODO Ensure all persistables have parameterless constructors
+            //CONSIDER Move QuitWork?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
             //CONSIDER Multiple interviews, job offers at one time?
 
@@ -83,30 +83,30 @@ namespace Gamefreak130
             }
 
             new Common.BuffBooter("Gamefreak130_InterviewBuffs").LoadBuffData();
-            Methods.InjectInteraction<Computer>(ref Computer.FindJob.Singleton, new FindJobComputer.Definition(), true);
-            Methods.InjectInteraction<Computer>(ref Computer.UploadResume.Singleton, new UploadResumeComputer.Definition(), true);
-            Methods.InjectInteraction<Computer>(ref Computer.RegisterAsSelfEmployedComputer.Singleton, new SelfEmployed.RegisterAsSelfEmployedComputer.Definition(), true);
-            Methods.InjectInteraction<Newspaper>(ref FindJobNewspaper.Singleton, new FindJobNewspaperEx.Definition(), true);
-            Methods.InjectInteraction<Newspaper>(ref RegisterAsSelfEmployedNewspaper.Singleton, new SelfEmployed.RegisterAsSelfEmployedNewspaper.Definition(), true);
-            Methods.InjectInteraction<PhoneSmart>(ref Phone.UploadResume.Singleton, new UploadResumePhone.Definition(), true);
-            Methods.InjectInteraction<Phone>(ref Phone.CallRegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedPhone.Definition(), true);
-            Methods.InjectInteraction<Phone>(ref Phone.CallToCancelSteadyGig.Singleton, new CallToCancelSteadyGigEx.Definition(), true);
-            Methods.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerInteriorDesigner.Singleton, new JoinActiveCareerInteriorDesignerEx.Definition(), true);
-            Methods.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerLifeguard.Singleton, new JoinActiveCareerLifeguardEx.Definition(), true);
-            Methods.InjectInteraction<ScienceLab>(ref ScienceLab.JoinActiveCareerGhostHunter.Singleton, new JoinActiveCareerGhostHunterEx.Definition(), true);
-            Methods.InjectInteraction<PoliceStation>(ref PoliceStation.JoinActiveCareerPrivateEye.Singleton, new JoinActiveCareerPrivateEyeEx.Definition(), true);
-            Methods.InjectInteraction<Lot>(ref Sims3.Gameplay.Services.DeliverNewspaper.Singleton, new DeliverNewspaperEx.Definition(), false);
-            Methods.InjectInteraction<Lot>(ref JoinFirefighterActiveCareer.Singleton, new JoinFirefighterActiveCareerEx.Definition(), true);
-            Methods.InjectInteraction<Lot>(ref JoinStylistActiveCareer.Singleton, new JoinStylistActiveCareerEx.Definition(), true);
-            Methods.InjectInteraction<Lot>(ref GhostHunter.GoToJob.Singleton, new GhostHunterEx.GoToJobEx.Definition(), true);
-            Methods.InjectInteraction<Terrain>(ref GhostHunter.ScanForGhosts.Singleton, new GhostHunterEx.ScanForGhostsEx.Definition(), true);
-            Methods.InjectInteraction<Sim>(ref InteriorDesigner.EvaluateRenovation.Singleton, new EvaluateRenovationEx.Definition(), false);
-            Methods.InjectInteraction<Sim>(ref Styling.StylistRole.JoinActiveCareerStylistSocial.Singleton, new JoinActiveCareerStylistSocialEx.Definition("Join Stylist Active Career"), true);
-            Methods.InjectInteraction<Sim>(ref Stylist.FinishGiveFashionAdvice.Singleton, new FinishGiveFashionAdviceEx.Definition(), true);
-            Methods.InjectInteraction<Sim>(ref Proprietor.AskToJoinPerformanceCareer.Singleton, new AskToJoinPerformanceCareerEx.Definition("Ask To Join Performance Career", ""), true);
+            Common.Helpers.InjectInteraction<Computer>(ref Computer.FindJob.Singleton, new FindJobComputer.Definition(), true);
+            Common.Helpers.InjectInteraction<Computer>(ref Computer.UploadResume.Singleton, new UploadResumeComputer.Definition(), true);
+            Common.Helpers.InjectInteraction<Computer>(ref Computer.RegisterAsSelfEmployedComputer.Singleton, new SelfEmployed.RegisterAsSelfEmployedComputer.Definition(), true);
+            Common.Helpers.InjectInteraction<Newspaper>(ref FindJobNewspaper.Singleton, new FindJobNewspaperEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Newspaper>(ref RegisterAsSelfEmployedNewspaper.Singleton, new SelfEmployed.RegisterAsSelfEmployedNewspaper.Definition(), true);
+            Common.Helpers.InjectInteraction<PhoneSmart>(ref Phone.UploadResume.Singleton, new UploadResumePhone.Definition(), true);
+            Common.Helpers.InjectInteraction<Phone>(ref Phone.CallRegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedPhone.Definition(), true);
+            Common.Helpers.InjectInteraction<Phone>(ref Phone.CallToCancelSteadyGig.Singleton, new CallToCancelSteadyGigEx.Definition(), true);
+            Common.Helpers.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerInteriorDesigner.Singleton, new JoinActiveCareerInteriorDesignerEx.Definition(), true);
+            Common.Helpers.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerLifeguard.Singleton, new JoinActiveCareerLifeguardEx.Definition(), true);
+            Common.Helpers.InjectInteraction<ScienceLab>(ref ScienceLab.JoinActiveCareerGhostHunter.Singleton, new JoinActiveCareerGhostHunterEx.Definition(), true);
+            Common.Helpers.InjectInteraction<PoliceStation>(ref PoliceStation.JoinActiveCareerPrivateEye.Singleton, new JoinActiveCareerPrivateEyeEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Lot>(ref Sims3.Gameplay.Services.DeliverNewspaper.Singleton, new DeliverNewspaperEx.Definition(), false);
+            Common.Helpers.InjectInteraction<Lot>(ref JoinFirefighterActiveCareer.Singleton, new JoinFirefighterActiveCareerEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Lot>(ref JoinStylistActiveCareer.Singleton, new JoinStylistActiveCareerEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Lot>(ref GhostHunter.GoToJob.Singleton, new GhostHunterEx.GoToJobEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Terrain>(ref GhostHunter.ScanForGhosts.Singleton, new GhostHunterEx.ScanForGhostsEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Sim>(ref InteriorDesigner.EvaluateRenovation.Singleton, new EvaluateRenovationEx.Definition(), false);
+            Common.Helpers.InjectInteraction<Sim>(ref Styling.StylistRole.JoinActiveCareerStylistSocial.Singleton, new JoinActiveCareerStylistSocialEx.Definition("Join Stylist Active Career"), true);
+            Common.Helpers.InjectInteraction<Sim>(ref Stylist.FinishGiveFashionAdvice.Singleton, new FinishGiveFashionAdviceEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Sim>(ref Proprietor.AskToJoinPerformanceCareer.Singleton, new AskToJoinPerformanceCareerEx.Definition("Ask To Join Performance Career", ""), true);
             if (!IsCareersInstalled)
             {
-                Methods.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
+                Common.Helpers.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
             }
             GoToOccupationJobLocation.Singleton = new GoToOccupationJobLocationEx.Definition();
             VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingDefinition singleton2 = new VisitLotAndWaitForDaycareGreetingEx.VisitLotAndWaitForDaycareGreetingDefinitionEx();
@@ -178,16 +178,16 @@ namespace Gamefreak130
 
         private static void OnPostLoad()
         {
-            Methods.InjectInteraction<RabbitHole>(ref GetJobInRabbitHole.Singleton, new GetJobInRabbitHoleEx.Definition(), true);
-            Methods.InjectInteraction<Newspaper>(ref GetNewspaperChooser.Singleton, new GetNewspaperChooserEx.Definition(), true);
+            Common.Helpers.InjectInteraction<RabbitHole>(ref GetJobInRabbitHole.Singleton, new GetJobInRabbitHoleEx.Definition(), true);
+            Common.Helpers.InjectInteraction<Newspaper>(ref GetNewspaperChooser.Singleton, new GetNewspaperChooserEx.Definition(), true);
             if (IsCareersInstalled)
             {
-                Methods.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
+                Common.Helpers.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
             }
             ReadSomethingInInventoryEx.Definition singleton = new();
             Common.Tunings.Inject(Sim.ReadSomethingInInventory.Singleton.GetType(), typeof(Sim), singleton.GetType(), typeof(Sim), true);
             Sim.ReadSomethingInInventory.Singleton = singleton;
-            Methods.InjectInteraction<RabbitHole>(ref CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton, new AttendResumeAndInterviewClass.Definition(), true);
+            Common.Helpers.InjectInteraction<RabbitHole>(ref CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton, new AttendResumeAndInterviewClass.Definition(), true);
             BootSettings();
         }
 
@@ -224,7 +224,7 @@ namespace Gamefreak130
         {
             foreach (Newspaper newspaper in GetObjects<Newspaper>())
             {
-                Methods.AddInteraction(newspaper, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction(newspaper, ChangeSettings.Singleton);
                 newspaper.RemoveInteractionByType(FindActiveCareerNewspaper.Singleton);
                 if (!RandomNewspaperSeeds.ContainsKey(newspaper.ObjectId))
                 {
@@ -233,7 +233,7 @@ namespace Gamefreak130
             }
             foreach (Computer computer in GetObjects<Computer>())
             {
-                Methods.AddInteraction(computer, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction(computer, ChangeSettings.Singleton);
                 Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
                 computer.RemoveInteractionByType(definitionType);
                 InteractionObjectPair iop = null;
@@ -255,15 +255,15 @@ namespace Gamefreak130
             }
             foreach (Phone phone in GetObjects<Phone>())
             {
-                Methods.AddInteraction(phone, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction(phone, ChangeSettings.Singleton);
             }
             foreach (SchoolRabbitHole school in GetObjects<SchoolRabbitHole>())
             {
-                Methods.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
+                Common.Helpers.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
             }
             foreach (CityHall cityHall in GetObjects<CityHall>())
             {
-                Methods.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
+                Common.Helpers.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
             }
             foreach (LifeguardChair chair in GetObjects<LifeguardChair>())
             {
@@ -296,9 +296,10 @@ namespace Gamefreak130
             List<string> currentCareers = new();
             List<string> currentSelfEmployedJobs = new();
             List<string> newCareers = new();
+            Type unemployedType = IsCareersInstalled ? Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer") : null;
             foreach (Career career in CareerManager.CareerList)
             {
-                if (GameUtils.IsInstalled(career.SharedData.ProductVersion) && career is not School)
+                if (GameUtils.IsInstalled(career.SharedData.ProductVersion) && career is not School && career.GetType() != unemployedType)
                 {
                     career.mAvailableInFuture = true;
                     string name = career.SharedData.Name.Substring(34);

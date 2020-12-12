@@ -42,7 +42,6 @@ using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation
 using static Sims3.Gameplay.GlobalFunctions;
 using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
-using Methods = Gamefreak130.Common.Methods;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
 {
@@ -374,7 +373,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
             Newspaper newspaper = (Newspaper)CreateObject("Newspaper", Vector3.OutOfWorld, 0, Vector3.UnitZ);
             RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
-            Methods.AddInteraction(newspaper, ChangeSettings.Singleton);
+            Common.Helpers.AddInteraction(newspaper, ChangeSettings.Singleton);
             actor.ParentToRightHand(newspaper);
             CarrySystem.EnterWhileHolding(actor, newspaper);
             CarrySystem.PutDownOnFloor(actor);
@@ -496,7 +495,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 if (IsOnceReadInstalled)
                 {
                     List<Book> books = new();
-                    MethodInfo method = Type.GetType("NRaas.OnceReadSpace.Interactions.ReadSomethingInInventoryEx, NRaasOnceRead").GetMethod("ChooseBook", BindingFlags.Static | BindingFlags.Public);
                     if (Actor.Inventory is not null)
                     {
                         foreach (Sims3.Gameplay.InventoryStack current in Actor.Inventory.mItems.Values)
@@ -513,8 +511,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    if (method.Invoke(null, new object[] { Actor, books }) is Book book)
+                    object[] args = new object[] { Actor, books };
+                    Type[] argTypes = new[] { typeof(Sim), typeof(List<Book>) };
+                    if (Common.Reflection.StaticInvoke<Book>("NRaas.OnceReadSpace.Interactions.ReadSomethingInInventoryEx, NRaasOnceRead", "ChooseBook", args, argTypes) is Book book)
                     {
+                        //TODO Replace with ReadBookChooserEx
                         InteractionInstance instance = ReadBookChooser.Singleton.CreateInstance(book, Actor, mPriority, Autonomous, CancellableByPlayer);
                         BeginCommodityUpdates();
                         bool flag = false;
@@ -692,12 +693,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    if (medicalJob.mTasks is not null && medicalJob.mPendingTasks is null)
+                    if (medicalJob.mTasks is not null)
                     {
-                        medicalJob.mPendingTasks = new(medicalJob.mTasks);
+                        medicalJob.mPendingTasks ??= new(medicalJob.mTasks);
                     }
                 }
-                if (medicalJob.mTasks == null || medicalJob.mTasks.Count == 0)
+                if (medicalJob.mTasks is null || medicalJob.mTasks.Count == 0)
                 {
                     return false;
                 }
@@ -830,12 +831,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             IUrnstone urnstone = CreateObjectOutOfWorld("UrnstoneHuman") as IUrnstone;
             if (GameUtils.IsFutureWorld() && RandomUtil.CoinFlip())
             {
-                ghost = OccultRobot.MakeRobot(CASAgeGenderFlags.Adult, (CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), (RobotForms)Methods.CoinFlipSelect(RobotForms.Hovering, RobotForms.Humanoid));
+                ghost = OccultRobot.MakeRobot(CASAgeGenderFlags.Adult, (CASAgeGenderFlags)Common.Helpers.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), (RobotForms)Common.Helpers.CoinFlipSelect(RobotForms.Hovering, RobotForms.Humanoid));
                 ghost.SetDeathStyle(SimDescription.DeathType.Robot, false);
             }
             else
             {
-                ghost = Genetics.MakeSim((CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Adult, CASAgeGenderFlags.Elder), (CASAgeGenderFlags)Methods.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), randomObjectFromList, 4294967295u);
+                ghost = Genetics.MakeSim((CASAgeGenderFlags)Common.Helpers.CoinFlipSelect(CASAgeGenderFlags.Adult, CASAgeGenderFlags.Elder), (CASAgeGenderFlags)Common.Helpers.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), randomObjectFromList, 4294967295u);
                 ghost.FirstName = SimUtils.GetRandomGivenName(ghost.IsMale, randomObjectFromList);
                 ghost.LastName = SimUtils.GetRandomFamilyName(randomObjectFromList);
                 ghost.SetDeathStyle(RandomUtil.GetRandomObjectFromList(sValidDeathTypes), false);
@@ -1023,12 +1024,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        if (ghostHunterJob.mTasks is not null && ghostHunterJob.mPendingTasks is null)
+                        if (ghostHunterJob.mTasks is not null)
                         {
-                            ghostHunterJob.mPendingTasks = new(ghostHunterJob.mTasks);
+                            ghostHunterJob.mPendingTasks ??= new(ghostHunterJob.mTasks);
                         }
                     }
-                    if (ghostHunterJob.mTasks == null || ghostHunterJob.mTasks.Count == 0)
+                    if (ghostHunterJob.mTasks is null || ghostHunterJob.mTasks.Count == 0)
                     {
                         return;
                     }
@@ -1495,98 +1496,251 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, RabbitHole, GetJobInRabbitHoleEx>
         {
-            public string mName = string.Empty;
+            public readonly CareerLocation mLocation;
 
-            public OccupationNames CareerGuid;
+            public readonly Pair<string, string> mName;
 
             public Definition()
             {
             }
 
-            public Definition(string s, CareerLocation careerLoc)
+            public Definition(string s, CareerLocation location)
+            {
+                mName = new Pair<string, string>(s, s);
+                mLocation = location;
+            }
+
+            public Definition(Pair<string, string> s, CareerLocation location)
             {
                 mName = s;
-                CareerGuid = careerLoc.Career.Guid;
+                mLocation = location;
             }
+
+            public override string[] GetPath(bool isFemale) => IsCareersInstalled && mLocation is not null && mLocation.Career.GetType() == Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer")
+                    ? new[] { LocalizeString(isFemale, "JoinCareer" + mLocation.Career.Guid.ToString(), mLocation.Career.Name) }
+                    : base.GetPath(isFemale);
+
+            public override string GetInteractionName(Sim a, RabbitHole target, InteractionObjectPair interaction) => mName.First;
 
             public override void AddInteractions(InteractionObjectPair iop, Sim actor, RabbitHole target, List<InteractionObjectPair> results)
             {
-                if (actor is not null)
+                try
                 {
-                    foreach (CareerLocation current in target.CareerLocations.Values)
+                    if (actor?.CareerManager is not null && target.CareerLocations is not null)
                     {
-                        if (actor.Occupation?.CareerLoc != current && actor.Occupation?.Guid != current.Career.Guid)
+                        Type unemployedType = IsCareersInstalled ? Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer") : null;
+                        foreach (CareerLocation current in target.CareerLocations.Values)
                         {
-                            results.Add(new(new Definition(LocalizeString(actor.IsFemale, "JoinCareer" + current.Career.Guid.ToString(), current.Career.Name), current), target));
+                            if (current.Career is null)
+                            {
+                                continue;
+                            }
+
+                            if (current.Career is School)
+                            {
+                                if (actor.CareerManager.School?.CareerLoc != current && actor.CareerManager.School?.Guid != current.Career.Guid)
+                                {
+                                    string text = LocalizeString(actor.IsFemale, "JoinCareer" + current.Career.Guid, current.Career.Name);
+                                    if (string.IsNullOrEmpty(text))
+                                    {
+                                        text = "JoinCareer" + current.Career.Guid;
+                                    }
+                                    results.Add(new(new Definition(text, current), target));
+                                }
+                            }
+                            else if (actor.Occupation?.CareerLoc != current && actor.Occupation?.Guid != current.Career.Guid)
+                            {
+                                if (current.Career.GetType() == unemployedType)
+                                {
+                                    List<Pair<string, string>> unemployedTitles = Common.Reflection.InstanceInvoke<List<Pair<string, string>>>(current.Career, "GetLocalizedTitles", new object[] { actor.IsFemale }, new[] { typeof(bool) });
+                                    foreach (Pair<string, string> pair in unemployedTitles)
+                                    {
+                                        results.Add(new(new Definition(pair, current), target));
+                                    }
+                                }
+                                else
+                                {
+                                    string text2 = LocalizeString(actor.IsFemale, "JoinCareer" + current.Career.Guid, current.Career.Name);
+                                    if (string.IsNullOrEmpty(text2))
+                                    {
+                                        text2 = "JoinCareer" + current.Career.Guid;
+                                    }
+                                    results.Add(new(new Definition(text2, current), target));
+                                }
+                            }
+                            else if (actor.Occupation.CareerLoc != current && actor.Occupation.Guid == current.Career.Guid)
+                            {
+                                results.Add(new(new Definition(LocalizeString(actor.IsFemale, "TransferJob"), current), target));
+                            }
                         }
-                        else if (actor.Occupation.CareerLoc != current && actor.Occupation.Guid == current.Career.Guid)
-                        {
-                            results.Add(new(new Definition(LocalizeString(actor.IsFemale, "TransferJob"), current), target));
-                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    if (!NRaasLogException(actor, target, exception))
+                    {
+                        throw;
                     }
                 }
             }
 
-            public override string GetInteractionName(Sim a, RabbitHole target, InteractionObjectPair interaction) => mName;
-
             public override bool Test(Sim a, RabbitHole target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
-                SimDescription simDescription = a.SimDescription;
-                if (simDescription.IsEnrolledInBoardingSchool())
+                try
                 {
-                    return false;
-                }
-                CareerLocation careerLocation = GetCareerLocation(target, CareerGuid);
-                Career career = careerLocation.Career;
-                if (career is School)
-                {
-                    return career is SchoolElementary
-                        ? simDescription.Child && a.School is null
-                        : career is SchoolHigh && simDescription.Teen && a.School is null;
-                }
-                else
-                {
-                    GreyedOutTooltipCallback greyedOutTooltipCallback2 = CreateTooltipCallback("NOT USED");
-                    Settings.InterviewSettings.TryGetValue(career.SharedData.Name.Substring(34), out InterviewSettings interviewSettings);
-                    Settings.CareerAvailabilitySettings.TryGetValue(career.SharedData.Name.Substring(34), out CareerAvailabilitySettings availabilitySettings);
-                    if (interviewSettings is null || availabilitySettings is null || !Settings.EnableGetJobInRabbitHole || !availabilitySettings.IsAvailable || interviewSettings.RequiresInterview || !career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback2))
+                    if (a.SimDescription.IsEnrolledInBoardingSchool())
                     {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("Boarding School");
                         return false;
                     }
-                    if (careerLocation is null || !career.CareerAgeTest(simDescription))
+                    if (GameUtils.GetCurrentWorldType() == WorldType.Vacation)
                     {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("On Vacation");
                         return false;
                     }
-                    if (simDescription.Teen && AfterschoolActivity.DoesJobConflictWithActivities(a, career))
+                    if (a.SimDescription.ToddlerOrBelow)
                     {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("ToddlerOrBelow");
                         return false;
                     }
-                    if (GameUtils.IsInstalled(ProductVersion.EP9) && availabilitySettings.RequiredDegrees.Count > 0)
+                    if (mLocation is null)
                     {
-                        foreach (AcademicDegreeNames degree in availabilitySettings.RequiredDegrees)
+                        return true;
+                    }
+                    if (mLocation.Career is SchoolElementary && !a.SimDescription.Child)
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("Elementary Not Child");
+                        return false;
+                    }
+                    if (mLocation.Career is SchoolHigh && !a.SimDescription.Teen)
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("High Not Teen");
+                        return false;
+                    }
+                    if (mLocation.Career is School && !a.SimDescription.Child && !a.SimDescription.Teen)
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("School Not Child Or Teen");
+                        return false;
+                    }
+                    if (a.School is not null && a.SimDescription.Teen && AfterschoolActivity.DoesJobConflictWithActivities(a, mLocation.Career))
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("DoesJobConflictWithActivities");
+                        return false;
+                    }
+                    if (!mLocation.Career.CareerAgeTest(a.SimDescription))
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("CareerAgeTest");
+                        return false;
+                    }
+                    Career occupationAsCareer = a.OccupationAsCareer;
+                    if (occupationAsCareer?.Guid == mLocation.Career.Guid && occupationAsCareer?.CareerLoc == mLocation)
+                    {
+                        greyedOutTooltipCallback = NRaasDebugTooltip("Already Working There");
+                        return false;
+                    }
+                    if (mLocation.Career is not School && !(IsCareersInstalled && mLocation.Career.GetType() == Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer")))
+                    {
+                        Settings.InterviewSettings.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out InterviewSettings interviewSettings);
+                        Settings.CareerAvailabilitySettings.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out CareerAvailabilitySettings availabilitySettings);
+                        if (interviewSettings is null || availabilitySettings is null || !Settings.EnableGetJobInRabbitHole || !availabilitySettings.IsAvailable || interviewSettings.RequiresInterview)
                         {
-                            if (a.DegreeManager is null || !a.DegreeManager.HasCompletedDegree(degree))
+                            return false;
+                        }
+                        if (GameUtils.IsInstalled(ProductVersion.EP9) && availabilitySettings.RequiredDegrees.Count > 0)
+                        {
+                            foreach (AcademicDegreeNames degree in availabilitySettings.RequiredDegrees)
                             {
-                                greyedOutTooltipCallback = CreateTooltipCallback(Helpers.Methods.LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees"));
-                                return false;
+                                if (a.DegreeManager is null || !a.DegreeManager.HasCompletedDegree(degree))
+                                {
+                                    greyedOutTooltipCallback = CreateTooltipCallback(Methods.LocalizeString(a.IsFemale, "DoesNotHaveRequiredDegrees", new object[0]));
+                                    return false;
+                                }
                             }
                         }
                     }
-                    return a.OccupationAsCareer?.CareerLoc != careerLocation;
+                    return mLocation.Career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback);
+                }
+                catch (Exception exception)
+                {
+                    if (!NRaasLogException(a, target, exception))
+                    {
+                        throw;
+                    }
+                    return false;
                 }
             }
         }
 
+        public static GreyedOutTooltipCallback NRaasDebugTooltip(string str) => IsCareersInstalled
+                ? Common.Reflection.StaticInvoke<GreyedOutTooltipCallback>("NRaas.Common, NRaasCareer", "DebugTooltip", new[] { str }, new[] { typeof(string) })
+                : null;
+
+        public static bool NRaasLogException(Sim actor, RabbitHole target, Exception ex)
+        {
+            if (IsCareersInstalled)
+            {
+                object[] args = new object[] { actor, target, ex };
+                Type[] argTypes = new[] { typeof(IScriptLogic), typeof(IScriptLogic), typeof(Exception) };
+                Common.Reflection.StaticInvoke("NRaas.Common, NRaasCareer", "Exception", args, argTypes);
+                return true;
+            }
+            return false;
+        }
+
         public override bool InRabbitHole()
         {
-            CareerLocation careerLocation = GetCareerLocation(Target, (InteractionDefinition as Definition).CareerGuid);
-            if (careerLocation is null)
+            try
             {
-                return false;
+                Definition definition = InteractionDefinition as Definition;
+                CareerLocation careerLocation = definition.mLocation;
+                if (careerLocation is null)
+                {
+                    return false;
+                }
+                Occupation occupation = Actor.CareerManager.mJob;
+                Occupation retiredCareer = Actor.CareerManager.RetiredCareer;
+                try
+                {
+                    if (careerLocation.Career is School)
+                    {
+                        Actor.CareerManager.mJob = null;
+                    }
+                    Actor.CareerManager.mRetiredCareer = null;
+                    TryDisablingCameraFollow(Actor);
+                    OfferJob(Actor, new(careerLocation.Career, careerLocation));
+
+                    if (Actor.CareerManager.mJob is null || Actor.CareerManager.mJob == occupation)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        if (IsCareersInstalled && Actor.Occupation?.GetType() == Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer"))
+                        {
+                            Common.Reflection.InstanceInvoke(Actor.Occupation, "UpdateName", new[] { definition.mName.Second }, new[] { typeof(string) });
+                        }
+                        return true;
+                    }
+                }
+                finally
+                {
+                    Actor.CareerManager.mJob ??= occupation;
+                    Actor.CareerManager.mRetiredCareer = retiredCareer;
+                    Actor.CareerManager.UpdateCareerUI();
+                }
             }
-            TryDisablingCameraFollow(Actor);
-            OfferJob(Actor, new(careerLocation.Career, careerLocation));
-            return true;
+            catch (ResetException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (!NRaasLogException(Actor, Target, ex))
+                {
+                    throw;
+                }
+            }
+            return false;
         }
     }
 
@@ -2142,7 +2296,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     AcquireOccupationParameters occupationParameters = new(CareerToSet, true, true);
                     if (IsCareersInstalled)
                     {
-                        Career career = Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer").GetConstructor(new Type[0]).Invoke(null) as Career;
+                        Career career = Activator.CreateInstance(Type.GetType("NRaas.Gameplay.Careers.OmniCareer, NRaasCareer")) as Career;
                         career.mCareerGuid = CareerToSet;
                         occupationParameters.Location = new() { Career = career };
                     }
