@@ -13,13 +13,13 @@ namespace Gamefreak130.JobOverhaulSpace
     [Persistable]
     public class InterviewSettings
     {
-        public bool RequiresInterview { get; set; }
+        public bool RequiresInterview { get; set; } = true;
 
-        public List<TraitNames> PositiveTraits { get; }
+        public List<TraitNames> PositiveTraits { get; } = new() { TraitNames.Ambitious };
 
-        public List<TraitNames> NegativeTraits { get; }
+        public List<TraitNames> NegativeTraits { get; } = new() { TraitNames.Loser };
 
-        public List<SkillNames> RequiredSkills { get; }
+        public List<SkillNames> RequiredSkills { get; } = new();
 
         public InterviewSettings()
         {
@@ -37,15 +37,17 @@ namespace Gamefreak130.JobOverhaulSpace
     [Persistable]
     public class CareerAvailabilitySettings
     {
-        public bool IsAvailable { get; set; }
+        public bool IsAvailable { get; set; } = true;
 
         public bool IsActive { get; set; }
 
-        public List<AcademicDegreeNames> RequiredDegrees { get; set; }
+        public List<AcademicDegreeNames> RequiredDegrees { get; set; } = new();
 
-        public CareerAvailabilitySettings()
+        private CareerAvailabilitySettings()
         {
         }
+
+        public CareerAvailabilitySettings(bool isActive) => IsActive = isActive;
 
         public CareerAvailabilitySettings(bool isAvailable, bool isActive, List<AcademicDegreeNames> requiredDegrees)
         {
@@ -205,10 +207,6 @@ namespace Gamefreak130.JobOverhaulSpace
         public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings { get; set; } = new();
 
         public Dictionary<string, bool> SelfEmployedAvailabilitySettings { get; set; } = new();
-
-        public PersistedSettings()
-        {
-        }
 
         public string Export()
         {

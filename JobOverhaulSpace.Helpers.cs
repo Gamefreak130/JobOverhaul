@@ -39,7 +39,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
 
         public CareerLocation CareerLocation { get; set; }
 
-        public OccupationEntryTuple()
+        private OccupationEntryTuple()
         {
         }
 

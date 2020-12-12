@@ -235,6 +235,7 @@ namespace Gamefreak130.Common
 
     public delegate T GenericDelegate<T>();
 
+    [Persistable]
     public interface IPersistedSettings
     {
     }
@@ -261,9 +262,9 @@ namespace Gamefreak130.Common.UI
 
         public GenericDelegate<ColumnInfo> mInfo;
 
-        public ColumnDelegateStruct(ColumnType ColType, GenericDelegate<ColumnInfo> infoDelegate)
+        public ColumnDelegateStruct(ColumnType colType, GenericDelegate<ColumnInfo> infoDelegate)
         {
-            mColumnType = ColType;
+            mColumnType = colType;
             mInfo = infoDelegate;
         }
     }
@@ -276,11 +277,11 @@ namespace Gamefreak130.Common.UI
 
         public string mTooltip;
 
-        public RowTextFormat(Color TextColor, bool BoldText, string TooltipText)
+        public RowTextFormat(Color textColor, bool boldText, string tooltipText)
         {
-            mTextColor = TextColor;
-            mBoldTextStyle = BoldText;
-            mTooltip = TooltipText;
+            mTextColor = textColor;
+            mBoldTextStyle = boldText;
+            mTooltip = tooltipText;
         }
     }
 
@@ -306,114 +307,92 @@ namespace Gamefreak130.Common.UI
 
         public Action<List<RowInfo>> OnEnd { get; }
 
-        public MenuContainer()
+        public MenuContainer() : this("")
         {
         }
 
-        public MenuContainer(string Title)
+        public MenuContainer(string title) : this(title, "")
         {
-            mHiddenRows = new();
-            MenuDisplayName = Title;
-            mTabImage = new[] { "" };
-            mTabText = new[] { "" };
-            OnEnd = null;
-            Headers = new();
-            mRowInformation = new();
-            TabInformation = new();
         }
 
-        public MenuContainer(string Title, string Subtitle)
+        public MenuContainer(string title, string subtitle) : this(title, new[] { "" }, new[] { subtitle }, 1, null)
         {
-            mHiddenRows = new();
-            MenuDisplayName = Title;
-            mTabImage = new[] { "" };
-            mTabText = new[] { Subtitle };
-            OnEnd = null;
-            Headers = new();
-            mRowInformation = new();
-            TabInformation = new();
         }
 
-        public MenuContainer(string Title, string[] TabImage, string[] TabName, int numSelectable, Action<List<RowInfo>> OnEndDelegate)
+        public MenuContainer(string title, string[] tabImage, string[] tabName, int numSelectable, Action<List<RowInfo>> onEndDelegate) : this(title, tabImage, tabName, numSelectable, onEndDelegate, null)
+        {
+        }
+
+        public MenuContainer(string title, string[] tabImage, string[] tabName, int numSelectable, Action<List<RowInfo>> onEndDelegate, GenericDelegate<List<RowInfo>> rowPopulationDelegate)
         {
             mHiddenRows = new();
-            MenuDisplayName = Title;
-            mTabImage = TabImage;
-            mTabText = TabName;
+            MenuDisplayName = title;
+            mTabImage = tabImage;
+            mTabText = tabName;
             Selectable = numSelectable;
-            OnEnd = OnEndDelegate;
+            OnEnd = onEndDelegate;
             Headers = new();
             mRowInformation = new();
             TabInformation = new();
-        }
-
-        public MenuContainer(string Title, string[] TabImage, string[] TabName, int numSelectable, Action<List<RowInfo>> OnEndDelegate, GenericDelegate<List<RowInfo>> RowPopulationDelegate)
-        {
-            mHiddenRows = new();
-            MenuDisplayName = Title;
-            mTabImage = TabImage;
-            mTabText = TabName;
-            Selectable = numSelectable;
-            OnEnd = OnEndDelegate;
-            mRowPopulationDelegate = RowPopulationDelegate;
-            Headers = new();
-            mRowInformation = new();
-            TabInformation = new();
-            RefreshMenuObjects(0);
-            if (mRowInformation.Count > 0)
+            mRowPopulationDelegate = rowPopulationDelegate;
+            if (mRowPopulationDelegate is not null)
             {
-                for (int i = 0; i < mRowInformation[0].ColumnInfo.Count; i++)
+                RefreshMenuObjects(0);
+                if (mRowInformation.Count > 0)
                 {
-                    Headers.Add(new("Ui/Caption/ObjectPicker:Sim", "", 200));
+                    for (int i = 0; i < mRowInformation[0].ColumnInfo.Count; i++)
+                    {
+                        Headers.Add(new("Ui/Caption/ObjectPicker:Sim", "", 200));
+                    }
                 }
             }
         }
 
-        public void RefreshMenuObjects(int Tabnumber)
+        public void RefreshMenuObjects(int tabnumber)
         {
             mRowInformation = mRowPopulationDelegate();
             TabInformation = new()
             {
-                new("", mTabText[Tabnumber], mRowInformation)
+                new("", mTabText[tabnumber], mRowInformation)
             };
         }
 
         public void SetHeaders(List<HeaderInfo> headers) => Headers = headers;
 
-        public void SetHeader(int HeaderNumber, HeaderInfo HeaderInfos) => Headers[HeaderNumber] = HeaderInfos;
+        public void SetHeader(int headerNumber, HeaderInfo headerInfos) => Headers[headerNumber] = headerInfos;
 
         public void ClearMenuObjects() => TabInformation.Clear();
 
-        public void AddMenuObject(MenuObject MenuItem)
+        public void AddMenuObject(MenuObject menuItem)
         {
             if (TabInformation.Count < 1)
             {
                 mRowInformation = new()
                 {
-                    MenuItem.RowInformation
+                    menuItem.RowInformation
                 };
                 TabInformation.Add(new(mTabImage[0], mTabText[0], mRowInformation));
                 Headers.Add(new("Ui/Caption/ObjectPicker:Name", "", 300));
                 Headers.Add(new("Ui/Caption/ObjectPicker:Value", "", 100));
                 return;
             }
-            TabInformation[0].RowInfo.Add(MenuItem.RowInformation);
+            TabInformation[0].RowInfo.Add(menuItem.RowInformation);
         }
 
-        public void AddMenuObject(List<HeaderInfo> headers, MenuObject MenuItem)
+        public void AddMenuObject(List<HeaderInfo> headers, MenuObject menuItem)
         {
 
             if (TabInformation.Count < 1)
             {
                 mRowInformation = new()
                 {
-                    MenuItem.RowInformation
+                    menuItem.RowInformation
                 };
                 TabInformation.Add(new(mTabImage[0], mTabText[0], mRowInformation));
                 Headers = headers;
                 return;
             }
-            TabInformation[0].RowInfo.Add(MenuItem.RowInformation);
+            TabInformation[0].RowInfo.Add(menuItem.RowInformation);
             Headers = headers;
         }
 
@@ -506,11 +485,13 @@ namespace Gamefreak130.Common.UI
 
         public void Stop() => StopModal();
 
-        public MenuController(string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle, Action<List<RowInfo>> EndResultDelegate) 
-            : this(true, PauseMode.PauseSimulator, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, showHeadersAndToggle)
-            => EndDelegates = EndResultDelegate;
+        public MenuController(string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle, Action<List<RowInfo>> endResultDelegates)
+            : this(true, PauseMode.PauseSimulator, title, buttonTrue, buttonFalse, listObjs, headers, numSelectableRows, showHeadersAndToggle, endResultDelegates)
+        {
+        }
 
-        public MenuController(bool _, PauseMode __, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle) : base("UiObjectPicker", kWinExportID, true, PauseMode.PauseSimulator, null)
+        public MenuController(bool isModal, PauseMode pauseMode, string title, string buttonTrue, string buttonFalse, List<TabInfo> listObjs, List<HeaderInfo> headers, int numSelectableRows, bool showHeadersAndToggle, Action<List<RowInfo>> endResultDelegates) 
+            : base("UiObjectPicker", kWinExportID, isModal, pauseMode, null)
         {
             if (mModalDialogWindow is not null)
             {
@@ -537,69 +518,50 @@ namespace Gamefreak130.Common.UI
                 mTable.Populate(listObjs, headers, numSelectableRows);
                 ResizeWindow();
             }
+            EndDelegates = endResultDelegates;
         }
 
         public void PopulateMenu(List<TabInfo> tabinfo, List<HeaderInfo> headers, int numSelectableRows) => mTable.Populate(tabinfo, headers, numSelectableRows);
 
         public override void Dispose() => Dispose(true);
 
-        public void AddRow(int Tabnumber, RowInfo rinfo)
+        public void AddRow(int Tabnumber, RowInfo info)
         {
             mTable.mItems[Tabnumber].RowInfo.Clear();
-            mTable.mItems[Tabnumber].RowInfo.Add(rinfo);
+            mTable.mItems[Tabnumber].RowInfo.Add(info);
             Repopulate();
         }
-
-        /*public void UpdateItems()
-        {
-            if (mTable is null)
-            {
-                return;
-            }
-            foreach (TabInfo current in mTable.mItems)
-            {
-                foreach (RowInfo current2 in current.RowInfo)
-                {
-                    if (current2.Item is MenuObject)
-                    {
-                        (current2.Item as MenuObject).UpdateMenuObject();
-                    }
-                }
-            }
-            Repopulate();
-            mTable.mTable.ScrollRowToTop(15);//TODO Fix
-        }*/
 
         public void SetTableColor(Color color) => mModalDialogWindow.GetChildByID(99576789u, false).ShadeColor = color;
 
-        public void SetTitleText(string Text) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = Text;
+        public void SetTitleText(string text) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = text;
 
-        public void SetTitleText(string Text, Color TextColor)
+        public void SetTitleText(string text, Color textColor)
         {
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = Text;
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = text;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = textColor;
         }
 
-        public void SetTitleText(string Text, Color TextColor, uint TextStyle)
+        public void SetTitleText(string text, Color textColor, uint textStyle)
         {
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = Text;
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = TextStyle;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = text;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = textColor;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = textStyle;
         }
 
-        public void SetTitleText(string Text, Color TextColor, bool TextStyleBold)
+        public void SetTitleText(string text, Color textColor, bool textStyleBold)
         {
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = Text;
-            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
-            if (TextStyleBold)
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).Caption = text;
+            (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = textColor;
+            if (textStyleBold)
             {
                 (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = 2u;
             }
         }
 
-        public void SetTitleTextColor(Color TextColor) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = TextColor;
+        public void SetTitleTextColor(Color textColor) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextColor = textColor;
 
-        public void SetTitleTextStyle(uint TextStyle) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = TextStyle;
+        public void SetTitleTextStyle(uint textStyle) => (mModalDialogWindow.GetChildByID(99576787u, false) as Text).TextStyle = textStyle;
 
         private void Repopulate()
         {
@@ -685,30 +647,7 @@ namespace Gamefreak130.Common.UI
             return true;
         }
 
-        public static bool ShowMenu(MenuContainer container)
-        {
-            while (true)
-            {
-                container.UpdateItems();
-                MenuController controller = Show(container);
-                if (controller.Okay)
-                {
-                    if (controller.Result is not null)
-                    {
-                        foreach (RowInfo current in controller.Result)
-                        {
-                            if (((MenuObject)current.Item).OnActivation())
-                            {
-                                return true;
-                            }
-                        }
-                        continue;
-                    }
-                    return true;
-                }
-                return false;
-            }
-        }
+        public static bool ShowMenu(MenuContainer container) => ShowMenu(container, 0);
 
         public static bool ShowMenu(MenuContainer container, int tab)
         {
@@ -733,14 +672,6 @@ namespace Gamefreak130.Common.UI
                 }
                 return false;
             }
-        }
-
-        private static MenuController Show(MenuContainer container)
-        {
-            MenuController menuController = new(container.MenuDisplayName, Localization.LocalizeString("Ui/Caption/Global:Ok"), Localization.LocalizeString("Ui/Caption/Global:Cancel"), container.TabInformation, container.Headers, container.Selectable, true, container.OnEnd);
-            menuController.SetTitleTextStyle(2u);
-            menuController.ShowModal();
-            return menuController;
         }
 
         private static MenuController Show(MenuContainer container, int tab)
@@ -784,28 +715,27 @@ namespace Gamefreak130.Common.UI
 
         public void Fillin() => RowInformation = new(this, mColumnInfoList);
 
-        public void Fillin(Color TextColor)
+        public void Fillin(Color textColor)
         {
-            mTextFormat.mTextColor = TextColor;
+            mTextFormat.mTextColor = textColor;
             Fillin();
         }
 
-        public void Fillin(Color TextColor, bool BoldTextStyle)
+        public void Fillin(Color textColor, bool boldTextStyle)
         {
-            mTextFormat.mTextColor = TextColor;
-            mTextFormat.mBoldTextStyle = BoldTextStyle;
+            mTextFormat.mTextColor = textColor;
+            Fillin(boldTextStyle);
+        }
+
+        public void Fillin(bool boldTextStyle)
+        {
+            mTextFormat.mBoldTextStyle = boldTextStyle;
             Fillin();
         }
 
-        public void Fillin(bool BoldTextStyle)
+        public void Fillin(string tooltipText)
         {
-            mTextFormat.mBoldTextStyle = BoldTextStyle;
-            Fillin();
-        }
-
-        public void Fillin(string TooltipText)
-        {
-            mTextFormat.mTooltip = TooltipText;
+            mTextFormat.mTooltip = tooltipText;
             Fillin();
         }
 

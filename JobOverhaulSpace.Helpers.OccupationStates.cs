@@ -82,10 +82,6 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
     // So we use a NullState instead to represent no saved occupation
     public class NullState : OccupationState
     {
-        public NullState()
-        {
-        }
-
         public override bool AcquireOccupation(CareerManager manager)
         {
             Methods.DropOccupation(manager);

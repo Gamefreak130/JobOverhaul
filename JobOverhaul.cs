@@ -35,7 +35,7 @@ using static Sims3.Gameplay.Queries;
 
 namespace Gamefreak130
 {
-    public class JobOverhaul
+    public static class JobOverhaul
     {
         [Tunable]
         private static readonly bool kCJackB;
@@ -60,7 +60,6 @@ namespace Gamefreak130
             //TEST In-place upgrade
             //TODO Random amount of jobs per day from specified min to max?
             //TODO Commonify Export/Import
-            //TODO Ensure all persistables have parameterless constructors
             //CONSIDER Move QuitWork?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
             //CONSIDER Multiple interviews, job offers at one time?
@@ -507,11 +506,11 @@ namespace Gamefreak130
                     newCareers.Remove(name);
                     if (!Settings.InterviewSettings.ContainsKey(name))
                     {
-                        Settings.InterviewSettings.Add(name, new(true, new() { TraitNames.Ambitious }, new() { TraitNames.Loser }, new()));
+                        Settings.InterviewSettings.Add(name, new());
                     }
                     if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
                     {
-                        Settings.CareerAvailabilitySettings.Add(name, new(true, false, new()));
+                        Settings.CareerAvailabilitySettings.Add(name, new(false));
                     }
                 }
             }
@@ -521,7 +520,7 @@ namespace Gamefreak130
                 if (newActiveCareers.Contains(name))
                 {
                     newActiveCareers.Remove(name);
-                    Settings.CareerAvailabilitySettings.Add(name, new(true, true, new()));
+                    Settings.CareerAvailabilitySettings.Add(name, new(true));
                 }
             }
             foreach (Occupation occupation in CareerManager.OccupationList)

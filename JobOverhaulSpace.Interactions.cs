@@ -33,7 +33,6 @@ using Sims3.UI.GameEntry;
 using Sims3.UI.Hud;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Xml;
 using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
@@ -1265,6 +1264,10 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public const string kProprietorJoinCareerInteractionsPathKey = "Gameplay/Roles/RoleProprietor:JoinCareer";
 
+            public Definition()
+            {
+            }
+
             public Definition(string text, string path) : base(text, new[] { path }, null, false)
             {
             }
@@ -1332,6 +1335,10 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
     {
         new public class Definition : InteractionDefinition<Sim, Lot, JoinStylistActiveCareerEx>
         {
+            public Definition()
+            {
+            }
+
             public override string GetInteractionName(Sim actor, Lot target, InteractionObjectPair iop) => Localization.LocalizeString("Gameplay/Excel/Socializing/Action:JoinStylistActiveCareer");
 
             public override bool Test(Sim a, Lot target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => target.CommercialLotSubType is CommercialLotSubType.kEP2_Salon && TestApplyForProfession(a, OccupationNames.Stylist, ref greyedOutTooltipCallback);

@@ -69,7 +69,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
 
             public string LocalizeString(bool isFemale, string name, params object[] parameters) => Localization.LocalizeString(isFemale, Parent.GetLocalizeKey() + "/RouteEveryoneToLot:" + name, parameters);
 
-            public RouteEveryoneToLot()
+            protected RouteEveryoneToLot()
             {
             }
 
@@ -124,11 +124,11 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
             }
         }
 
-        public VaccinationSessionSituationEx()
+        protected VaccinationSessionSituationEx()
         {
         }
 
-        public VaccinationSessionSituationEx(Sim vaccinator, Lot lot)
+        protected VaccinationSessionSituationEx(Sim vaccinator, Lot lot)
         {
             Vaccinator = vaccinator;
             Vaccinator.AssignRole(this);
@@ -289,11 +289,11 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
 
         public override void SendEventSuccessfullyHeld() => EventTracker.SendEvent(EventTypeId.kHeldSuccessfulFreeClinic, Vaccinator);
 
-        public FreeClinicSessionSituationEx()
+        private FreeClinicSessionSituationEx()
         {
         }
 
-        public FreeClinicSessionSituationEx(Sim diagnoser, Lot lot) : base(diagnoser, lot)
+        private FreeClinicSessionSituationEx(Sim diagnoser, Lot lot) : base(diagnoser, lot)
         {
         }
 

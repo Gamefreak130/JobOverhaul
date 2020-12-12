@@ -44,7 +44,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public OccupationNames CareerName { get; }
 
-            public InterviewData()
+            private InterviewData()
             {
             }
 
