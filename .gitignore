@@ -10,9 +10,6 @@
 *.userosscache
 *.sln.docstates
 
-# Preserve Project-Level Repo
-*.sln
-
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
