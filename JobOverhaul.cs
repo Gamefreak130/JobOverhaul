@@ -1,7 +1,7 @@
 ﻿using Gamefreak130.JobOverhaulSpace;
 using Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates;
-using Gamefreak130.JobOverhaulSpace.Situations;
 using Gamefreak130.JobOverhaulSpace.Interactions;
+using Gamefreak130.JobOverhaulSpace.Situations;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
@@ -20,6 +20,7 @@ using Sims3.Gameplay.Objects.RabbitHoles;
 using Sims3.Gameplay.Objects.Seating;
 using Sims3.Gameplay.Opportunities;
 using Sims3.Gameplay.Roles;
+using Sims3.Gameplay.Services;
 using Sims3.Gameplay.Skills;
 using Sims3.Gameplay.Socializing;
 using Sims3.Gameplay.Utilities;
@@ -30,7 +31,6 @@ using static Gamefreak130.JobOverhaulSpace.Helpers.Listeners;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.Queries;
-using Sims3.Gameplay.Services;
 
 namespace Gamefreak130
 {

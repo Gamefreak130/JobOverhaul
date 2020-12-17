@@ -786,7 +786,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         }
     }
 
-    public class GhostHunterEx
+    public static class GhostHunterEx
     {
         private static readonly SimDescription.DeathType[] sValidDeathTypes =
         {
@@ -2186,7 +2186,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         }
     }
 
-    public class SelfEmployed
+    public static class SelfEmployed
     {
         private static List<SkillBasedCareer.ValidSkillBasedCareerEntry> GetSkillBasedCareerList(Sim sim)
         {

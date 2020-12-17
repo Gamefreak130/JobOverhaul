@@ -23,7 +23,7 @@ using static Sims3.Gameplay.Queries;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
 {
-    public class Interviews
+    public static class Interviews
     {
         [Persistable]
         public class InterviewData

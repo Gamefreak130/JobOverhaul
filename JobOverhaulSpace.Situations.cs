@@ -7,6 +7,7 @@ using Sims3.Gameplay.Core;
 using Sims3.Gameplay.EventSystem;
 using Sims3.Gameplay.Interactions;
 using Sims3.Gameplay.Objects.Miscellaneous;
+using Sims3.Gameplay.Objects.Vehicles;
 using Sims3.Gameplay.Situations;
 using Sims3.Gameplay.Socializing;
 using Sims3.Gameplay.Utilities;
@@ -96,7 +97,7 @@ namespace Gamefreak130.JobOverhaulSpace.Situations
             }
 
             public bool ValidTest(Sim sim) => sim.IsNPC && !sim.SimDescription.IsGhost && !sim.SimDescription.IsMummy && !sim.SimDescription.IsFrankenstein && !sim.SimDescription.IsEP11Bot && sim != Parent.Vaccinator 
-                && !Parent.LivingWithVaccinator(sim) && !sim.IsPerformingAService && !sim.SimDescription.ChildOrBelow && !Parent.IsInIgnoreList(sim) && !Sims3.Gameplay.Objects.Vehicles.CarNpcManager.Singleton.NpcDriversManager.IsNpcDriver(sim) && !Parent.IsAskingAlready(sim);
+                && !Parent.LivingWithVaccinator(sim) && !sim.IsPerformingAService && !sim.SimDescription.ChildOrBelow && !Parent.IsInIgnoreList(sim) && !CarNpcManager.Singleton.NpcDriversManager.IsNpcDriver(sim) && !Parent.IsAskingAlready(sim);
 
             public void OnEnterBroadcaster(Sim s, ReactionBroadcaster broadcaster)
             {
