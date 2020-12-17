@@ -5,21 +5,28 @@ using Sims3.Gameplay.Skills;
 using Sims3.SimIFace;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
+#pragma warning disable IDE0032 // Use auto property
 namespace Gamefreak130.JobOverhaulSpace
 {
     [Persistable]
     public class InterviewSettings
     {
-        public bool RequiresInterview { get; set; } = true;
+        private bool mRequiresInterview = true;
 
-        public List<TraitNames> PositiveTraits { get; } = new() { TraitNames.Ambitious };
+        private readonly List<TraitNames> mPositiveTraits = new() { TraitNames.Ambitious };
 
-        public List<TraitNames> NegativeTraits { get; } = new() { TraitNames.Loser };
+        private readonly List<TraitNames> mNegativeTraits = new() { TraitNames.Loser };
 
-        public List<SkillNames> RequiredSkills { get; } = new();
+        private readonly List<SkillNames> mRequiredSkills = new();
+
+        public bool RequiresInterview { get => mRequiresInterview; set => mRequiresInterview = value; }
+
+        public List<TraitNames> PositiveTraits => mPositiveTraits;
+
+        public List<TraitNames> NegativeTraits => mNegativeTraits;
+
+        public List<SkillNames> RequiredSkills => mRequiredSkills;
 
         public InterviewSettings()
         {
@@ -27,38 +34,43 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public InterviewSettings(bool requiresInterview, List<TraitNames> posTraits, List<TraitNames> negTraits, List<SkillNames> skills)
         {
-            RequiresInterview = requiresInterview;
-            PositiveTraits = posTraits;
-            NegativeTraits = negTraits;
-            RequiredSkills = skills;
+            mRequiresInterview = requiresInterview;
+            mPositiveTraits = posTraits;
+            mNegativeTraits = negTraits;
+            mRequiredSkills = skills;
         }
     }
 
     [Persistable]
     public class CareerAvailabilitySettings
     {
-        public bool IsAvailable { get; set; } = true;
+        private readonly bool mIsActive;
 
-        public bool IsActive { get; set; }
+        private bool mIsAvailable = true;
 
-        public List<AcademicDegreeNames> RequiredDegrees { get; set; } = new();
+        private readonly List<AcademicDegreeNames> mRequiredDegrees = new();
+
+        public bool IsActive => mIsActive;
+
+        public bool IsAvailable { get => mIsAvailable; set => mIsAvailable = value; }
+
+        public List<AcademicDegreeNames> RequiredDegrees => mRequiredDegrees;
 
         private CareerAvailabilitySettings()
         {
         }
 
-        public CareerAvailabilitySettings(bool isActive) => IsActive = isActive;
+        public CareerAvailabilitySettings(bool isActive) => mIsActive = isActive;
 
         public CareerAvailabilitySettings(bool isAvailable, bool isActive, List<AcademicDegreeNames> requiredDegrees)
         {
-            IsAvailable = isAvailable;
-            RequiredDegrees = requiredDegrees;
-            IsActive = isActive;
+            mIsAvailable = isAvailable;
+            mRequiredDegrees = requiredDegrees;
+            mIsActive = isActive;
         }
     }
 
-    [Persistable]
-    public class PersistedSettings : IPersistedSettings
+    public class PersistedSettings : Settings
     {
         [Tunable, TunableComment("True/False: Whether or not to enable the EA default 'Join Career' rabbithole interactions for occupations that do not require an interview")]
         private static readonly bool kEnableGetJobInRabbitHole = true;
@@ -120,7 +132,6 @@ namespace Gamefreak130.JobOverhaulSpace
         [Tunable, TunableComment("The amount of time, in sim minutes, that a sim spends inside a rabbithole to fill out a job application or sign self-employment paperwork")]
         private static readonly float kApplicationTime = 30;
 
-#pragma warning disable IDE0032 // Use auto property
         private bool mEnableGetJobInRabbitHole = kEnableGetJobInRabbitHole;
 
         private bool mEnableJoinProfessionInRabbitHoleOrLot = kEnableJoinProfessionInRabbitHoleOrLot;
@@ -160,7 +171,12 @@ namespace Gamefreak130.JobOverhaulSpace
         private float mInterviewTime = kInterviewTime;
 
         private float mApplicationTime = kApplicationTime;
-#pragma warning restore IDE0032 // Use auto property
+
+        private readonly Dictionary<string, InterviewSettings> mInterviewSettings = new();
+
+        private readonly Dictionary<string, CareerAvailabilitySettings> mCareerAvailabilitySettings = new();
+
+        private readonly Dictionary<string, bool> mSelfEmployedAvailabilitySettings = new();
 
         public bool EnableGetJobInRabbitHole { get => mEnableGetJobInRabbitHole; set => mEnableGetJobInRabbitHole = value; }
 
@@ -202,81 +218,11 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public float ApplicationTime { get => mApplicationTime; set => mApplicationTime = value; }
 
-        public Dictionary<string, InterviewSettings> InterviewSettings { get; set; } = new();
+        public Dictionary<string, InterviewSettings> InterviewSettings => mInterviewSettings;
 
-        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings { get; set; } = new();
+        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings => mCareerAvailabilitySettings;
 
-        public Dictionary<string, bool> SelfEmployedAvailabilitySettings { get; set; } = new();
-
-        public string Export()
-        {
-            StringBuilder text = new("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<JobOverhaulSettings>\n");
-            foreach (var field in typeof(PersistedSettings).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-            {
-                if (field.GetValue(this) is Dictionary<string, InterviewSettings> dict)
-                {
-                    text.AppendLine("  <mInterviewSettings>");
-                    foreach (KeyValuePair<string, InterviewSettings> pair in dict)
-                    {
-                        InterviewSettings settings = pair.Value;
-                        List<string> posTraits = new();
-                        List<string> negTraits = new();
-                        List<string> skills = new();
-                        foreach (TraitNames trait in settings.PositiveTraits)
-                        {
-                            posTraits.Add(trait.ToString());
-                        }
-                        foreach (TraitNames trait in settings.NegativeTraits)
-                        {
-                            negTraits.Add(trait.ToString());
-                        }
-                        foreach (SkillNames skill in settings.RequiredSkills)
-                        {
-                            skills.Add(skill.ToString());
-                        }
-                        text.AppendFormat("    <{0}>\n", pair.Key);
-                        text.AppendFormat("      <mRequiresInterview value=\"{0}\"/>\n", settings.RequiresInterview.ToString());
-                        text.AppendFormat("      <mPositiveTraits value=\"{0}\"/>\n", string.Join(",", posTraits.ToArray()));
-                        text.AppendFormat("      <mNegativeTraits value=\"{0}\"/>\n", string.Join(",", negTraits.ToArray()));
-                        text.AppendFormat("      <mRequiredSkills value=\"{0}\"/>\n", string.Join(",", skills.ToArray()));
-                        text.AppendFormat("    </{0}>\n", pair.Key);
-                    }
-                    text.AppendLine("  </mInterviewSettings>");
-                }
-                else if (field.GetValue(this) is Dictionary<string, CareerAvailabilitySettings> dict2)
-                {
-                    text.AppendLine("  <mCareerAvailabilitySettings>");
-                    foreach (KeyValuePair<string, CareerAvailabilitySettings> pair in dict2)
-                    {
-                        CareerAvailabilitySettings settings = pair.Value;
-                        List<string> list = new();
-                        foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
-                        {
-                            list.Add(degree.ToString());
-                        }
-                        text.AppendFormat("    <m{0}>\n", pair.Key);
-                        text.AppendFormat("      <mIsAvailable value=\"{0}\"/>\n", settings.IsAvailable.ToString());
-                        text.AppendFormat("      <mRequiredDegrees value=\"{0}\"/>\n", string.Join(",", list.ToArray()));
-                        text.AppendFormat("    </m{0}>\n", pair.Key);
-                    }
-                    text.AppendLine("  </mCareerAvailabilitySettings>");
-                }
-                else if (field.GetValue(this) is Dictionary<string, bool> dict3)
-                {
-                    text.AppendLine("  <mSelfEmployedAvailabilitySettings>");
-                    foreach (KeyValuePair<string, bool> pair in dict3)
-                    {
-                        text.AppendFormat("    <m{0} value=\"{1}\"/>\n", pair.Key, pair.Value.ToString());
-                    }
-                    text.AppendLine("  </mSelfEmployedAvailabilitySettings>");
-                }
-                else
-                {
-                    text.AppendFormat("  <{0} value=\"{1}\"/>\n", field.Name, field.GetValue(this).ToString());
-                }
-            }
-            text.Append("</JobOverhaulSettings>");
-            return text.ToString();
-        }
+        public Dictionary<string, bool> SelfEmployedAvailabilitySettings => mSelfEmployedAvailabilitySettings;
     }
 }
+#pragma warning restore IDE0032 // Use auto property

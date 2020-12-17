@@ -1,11 +1,11 @@
 ﻿using Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates;
 using Gamefreak130.JobOverhaulSpace.Interactions;
+using Sims3.Gameplay;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
 using Sims3.Gameplay.ActiveCareer.ActiveCareers;
 using Sims3.Gameplay.Actors;
-using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Autonomy;
 using Sims3.Gameplay.Careers;
 using Sims3.Gameplay.CAS;
@@ -23,8 +23,6 @@ using Sims3.SimIFace;
 using Sims3.UI;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Xml;
 using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
@@ -37,7 +35,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
     {
         public Occupation OccupationEntry { get; set; }
 
-        public CareerLocation CareerLocation { get; set; }
+        public CareerLocation CareerLocation { get; }
 
         private OccupationEntryTuple()
         {
@@ -261,9 +259,9 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         {
             if (e.Actor is Sim sim)
             {
-                foreach (Sims3.Gameplay.InventoryStack stack in sim.Inventory.InventoryItems.Values)
+                foreach (InventoryStack stack in sim.Inventory.InventoryItems.Values)
                 {
-                    foreach (Sims3.Gameplay.InventoryItem item in stack.List)
+                    foreach (InventoryItem item in stack.List)
                     {
                         if (item.Object is Newspaper newspaper)
                         {
@@ -324,14 +322,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     _                      => new NullState()
                 };
 
-                if (SavedOccupationsForTravel.ContainsKey(id))
-                {
-                    SavedOccupationsForTravel[id] = state;
-                }
-                else
-                {
-                    SavedOccupationsForTravel.Add(id, state);
-                }
+                SavedOccupationsForTravel[id] = state;
             }
             return ListenerAction.Keep;
         }
@@ -365,7 +356,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         internal static ListenerAction OnFinishedWork(Event e)
         {
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds,
-                delegate () {
+                delegate {
                     if (e.Actor is Sim { IsSelectable: true } sim && sim.OccupationAsCareer is Career { Performance: >= 99f } career and not School && RandomUtil.RandomChance(Settings.PromotionChance)
                         && TwoButtonDialog.Show(LocalizeString(sim.IsFemale, "PromotionOfferDialog", sim), LocalizationHelper.Yes, LocalizationHelper.No))
                     {
@@ -634,177 +625,6 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         public static bool IsActiveCareerAvailable(ActiveCareer career) => career is Lifeguard && IsPoolLifeguardModInstalled
                 ? LotManager.GetCommercialLots(CommercialLotSubType.kBeach) is not null || LotManager.GetCommercialLots(CommercialLotSubType.kPool) is not null
                 : career.IsActiveCareerAvailable();
-
-        internal static void ParseXml(XmlNode startElement)
-        {
-            for (XmlNode node = startElement; node is not null; node = node.NextSibling)
-            {
-                if (node.Attributes["value"] is not null)
-                {
-                    SetImplicitValue(node.Name, node.Attributes["value"].Value);
-                }
-                else
-                {
-                    if (node.Name is "mInterviewSettings")
-                    {
-                        Dictionary<string, InterviewSettings> dict = new();
-                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
-                        {
-                            bool.TryParse(node2.ChildNodes.Item(0).Attributes["value"].Value, out bool val);
-                            List<string> posTraitList = new(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new[] { ',' }));
-                            List<TraitNames> posTraits = new(posTraitList.Count);
-                            foreach (string str in posTraitList)
-                            {
-                                if (!string.IsNullOrEmpty(str))
-                                {
-                                    if (ParserFunctions.TryParseEnum(str, out TraitNames trait, TraitNames.Unknown))
-                                    {
-                                        posTraits.Add(trait);
-                                    }
-                                    else
-                                    {
-                                        foreach (ulong id in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
-                                        {
-                                            if (str == id.ToString())
-                                            {
-                                                posTraits.Add((TraitNames)id);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            List<string> negTraitList = new(node2.ChildNodes.Item(2).Attributes["value"].Value.Split(new[] { ',' }));
-                            List<TraitNames> negTraits = new(negTraitList.Count);
-                            foreach (string str in negTraitList)
-                            {
-                                if (!string.IsNullOrEmpty(str))
-                                {
-                                    if (ParserFunctions.TryParseEnum(str, out TraitNames trait, TraitNames.Unknown))
-                                    {
-                                        negTraits.Add(trait);
-                                    }
-                                    else
-                                    {
-                                        foreach (ulong id in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
-                                        {
-                                            if (str == id.ToString())
-                                            {
-                                                negTraits.Add((TraitNames)id);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            List<string> skillList = new(node2.ChildNodes.Item(3).Attributes["value"].Value.Split(new[] { ',' }));
-                            List<SkillNames> skills = new(skillList.Count);
-                            foreach (string str in skillList)
-                            {
-                                if (!string.IsNullOrEmpty(str))
-                                {
-                                    if (ParserFunctions.TryParseEnum(str, out SkillNames skill, SkillNames.None))
-                                    {
-                                        skills.Add(skill);
-                                    }
-                                    else
-                                    {
-                                        foreach (ulong id in GenericManager<SkillNames, Skill, Skill>.sDictionary.Keys)
-                                        {
-                                            if (str == id.ToString())
-                                            {
-                                                skills.Add((SkillNames)id);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            dict.Add(node2.Name, new(val, posTraits, negTraits, skills));
-                        }
-                        foreach (string key in dict.Keys)
-                        {
-                            if (Settings.InterviewSettings.ContainsKey(key))
-                            {
-                                Settings.InterviewSettings[key] = dict[key];
-                            }
-                        }
-                    }
-                    else if (node.Name is "mCareerAvailabilitySettings")
-                    {
-                        Dictionary<string, CareerAvailabilitySettings> dict = new();
-                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
-                        {
-                            bool.TryParse(node2.ChildNodes.Item(0).Attributes["value"].Value, out bool val);
-                            List<string> degreeList = new(node2.ChildNodes.Item(1).Attributes["value"].Value.Split(new[] { ',' }));
-                            List<AcademicDegreeNames> degrees = new(degreeList.Count);
-                            foreach (string str in degreeList)
-                            {
-                                if (!string.IsNullOrEmpty(str))
-                                {
-                                    if (ParserFunctions.TryParseEnum(str, out AcademicDegreeNames degree, AcademicDegreeNames.Undefined))
-                                    {
-                                        degrees.Add(degree);
-                                    }
-                                    else
-                                    {
-                                        foreach (ulong id in GenericManager<AcademicDegreeNames, AcademicDegreeStaticData, AcademicDegree>.sDictionary.Keys)
-                                        {
-                                            if (str == id.ToString())
-                                            {
-                                                degrees.Add((AcademicDegreeNames)id);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            dict.Add(node2.Name.Substring(1), new(val, false, degrees));
-                        }
-                        foreach (string key in dict.Keys)
-                        {
-                            if (Settings.CareerAvailabilitySettings.ContainsKey(key))
-                            {
-                                Settings.CareerAvailabilitySettings[key].IsAvailable = dict[key].IsAvailable;
-                                Settings.CareerAvailabilitySettings[key].RequiredDegrees = dict[key].RequiredDegrees;
-                            }
-                        }
-                    }
-                    else if (node.Name is "mSelfEmployedAvailabilitySettings")
-                    {
-                        Dictionary<string, bool> dict = new();
-                        for (XmlNode node2 = node.FirstChild; node2 is not null; node2 = node2.NextSibling)
-                        {
-                            bool.TryParse(node2.Attributes["value"].Value, out bool val);
-                            dict.Add(node2.Name.Substring(1), val);
-                        }
-                        foreach (string key in dict.Keys)
-                        {
-                            if (Settings.SelfEmployedAvailabilitySettings.ContainsKey(key))
-                            {
-                                Settings.SelfEmployedAvailabilitySettings[key] = dict[key];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void SetImplicitValue(string name, string value)
-        {
-            FieldInfo info = typeof(PersistedSettings).GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            if (info.FieldType == typeof(bool))
-            {
-                bool.TryParse(value, out bool val);
-                info.SetValue(Settings, val);
-            }
-            if (info.FieldType == typeof(int))
-            {
-                int.TryParse(value, out int val2);
-                info.SetValue(Settings, val2);
-            }
-            if (info.FieldType == typeof(float))
-            {
-                float.TryParse(value, out float val3);
-                info.SetValue(Settings, val3);
-            }
-        }
 
         public static string GetTextDayOfWeek(DateAndTime time)
         {

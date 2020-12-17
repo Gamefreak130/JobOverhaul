@@ -1,11 +1,13 @@
 ﻿using Gamefreak130.JobOverhaulSpace.Helpers;
 using Gamefreak130.JobOverhaulSpace.Situations;
+using Sims3.Gameplay;
 using Sims3.Gameplay.Abstracts;
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
 using Sims3.Gameplay.ActiveCareer.ActiveCareers;
 using Sims3.Gameplay.Actors;
 using Sims3.Gameplay.ActorSystems;
+using Sims3.Gameplay.ActorSystems.Children;
 using Sims3.Gameplay.Autonomy;
 using Sims3.Gameplay.Careers;
 using Sims3.Gameplay.CAS;
@@ -24,6 +26,7 @@ using Sims3.Gameplay.Seasons;
 using Sims3.Gameplay.Situations;
 using Sims3.Gameplay.Skills;
 using Sims3.Gameplay.Socializing;
+using Sims3.Gameplay.Tutorial;
 using Sims3.Gameplay.Utilities;
 using Sims3.SimIFace;
 using Sims3.SimIFace.CAS;
@@ -38,7 +41,6 @@ using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation;
-using static Sims3.Gameplay.GlobalFunctions;
 using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
 
@@ -71,34 +73,31 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         public override bool Run()
         {
             Common.UI.MenuContainer container = new(LocalizeString("MenuTitle"), LocalizeString("Settings"));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<int>(LocalizeString("MaxInterviewPostponesMenuName"), LocalizeString("MaxInterviewPostponesPrompt"), "MaxInterviewPostpones", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("ReadyForInterviewChanceChangeMenuName"), LocalizeString("ReadyForInterviewChanceChangePrompt"), "ReadyForInterviewChanceChange", 
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("MaxInterviewPostponesMenuName"), LocalizeString("MaxInterviewPostponesPrompt"), "MaxInterviewPostpones", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("ReadyForInterviewChanceChangeMenuName"), LocalizeString("ReadyForInterviewChanceChangePrompt"), "ReadyForInterviewChanceChange", 
                 () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("BaseFullTimeJobChanceMenuName"), LocalizeString("BaseFullTimeJobChancePrompt"), "BaseFullTimeJobChance", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("BasePartTimeJobChanceMenuName"), LocalizeString("BasePartTimeJobChancePrompt"), "BasePartTimeJobChance", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PostponeInterviewChanceChangeMenuName"), LocalizeString("PostponeInterviewChanceChangePrompt"), "PostponeInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PositiveTraitInterviewChanceChangeMenuName"), LocalizeString("PositiveTraitInterviewChanceChangePrompt"), "PositiveTraitInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("NegativeTraitInterviewChanceChangeMenuName"), LocalizeString("NegativeTraitInterviewChanceChangePrompt"), "NegativeTraitInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("RequiredSkillInterviewChanceChangeMenuName"), LocalizeString("RequiredSkillInterviewChanceChangePrompt"), "RequiredSkillInterviewChanceChange", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("PromotionChanceMenuName"), LocalizeString("PromotionChancePrompt"), "PromotionChance", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("InterviewTimeMenuName"), LocalizeString("InterviewTimePrompt"), "InterviewTime", null, Settings));
-            container.AddMenuObject(new Common.UI.SetValuePromptObject<float>(LocalizeString("ApplicationTimeMenuName"), LocalizeString("ApplicationTimePrompt"), "ApplicationTime", null, Settings));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NewspaperSelfEmployedMenuName"), () => Settings.NewspaperSelfEmployed.ToString(), 
-                () => GameUtils.IsInstalled(ProductVersion.EP2) || GameUtils.IsInstalled(ProductVersion.EP3) || GameUtils.IsInstalled(ProductVersion.EP5) || GameUtils.IsInstalled(ProductVersion.EP7) || GameUtils.IsInstalled(ProductVersion.EP10) || GameUtils.IsInstalled(ProductVersion.EP11), 
-                () => Settings.NewspaperSelfEmployed = !Settings.NewspaperSelfEmployed));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("EnableGetJobInRabbitholeMenuName"), () => Settings.EnableGetJobInRabbitHole.ToString(), null, () => Settings.EnableGetJobInRabbitHole = !Settings.EnableGetJobInRabbitHole));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("EnableJoinProfessionMenuName"), () => Settings.EnableJoinProfessionInRabbitHoleOrLot.ToString(), () => CareerManager.GetActiveCareers().Count > 0, 
-                () => Settings.EnableJoinProfessionInRabbitHoleOrLot = !Settings.EnableJoinProfessionInRabbitHoleOrLot));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("InstantGratificationMenuName"), () => Settings.InstantGratification.ToString(), null, () => Settings.InstantGratification = !Settings.InstantGratification));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("HoloComputerInstantGratificationMenuName"), () => Settings.HoloComputerInstantGratification.ToString(), () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11), 
-                () => Settings.HoloComputerInstantGratification = !Settings.HoloComputerInstantGratification));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("HoloPhoneInstantGratificationMenuName"), () => Settings.HoloPhoneInstantGratification.ToString(), 
-                () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11) && GameUtils.IsInstalled(ProductVersion.EP9), () => Settings.HoloPhoneInstantGratification = !Settings.HoloPhoneInstantGratification));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ClearAllInterviewsMenuName"), () => string.Empty, null,
-                delegate () {
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("BaseFullTimeJobChanceMenuName"), LocalizeString("BaseFullTimeJobChancePrompt"), "BaseFullTimeJobChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("BasePartTimeJobChanceMenuName"), LocalizeString("BasePartTimeJobChancePrompt"), "BasePartTimeJobChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("PostponeInterviewChanceChangeMenuName"), LocalizeString("PostponeInterviewChanceChangePrompt"), "PostponeInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("PositiveTraitInterviewChanceChangeMenuName"), LocalizeString("PositiveTraitInterviewChanceChangePrompt"), "PositiveTraitInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("NegativeTraitInterviewChanceChangeMenuName"), LocalizeString("NegativeTraitInterviewChanceChangePrompt"), "NegativeTraitInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("RequiredSkillInterviewChanceChangeMenuName"), LocalizeString("RequiredSkillInterviewChanceChangePrompt"), "RequiredSkillInterviewChanceChange", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("PromotionChanceMenuName"), LocalizeString("PromotionChancePrompt"), "PromotionChance", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("InterviewTimeMenuName"), LocalizeString("InterviewTimePrompt"), "InterviewTime", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<float>(LocalizeString("ApplicationTimeMenuName"), LocalizeString("ApplicationTimePrompt"), "ApplicationTime", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("NewspaperSelfEmployedMenuName"), "NewspaperSelfEmployed", 
+                () => GameUtils.IsInstalled(ProductVersion.EP2) || GameUtils.IsInstalled(ProductVersion.EP3) || GameUtils.IsInstalled(ProductVersion.EP5) || GameUtils.IsInstalled(ProductVersion.EP7) || GameUtils.IsInstalled(ProductVersion.EP10) || GameUtils.IsInstalled(ProductVersion.EP11), Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("EnableGetJobInRabbitholeMenuName"), "EnableGetJobInRabbitHole", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("EnableJoinProfessionMenuName"), "EnableJoinProfessionInRabbitHoleOrLot", () => CareerManager.GetActiveCareers().Count > 0, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("InstantGratificationMenuName"), "InstantGratification", null, Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("HoloComputerInstantGratificationMenuName"), "HoloComputerInstantGratification", () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11), Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("HoloPhoneInstantGratificationMenuName"), "HoloPhoneInstantGratification", 
+                () => !Settings.InstantGratification && GameUtils.IsInstalled(ProductVersion.EP11) && GameUtils.IsInstalled(ProductVersion.EP9), Settings));
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ClearAllInterviewsMenuName"), null,
+                delegate {
                     if (AcceptCancelDialog.Show(LocalizeString("ClearAllInterviewsPrompt")))
                     {
                         for (int i = InterviewList.Count - 1; i >= 0; i--)
@@ -108,8 +107,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         SimpleMessageDialog.Show(LocalizeString("ClearAllInterviewsMenuName"), LocalizeString("ClearAllInterviewsComplete"));
                     }
                 }));
-            container.AddMenuObject(new Common.UI.OneShotActionObject(LocalizeString("ResetMenuName"), () => string.Empty, null,
-                delegate () {
+            container.AddMenuObject(new Common.UI.ConditionalActionObject(LocalizeString("ResetMenuName"), null,
+                delegate {
                     if (AcceptCancelDialog.Show(LocalizeString("ResetPrompt")))
                     {
                         ResetSettings();
@@ -118,22 +117,22 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     return false;
                 }));
-            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ExportMenuName"), () => string.Empty, null,
-                delegate () {
+            container.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("ExportMenuName"), null,
+                delegate {
                 CJACK_01:
                     string name = StringInputDialog.Show(LocalizeString("ExportMenuName"), LocalizeString("ExportPrompt"), "Settings");
                     if (!string.IsNullOrEmpty(name))
                     {
                         name = "Gamefreak130.JobOverhaul." + name;
-                        Sims3.Gameplay.BinModel.Singleton.PopulateExportBin();
-                        foreach (IExportBinContents current in Sims3.Gameplay.BinModel.Singleton.ExportBinContents)
+                        BinModel.Singleton.PopulateExportBin();
+                        foreach (IExportBinContents current in BinModel.Singleton.ExportBinContents)
                         {
-                            Sims3.Gameplay.ExportBinContents contents = current as Sims3.Gameplay.ExportBinContents;
+                            ExportBinContents contents = current as ExportBinContents;
                             if (contents?.HouseholdName == name)
                             {
                                 if (AcceptCancelDialog.Show(LocalizeString("ExportFileOverwritePrompt")))
                                 {
-                                    Sims3.Gameplay.BinModel.Singleton.DeleteFromExportBin(contents.BinInfo);
+                                    BinModel.Singleton.DeleteFromExportBin(contents.BinInfo);
                                 }
                                 else
                                 {
@@ -144,16 +143,16 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         Household household = Household.Create();
                         household.SetName(name);
                         household.BioText = Settings.Export();
-                        Sims3.Gameplay.BinModel.Singleton.AddToExportBin(household);
+                        BinModel.Singleton.AddToExportBin(household);
                         household.Destroy();
                         SimpleMessageDialog.Show(LocalizeString("ExportMenuName"), LocalizeString("ExportComplete"));
                     }
                 }));
-            container.AddMenuObject(new Common.UI.OneShotActionObject(LocalizeString("ImportMenuName"), () => string.Empty, null,
-                delegate () {
-                    Sims3.Gameplay.BinModel.Singleton.PopulateExportBin();
+            container.AddMenuObject(new Common.UI.ConditionalActionObject(LocalizeString("ImportMenuName"), null,
+                delegate {
+                    BinModel.Singleton.PopulateExportBin();
                     List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
-                    foreach (IExportBinContents current in Sims3.Gameplay.BinModel.Singleton.ExportBinContents)
+                    foreach (IExportBinContents current in BinModel.Singleton.ExportBinContents)
                     {
                         if (current.HouseholdName is not null && current.HouseholdName.Contains("Gamefreak130.JobOverhaul."))
                         {
@@ -172,7 +171,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         XmlDocument xml = new();
                         xml.LoadXml(((IExportBinContents)list2[0].Item).HouseholdBio);
-                        ParseXml(xml.DocumentElement.FirstChild);
+                        Settings.Import(xml);
                         SimpleMessageDialog.Show(LocalizeString("ImportMenuName"), LocalizeString("ImportComplete"));
                         return true;
                     }
@@ -185,9 +184,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 CareerAvailabilitySettings settings = Settings.CareerAvailabilitySettings[key];
                 string name = settings.IsActive ? XpBasedCareer.LocalizeString(Actor.IsFemale, key) : Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
                 Common.UI.MenuContainer jobContainer = new(LocalizeString("MenuTitle"), name);
-                jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("IsAvailableMenuName"), () => settings.IsAvailable.ToString(), null, () => settings.IsAvailable = !settings.IsAvailable));
-                jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredDegreesMenuName"), () => string.Empty, () => GameUtils.IsInstalled(ProductVersion.EP9),
-                    delegate () {
+                jobContainer.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("IsAvailableMenuName"), "IsAvailable", null, settings));
+                jobContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredDegreesMenuName"), () => GameUtils.IsInstalled(ProductVersion.EP9),
+                    delegate {
                         List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
                         List<RowInfo> list2 = new();
                         foreach (AcademicDegreeNames degree in GenericManager<AcademicDegreeNames, AcademicDegreeStaticData, AcademicDegree>.sDictionary.Keys)
@@ -213,9 +212,10 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container2.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, jobContainer));
+                container2.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, 
+                    new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, null, jobContainer));
             }
-            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), container2));
+            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), null, container2));
 
             Common.UI.MenuContainer container3 = new(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
             foreach (string key in Settings.InterviewSettings.Keys)
@@ -223,9 +223,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 InterviewSettings settings = Settings.InterviewSettings[key];
                 string name = Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
                 Common.UI.MenuContainer interviewContainer = new(LocalizeString("MenuTitle"), name);
-                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiresInterviewMenuName"), () => settings.RequiresInterview.ToString(), null, () => settings.RequiresInterview = !settings.RequiresInterview));
-                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredSkillsMenuName"), () => string.Empty, null,
-                    delegate () {
+                interviewContainer.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("RequiresInterviewMenuName"), "RequiresInterview", null, settings));
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("RequiredSkillsMenuName"), null,
+                    delegate {
                         List<HeaderInfo> list = new()
                         {
                             new("Ui/Caption/ObjectPicker:Name", "", 250),
@@ -260,8 +260,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("PositiveTraitsMenuName"), () => string.Empty, null,
-                    delegate () {
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("PositiveTraitsMenuName"), null,
+                    delegate {
                         List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
                         List<RowInfo> list2 = new();
                         foreach (TraitNames trait in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
@@ -291,8 +291,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NegativeTraitsMenuName"), () => string.Empty, null,
-                    delegate () {
+                interviewContainer.AddMenuObject(new Common.UI.GenericActionObject(LocalizeString("NegativeTraitsMenuName"), null,
+                    delegate {
                         List<TabInfo> list = new() { new("shop_all_r2", string.Empty, new()) };
                         List<RowInfo> list2 = new();
                         foreach (TraitNames trait in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
@@ -322,19 +322,19 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }));
-                container3.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, interviewContainer));
+                container3.AddMenuObject(new() { new("Ui/Caption/ObjectPicker:Name", "", 250) }, 
+                    new Common.UI.GenerateMenuObject(new List<Common.UI.ColumnDelegateStruct>() { new(ColumnType.kText, () => new TextColumn(name)) }, null, interviewContainer));
             }
-            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("InterviewSettingsMenuName"), container3));
+            container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("InterviewSettingsMenuName"), null, container3));
 
             if (Settings.SelfEmployedAvailabilitySettings.Count > 0)
             {
                 Common.UI.MenuContainer container4 = new(LocalizeString("MenuTitle"), LocalizeString("SelfEmployedAvailabilitySettingsMenuName"));
                 foreach (string key in Settings.SelfEmployedAvailabilitySettings.Keys)
                 {
-                    container4.AddMenuObject(new Common.UI.GenericActionObject(XpBasedCareer.LocalizeString(Actor.IsFemale, key), () => Settings.SelfEmployedAvailabilitySettings[key].ToString(), null, 
-                        () => Settings.SelfEmployedAvailabilitySettings[key] = !Settings.SelfEmployedAvailabilitySettings[key]));
+                    container4.AddMenuObject(new Common.UI.SetSimpleDictionaryValueObject<string, bool>(XpBasedCareer.LocalizeString(Actor.IsFemale, key), Settings.SelfEmployedAvailabilitySettings, key, null));
                 }
-                container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("SelfEmployedAvailabilitySettingsMenuName"), container4));
+                container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("SelfEmployedAvailabilitySettingsMenuName"), null, container4));
             }
             Common.UI.MenuController.ShowMenu(container);
             return true;
@@ -370,7 +370,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 StyledNotification.Show(new(titleText, actor.ObjectId, StyledNotification.NotificationStyle.kSimTalking));
                 return true;
             }
-            Newspaper newspaper = (Newspaper)CreateObject("Newspaper", Vector3.OutOfWorld, 0, Vector3.UnitZ);
+            Newspaper newspaper = (Newspaper)GlobalFunctions.CreateObject("Newspaper", Vector3.OutOfWorld, 0, Vector3.UnitZ);
             RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
             Common.Helpers.AddInteraction(newspaper, ChangeSettings.Singleton);
             actor.ParentToRightHand(newspaper);
@@ -386,7 +386,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 }
                 if (household.Sims.Count > 0)
                 {
-                    Sims3.Gameplay.Tutorial.Tutorialette.TriggerLesson(Sims3.Gameplay.Tutorial.Lessons.Jobs, household.Sims[0]);
+                    Tutorialette.TriggerLesson(Lessons.Jobs, household.Sims[0]);
                 }
             }
             return true;
@@ -496,11 +496,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     List<Book> books = new();
                     if (Actor.Inventory is not null)
                     {
-                        foreach (Sims3.Gameplay.InventoryStack current in Actor.Inventory.mItems.Values)
+                        foreach (InventoryStack current in Actor.Inventory.mItems.Values)
                         {
                             if (current.List.Count > 0 && current.List[0].Object is Book)
                             {
-                                foreach (Sims3.Gameplay.InventoryItem current2 in current.List)
+                                foreach (InventoryItem current2 in current.List)
                                 {
                                     if (current2.Object is Book inventoryBook)
                                     {
@@ -510,8 +510,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    object[] args = new object[] { Actor, books };
-                    Type[] argTypes = new[] { typeof(Sim), typeof(List<Book>) };
+                    object[] args = { Actor, books };
+                    Type[] argTypes = { typeof(Sim), typeof(List<Book>) };
                     if (Common.Reflection.StaticInvoke<Book>("NRaas.OnceReadSpace.Interactions.ReadSomethingInInventoryEx, NRaasOnceRead", "ChooseBook", args, argTypes) is Book book)
                     {
                         //TODO Replace with ReadBookChooserEx
@@ -541,7 +541,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             INewspaper newspaper = Actor.Inventory.Find<INewspaper>();
             if (newspaper is null)
             {
-                newspaper = CreateObjectOutOfWorld("Newspaper") as INewspaper;
+                newspaper = GlobalFunctions.CreateObjectOutOfWorld("Newspaper") as INewspaper;
                 Actor.Inventory.TryToAdd(newspaper);
             }
             if (newspaper is not null)
@@ -788,7 +788,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
     public class GhostHunterEx
     {
-        private static readonly SimDescription.DeathType[] sValidDeathTypes = new[]
+        private static readonly SimDescription.DeathType[] sValidDeathTypes =
         {
             SimDescription.DeathType.OldAge,
             SimDescription.DeathType.Drown,
@@ -827,7 +827,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 gameObject.Destroy();
             }
             WorldName randomObjectFromList = RandomUtil.GetRandomObjectFromList(GhostHunter.GhostHunterJob.sValidHomeWorlds);
-            IUrnstone urnstone = CreateObjectOutOfWorld("UrnstoneHuman") as IUrnstone;
+            IUrnstone urnstone = GlobalFunctions.CreateObjectOutOfWorld("UrnstoneHuman") as IUrnstone;
             if (GameUtils.IsFutureWorld() && RandomUtil.CoinFlip())
             {
                 ghost = OccultRobot.MakeRobot(CASAgeGenderFlags.Adult, (CASAgeGenderFlags)Common.Helpers.CoinFlipSelect(CASAgeGenderFlags.Male, CASAgeGenderFlags.Female), (RobotForms)Common.Helpers.CoinFlipSelect(RobotForms.Hovering, RobotForms.Humanoid));
@@ -1151,7 +1151,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 return false;
             }
-            Sims3.Gameplay.ActorSystems.Children.CaregiverRoutingMonitor.CountBabiesToddlersAndCaregivers(ownerSim.Household, ownerSim.LotHome, null, out int num, out int num2, out int num3, out Sim sim, true);
+            CaregiverRoutingMonitor.CountBabiesToddlersAndCaregivers(ownerSim.Household, ownerSim.LotHome, null, out int num, out int num2, out int num3, out Sim sim, true);
             if (num2 > 0 || Actor.SimDescription.Child)
             {
                 OnGreeted(daycareSituation);
@@ -1686,8 +1686,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             if (IsCareersInstalled)
             {
-                object[] args = new object[] { actor, target, ex };
-                Type[] argTypes = new[] { typeof(IScriptLogic), typeof(IScriptLogic), typeof(Exception) };
+                object[] args = { actor, target, ex };
+                Type[] argTypes = { typeof(IScriptLogic), typeof(IScriptLogic), typeof(Exception) };
                 Common.Reflection.StaticInvoke("NRaas.Common, NRaasCareer", "Exception", args, argTypes);
                 return true;
             }
@@ -2313,9 +2313,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             }
         }
 
-        public class RegisterAsSelfEmployedNewspaper : Sims3.Gameplay.Objects.Miscellaneous.RegisterAsSelfEmployedNewspaper
+        public class RegisterAsSelfEmployedNewspaperEx : RegisterAsSelfEmployedNewspaper
         {
-            new public class Definition : InteractionDefinition<Sim, Newspaper, RegisterAsSelfEmployedNewspaper>
+            new public class Definition : InteractionDefinition<Sim, Newspaper, RegisterAsSelfEmployedNewspaperEx>
             {
                 internal SkillBasedCareer.ValidSkillBasedCareerEntry OccupationEntry;
 

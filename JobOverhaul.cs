@@ -26,12 +26,11 @@ using Sims3.Gameplay.Utilities;
 using Sims3.SimIFace;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Listeners;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
-using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation;
 using static Sims3.Gameplay.Queries;
+using Sims3.Gameplay.Services;
 
 namespace Gamefreak130
 {
@@ -58,35 +57,21 @@ namespace Gamefreak130
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
             //TEST In-place upgrade
-            //TODO Random amount of jobs per day from specified min to max?
-            //TODO Commonify Export/Import
+            //TODO Re-refactor InterviewData?
             //CONSIDER Move QuitWork?
+            //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
             //CONSIDER Multiple interviews, job offers at one time?
 
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in assemblies)
-            {
-                if (assembly.FullName.Contains("icarusallsorts.PoolLifeguard"))
-                {
-                    IsPoolLifeguardModInstalled = true;
-                }
-                if (assembly.FullName.Contains("NRaasOnceRead"))
-                {
-                    IsOnceReadInstalled = true;
-                }
-                if (assembly.FullName.Contains("NRaasCareer"))
-                {
-                    IsCareersInstalled = true;
-                }
-            }
-
+            IsPoolLifeguardModInstalled = Common.Helpers.FindAssembly("icarusallsorts.PoolLifeguard");
+            IsOnceReadInstalled = Common.Helpers.FindAssembly("NRaasOnceRead");
+            IsCareersInstalled = Common.Helpers.FindAssembly("NRaasCareer");
             new Common.BuffBooter("Gamefreak130_InterviewBuffs").LoadBuffData();
             Common.Helpers.InjectInteraction<Computer>(ref Computer.FindJob.Singleton, new FindJobComputer.Definition(), true);
             Common.Helpers.InjectInteraction<Computer>(ref Computer.UploadResume.Singleton, new UploadResumeComputer.Definition(), true);
             Common.Helpers.InjectInteraction<Computer>(ref Computer.RegisterAsSelfEmployedComputer.Singleton, new SelfEmployed.RegisterAsSelfEmployedComputer.Definition(), true);
             Common.Helpers.InjectInteraction<Newspaper>(ref FindJobNewspaper.Singleton, new FindJobNewspaperEx.Definition(), true);
-            Common.Helpers.InjectInteraction<Newspaper>(ref RegisterAsSelfEmployedNewspaper.Singleton, new SelfEmployed.RegisterAsSelfEmployedNewspaper.Definition(), true);
+            Common.Helpers.InjectInteraction<Newspaper>(ref RegisterAsSelfEmployedNewspaper.Singleton, new SelfEmployed.RegisterAsSelfEmployedNewspaperEx.Definition(), true);
             Common.Helpers.InjectInteraction<PhoneSmart>(ref Phone.UploadResume.Singleton, new UploadResumePhone.Definition(), true);
             Common.Helpers.InjectInteraction<Phone>(ref Phone.CallRegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedPhone.Definition(), true);
             Common.Helpers.InjectInteraction<Phone>(ref Phone.CallToCancelSteadyGig.Singleton, new CallToCancelSteadyGigEx.Definition(), true);
@@ -94,7 +79,7 @@ namespace Gamefreak130
             Common.Helpers.InjectInteraction<CityHall>(ref CityHall.JoinActiveCareerLifeguard.Singleton, new JoinActiveCareerLifeguardEx.Definition(), true);
             Common.Helpers.InjectInteraction<ScienceLab>(ref ScienceLab.JoinActiveCareerGhostHunter.Singleton, new JoinActiveCareerGhostHunterEx.Definition(), true);
             Common.Helpers.InjectInteraction<PoliceStation>(ref PoliceStation.JoinActiveCareerPrivateEye.Singleton, new JoinActiveCareerPrivateEyeEx.Definition(), true);
-            Common.Helpers.InjectInteraction<Lot>(ref Sims3.Gameplay.Services.DeliverNewspaper.Singleton, new DeliverNewspaperEx.Definition(), false);
+            Common.Helpers.InjectInteraction<Lot>(ref DeliverNewspaper.Singleton, new DeliverNewspaperEx.Definition(), false);
             Common.Helpers.InjectInteraction<Lot>(ref JoinFirefighterActiveCareer.Singleton, new JoinFirefighterActiveCareerEx.Definition(), true);
             Common.Helpers.InjectInteraction<Lot>(ref JoinStylistActiveCareer.Singleton, new JoinStylistActiveCareerEx.Definition(), true);
             Common.Helpers.InjectInteraction<Lot>(ref GhostHunter.GoToJob.Singleton, new GhostHunterEx.GoToJobEx.Definition(), true);
@@ -107,10 +92,10 @@ namespace Gamefreak130
             {
                 Common.Helpers.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
             }
-            GoToOccupationJobLocation.Singleton = new GoToOccupationJobLocationEx.Definition();
-            VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingDefinition singleton2 = new VisitLotAndWaitForDaycareGreetingEx.VisitLotAndWaitForDaycareGreetingDefinitionEx();
-            Common.Tunings.Inject(VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingSingleton.GetType(), typeof(Lot), singleton2.GetType(), typeof(Lot), true);
-            VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingSingleton = singleton2;
+            Common.Helpers.InjectInteraction<GameObject, GoToOccupationJobLocation.Definition>(ref GoToOccupationJobLocation.Singleton, new GoToOccupationJobLocationEx.Definition(), false);
+            Common.Helpers.InjectInteraction<Lot, DaycareTransportSituation.VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingDefinition>(ref DaycareTransportSituation.VisitLotAndWaitForDaycareGreeting.VisitLotAndWaitForDaycareGreetingSingleton,
+                new VisitLotAndWaitForDaycareGreetingEx.VisitLotAndWaitForDaycareGreetingDefinitionEx(),
+                true);
             foreach (string key in SocialRuleRHS.sDictionary.Keys)
             {
                 if (key is "Vaccinate")
@@ -183,9 +168,7 @@ namespace Gamefreak130
             {
                 Common.Helpers.InjectInteraction<CityHall>(ref CityHall.RegisterAsSelfEmployed.Singleton, new SelfEmployed.RegisterAsSelfEmployedCityHall.Definition(), true);
             }
-            ReadSomethingInInventoryEx.Definition singleton = new();
-            Common.Tunings.Inject(Sim.ReadSomethingInInventory.Singleton.GetType(), typeof(Sim), singleton.GetType(), typeof(Sim), true);
-            Sim.ReadSomethingInInventory.Singleton = singleton;
+            Common.Helpers.InjectInteraction<Sim>(ref Sim.ReadSomethingInInventory.Singleton, new ReadSomethingInInventoryEx.Definition(), true);
             Common.Helpers.InjectInteraction<RabbitHole>(ref CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton, new AttendResumeAndInterviewClass.Definition(), true);
             BootSettings();
         }
