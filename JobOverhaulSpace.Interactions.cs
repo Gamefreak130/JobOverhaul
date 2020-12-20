@@ -514,8 +514,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     Type[] argTypes = { typeof(Sim), typeof(List<Book>) };
                     if (Common.Reflection.StaticInvoke<Book>("NRaas.OnceReadSpace.Interactions.ReadSomethingInInventoryEx, NRaasOnceRead", "ChooseBook", args, argTypes) is Book book)
                     {
-                        //TODO Replace with ReadBookChooserEx
-                        InteractionInstance instance = ReadBookChooser.Singleton.CreateInstance(book, Actor, mPriority, Autonomous, CancellableByPlayer);
+                        object singleton = Type.GetType("NRaas.OnceReadSpace.Interactions.ReadBookChooserEx, NRaasOnceRead").GetField("Singleton").GetValue(null);
+                        Type[] types = { typeof(IGameObject), typeof(IActor), typeof(InteractionPriority), typeof(bool), typeof(bool) };
+                        InteractionInstance instance = Common.Reflection.InstanceInvoke<InteractionInstance>(singleton, "CreateInstance", new object[] { book, Actor, mPriority, Autonomous, CancellableByPlayer }, types);
                         BeginCommodityUpdates();
                         bool flag = false;
                         try
