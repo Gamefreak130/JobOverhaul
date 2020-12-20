@@ -398,7 +398,7 @@ namespace Gamefreak130.Common
                 throw new ArgumentNullException("Object value");
             }
             Type type = val.GetType();
-            if (type == typeof(string) || type.IsEnum || type.IsPrimitive)
+            if (type == typeof(string) || type == typeof(decimal) || type.IsEnum || type.IsPrimitive)
             {
                 text.Append(XmlConvert.EncodeLocalName(val.ToString()));
             }
@@ -415,7 +415,7 @@ namespace Gamefreak130.Common
             {
                 foreach (DictionaryEntry entry in dict)
                 {
-                    if (entry.Key is not Enum and not string && !entry.Key.GetType().IsPrimitive)
+                    if (entry.Key is not Enum and not string and not decimal && !entry.Key.GetType().IsPrimitive)
                     {
                         throw new ArgumentException("Dictionary keys must be a primitive type, enum, or string");
                     }
@@ -446,7 +446,7 @@ namespace Gamefreak130.Common
                 throw new ArgumentNullException("Object value");
             }
             Type type = currentObj.GetType();
-            if (type.IsPrimitive || type == typeof(string))
+            if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
             {
                 return Convert.ChangeType(XmlConvert.DecodeName(objNode.InnerText), type);
             }
@@ -463,7 +463,7 @@ namespace Gamefreak130.Common
             else if (type.IsGenericType && currentObj is IDictionary currentDict)
             {
                 Type[] generics = type.GetGenericArguments();
-                if (!generics[0].IsEnum && generics[0] != typeof(string) && !generics[0].IsPrimitive)
+                if (!generics[0].IsEnum && generics[0] != typeof(string) && generics[0] != typeof(decimal) && !generics[0].IsPrimitive)
                 {
                     throw new ArgumentException("Dictionary keys must be a primitive type, enum, or string");
                 }
