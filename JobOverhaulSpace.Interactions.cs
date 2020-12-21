@@ -1881,14 +1881,17 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            if (!StandardExitCalled)
+            {
+                AlarmManager.Global.RemoveAlarm(EventAlarm);
+                EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            }
         }
 
         public override void Cleanup()
         {
-            base.Cleanup();
             AlarmManager.Global.RemoveAlarm(EventAlarm);
+            base.Cleanup();
         }
     }
 
@@ -1987,14 +1990,17 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            if (!StandardExitCalled)
+            {
+                AlarmManager.Global.RemoveAlarm(EventAlarm);
+                EventAlarm = AlarmManager.Global.AddAlarm(Newspaper.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            }
         }
 
         public override void Cleanup()
         {
-            base.Cleanup();
             AlarmManager.Global.RemoveAlarm(EventAlarm);
+            base.Cleanup();
         }
 
         public override void PostureTransitionFailed(bool transitionExitResult) => Target.PutNewspaperAway(Actor, true);
@@ -2082,14 +2088,17 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            if (!StandardExitCalled)
+            {
+                AlarmManager.Global.RemoveAlarm(EventAlarm);
+                EventAlarm = AlarmManager.Global.AddAlarm(Target.ComputerTuning.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            }
         }
 
         public override void Cleanup()
         {
-            base.Cleanup();
             AlarmManager.Global.RemoveAlarm(EventAlarm);
+            base.Cleanup();
         }
     }
 
@@ -2176,14 +2185,17 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
-            AlarmManager.Global.RemoveAlarm(EventAlarm);
-            EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            if (!StandardExitCalled)
+            {
+                AlarmManager.Global.RemoveAlarm(EventAlarm);
+                EventAlarm = AlarmManager.Global.AddAlarm(Phone.UploadResume.FindJobNumMinutesBetweenOffer, TimeUnit.Minutes, FindJobAlarmCallback, "Gamefreak130 wuz here", AlarmType.AlwaysPersisted, Actor);
+            }
         }
 
         public override void Cleanup()
         {
-            base.Cleanup();
             AlarmManager.Global.RemoveAlarm(EventAlarm);
+            base.Cleanup();
         }
     }
 
