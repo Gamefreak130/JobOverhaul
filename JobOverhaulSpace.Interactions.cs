@@ -198,7 +198,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 list2.Add(info);
                             }
                         }
-                        List<RowInfo> list3 = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredDegreesMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> list3 = Common.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredDegreesMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new() { new("Ui/Caption/ObjectPicker:Degree", "", 250) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
                         if (list3 is not null)
                         {
@@ -246,7 +246,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> skillList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredSkillsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> skillList = Common.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("RequiredSkillsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list2, list, list2[0].RowInfo.Count, new(-1f, -1f), false, list3, false, false);
                         if (skillList is not null)
                         {
@@ -277,7 +277,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("PositiveTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> traitList = Common.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("PositiveTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new() { new("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
                         if (traitList is not null)
                         {
@@ -308,7 +308,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                 }
                             }
                         }
-                        List<RowInfo> traitList = UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("NegativeTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
+                        List<RowInfo> traitList = Common.UI.ObjectPickerDialogEx.Show(true, ModalDialog.PauseMode.PauseSimulator, LocalizeString("NegativeTraitsMenuName"), Localization.LocalizeString("Ui/Caption/ObjectPicker:OK"), Localization.LocalizeString("Ui/Caption/ObjectPicker:Cancel"), 
                             list, new() { new("Ui/Caption/ObjectPicker:Name", "", 400) }, list[0].RowInfo.Count, new(-1f, -1f), false, list2, false, false);
                         if (traitList is not null)
                         {
