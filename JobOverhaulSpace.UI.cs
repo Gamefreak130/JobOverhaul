@@ -90,10 +90,11 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                             }
                             if (mSim.AcquireOccupation(occupationParameters))
                             {
-                                string newOccupationTnsText = mSim.CareerManager.Occupation.GetNewOccupationTnsText();
+                                Career clonedCareer = career is School ? mSim.CareerManager.School : mSim.CareerManager.OccupationAsCareer;
+                                string newOccupationTnsText = clonedCareer.GetNewOccupationTnsText();
                                 if (!string.IsNullOrEmpty(newOccupationTnsText))
                                 {
-                                    mSim.CareerManager.Occupation.ShowOccupationTNS(newOccupationTnsText);
+                                    clonedCareer.ShowOccupationTNS(newOccupationTnsText);
                                 }
                                 Audio.StartSound("sting_career_positive");
                             }
