@@ -28,41 +28,21 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         [Persistable]
         public class InterviewData
         {
-#pragma warning disable IDE0032 // Use auto property
+            public ulong ActorId { get; }
 
-            private readonly ulong mActorId;
+            public DateAndTime InterviewDate { get; set; }
 
-            private DateAndTime mInterviewDate;
+            public int TimesPostponed { get; set; }
 
-            private int mTimesPostponed;
+            public AlarmHandle RemindAlarm { get; set; }
 
-            private AlarmHandle mRemindAlarm = AlarmHandle.kInvalidHandle;
+            public AlarmHandle TimeoutAlarm { get; set; }
 
-            private AlarmHandle mTimeoutAlarm = AlarmHandle.kInvalidHandle;
+            public EventListener RabbitHoleDisposedListener { get; set; }
 
-            private EventListener mRabbitHoleDisposedListener;
+            public RabbitHole RabbitHole { get; }
 
-            private readonly OccupationNames mCareerName;
-
-            private readonly RabbitHole mRabbitHole;
-
-            public ulong ActorId => mActorId;
-
-            public DateAndTime InterviewDate { get => mInterviewDate; set => mInterviewDate = value; }
-
-            public int TimesPostponed { get => mTimesPostponed; set => mTimesPostponed = value; }
-
-            public AlarmHandle RemindAlarm { get => mRemindAlarm; set => mRemindAlarm = value; }
-
-            public AlarmHandle TimeoutAlarm { get => mTimeoutAlarm; set => mTimeoutAlarm = value; }
-
-            public EventListener RabbitHoleDisposedListener { get => mRabbitHoleDisposedListener; set => mRabbitHoleDisposedListener = value; }
-
-            public RabbitHole RabbitHole => mRabbitHole;
-
-            public OccupationNames CareerName => mCareerName;
-
-#pragma warning restore IDE0032 // Use auto property
+            public OccupationNames CareerName { get; }
 
             private InterviewData()
             {
@@ -70,9 +50,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public InterviewData(CareerLocation careerLocation, Sim actor)
             {
-                mRabbitHole = careerLocation.Owner;
-                mActorId = actor.SimDescription.SimDescriptionId;
-                mCareerName = careerLocation.Career.Guid;
+                RabbitHole = careerLocation.Owner;
+                ActorId = actor.SimDescription.SimDescriptionId;
+                CareerName = careerLocation.Career.Guid;
                 TimesPostponed = 0;
                 float interviewDelta = careerLocation.Career.SharedData.Category is Career.CareerCategory.FullTime ? SimClock.HoursUntil(Settings.FullTimeInterviewHour) + 24 : SimClock.HoursUntil(Settings.PartTimeInterviewHour) + 24;
                 HolidayManager manager = HolidayManager.Instance;
