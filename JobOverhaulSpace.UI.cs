@@ -39,6 +39,10 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             mSim = sim;
             try
             {
+                if (!mSim.IsSelectable)
+                {
+                    return;
+                }
                 mHomeLotMapTag = new(mSim.LotHome, mSim);
                 CareerSelectionModel.Singleton.mHomeLotMapTag = mHomeLotMapTag;
                 mCurrentObject = interactingObject;
@@ -131,6 +135,10 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             mSim = sim;
             try
             {
+                if (!mSim.IsSelectable)
+                {
+                    return false;
+                }
                 mHomeLotMapTag = new(mSim.LotHome, mSim);
                 CareerSelectionModel.Singleton.mHomeLotMapTag = mHomeLotMapTag;
                 mCurrentObject = interactingObject;
