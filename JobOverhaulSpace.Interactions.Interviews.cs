@@ -72,7 +72,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     });
                 StyledNotification.Show(new(text, StyledNotification.NotificationStyle.kGameMessagePositive));
                 RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) - 1, TimeUnit.Hours, OnReminderCallback, "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, actor);
-                TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) + 1, TimeUnit.Hours, OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, actor);
+                TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) + 0.5f, TimeUnit.Hours, OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, actor);
                 careerLocation.Owner.AddInteraction(new DoInterview.Definition(this));
                 RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, OnRabbitHoleDisposed, null, RabbitHole);
                 PhoneCell phone = actor.Inventory.Find<PhoneCell>();
@@ -82,7 +82,11 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     AddPhoneInteractions(phoneHome, this);
                 }
-                InterviewList.Add(this);
+                if (!InterviewLists.ContainsKey(ActorId))
+                {
+                    InterviewLists[ActorId] = new();
+                }
+                InterviewLists[ActorId].Add(this);
                 Audio.StartSound("sting_opp_success");
             }
 
@@ -159,16 +163,32 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         RabbitHole.RemoveInteraction(iop);
                     }
                 }
-                InterviewList.Remove(this);
+                List<InterviewData> actorList = InterviewLists[ActorId];
+                actorList.Remove(this);
+                if (actorList.Count == 0)
+                {
+                    InterviewLists.Remove(ActorId);
+                }
                 AlarmManager.Global.RemoveAlarm(RemindAlarm);
                 AlarmManager.Global.RemoveAlarm(TimeoutAlarm);
                 EventTracker.RemoveListener(RabbitHoleDisposedListener);
                 RabbitHoleDisposedListener = null;
             }
+
+            internal static void DisposeActorData(ulong actorId)
+            {
+                if (InterviewLists.TryGetValue(actorId, out List<InterviewData> list))
+                {
+                    for (int i = list.Count - 1; i >= 0; i--)
+                    {
+                        list[i].Dispose(false);
+                    }
+                }
+            }
         }
 
         [PersistableStatic]
-        public static List<InterviewData> InterviewList = new();
+        public static Dictionary<ulong, List<InterviewData>> InterviewLists = new();
 
         public class DoInterview : RabbitHole.RabbitHoleInteraction<Sim, RabbitHole>
         {
@@ -364,7 +384,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
                 data.RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) - 1, TimeUnit.Hours, data.OnReminderCallback, "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, Actor);
                 AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
-                data.TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) + 1, TimeUnit.Hours, data.OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, Actor);
+                data.TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) + 0.5f, TimeUnit.Hours, data.OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, Actor);
                 data.TimesPostponed += 1;
                 Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, data.TimesPostponed >= Settings.MaxInterviewPostpones ? "InterviewPostponedFinal" : "InterviewPostponed", new object[]
                     {

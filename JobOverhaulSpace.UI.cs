@@ -5,6 +5,7 @@ using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActiveCareer;
 using Sims3.Gameplay.Actors;
 using Sims3.Gameplay.Careers;
+using Sims3.Gameplay.CAS;
 using Sims3.Gameplay.CelebritySystem;
 using Sims3.Gameplay.ChildAndTeenUpdates;
 using Sims3.Gameplay.Core;
@@ -20,7 +21,6 @@ using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.Queries;
-using static Sims3.UI.ObjectPicker;
 
 namespace Gamefreak130.JobOverhaulSpace.UI
 {
@@ -353,9 +353,9 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         private readonly bool mIsFemale;
 
-        private Color kDayTextNotWorkingColor = new(2155905152u);
+        private static readonly Color kDayTextNotWorkingColor = new(2155905152u);
 
-        private Color kDayTextWorkingColor = new(4278198336u);
+        private static readonly Color kDayTextWorkingColor = new(4278198336u);
 
         private readonly bool mWasMapview;
 
@@ -417,42 +417,42 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             mCareerSelectionModel = CareerSelectionModelEx.Singleton;
             mCareerEntries = mCareerSelectionModel.mCareerEntries;
             mIsFemale = isFemale;
-            Window window = mModalDialogWindow.GetChildByID(107605763u, true) as Window;
+            Window window = mModalDialogWindow.GetChildByID((uint)ControlIDs.WindowObjectImage, true) as Window;
             ImageDrawable imageDrawable = window.Drawable as ImageDrawable;
             imageDrawable.Image = UIManager.GetThumbnailImage(Responder.Instance.HudModel.GetThumbnailForGameObject(mCareerSelectionModel.InteractionObjectGuid));
             window.Invalidate();
-            window = mModalDialogWindow.GetChildByID(107605764u, true) as Window;
+            window = mModalDialogWindow.GetChildByID((uint)ControlIDs.WindowSimImage, true) as Window;
             imageDrawable = window.Drawable as ImageDrawable;
             imageDrawable.Image = UIManager.GetThumbnailImage(Responder.Instance.HudModel.GetThumbnailForGameObject(mCareerSelectionModel.SimGuid));
             window.Invalidate();
-            Button button = mModalDialogWindow.GetChildByID(65333248u, true) as Button;
+            Button button = mModalDialogWindow.GetChildByID((uint)ControlIDs.ButtonOK, true) as Button;
             button.Click += OnAcceptCareer;
-            button = mModalDialogWindow.GetChildByID(114633988u, true) as Button;
+            button = mModalDialogWindow.GetChildByID((uint)ControlIDs.CancelButton, true) as Button;
             button.Click += OnCancelButtonClick;
             if (mCareerEntries.Count > 2)
             {
-                button = mModalDialogWindow.GetChildByID(114633984u, true) as Button;
+                button = mModalDialogWindow.GetChildByID((uint)ControlIDs.CareerCycleLeftButton, true) as Button;
                 button.Click += OnCareerSelectionChanged;
-                button = mModalDialogWindow.GetChildByID(114633985u, true) as Button;
+                button = mModalDialogWindow.GetChildByID((uint)ControlIDs.CareerCycleRightButton, true) as Button;
                 button.Click += OnCareerSelectionChanged;
             }
             else
             {
-                button = mModalDialogWindow.GetChildByID(114633984u, true) as Button;
+                button = mModalDialogWindow.GetChildByID((uint)ControlIDs.CareerCycleLeftButton, true) as Button;
                 button.Visible = false;
-                button = mModalDialogWindow.GetChildByID(114633985u, true) as Button;
+                button = mModalDialogWindow.GetChildByID((uint)ControlIDs.CareerCycleRightButton, true) as Button;
                 button.Visible = false;
             }
-            button = mModalDialogWindow.GetChildByID(114633987u, true) as Button;
+            button = mModalDialogWindow.GetChildByID((uint)ControlIDs.SeeLocationButton, true) as Button;
             button.Click += OnSeeLocationButtonClick;
             FillCareerInfo(mCareerEntries[0]);
             EnableDisableAcceptCareerButton(mCareerSelectionModel, mCareerEntries[0]);
-            window = mModalDialogWindow.GetChildByID((uint)(107605808 + mHudModel.CurrentDay), true) as Window;
+            window = mModalDialogWindow.GetChildByID((uint)((uint)ControlIDs.WindowCurrentDayArrowStart + mHudModel.CurrentDay), true) as Window;
             window.Visible = true;
             mSelectedCareer = mCareerEntries[0];
             mCareerSelectionModel.CareerSelected(mSelectedCareer, mCurrentIndex);
-            OkayID = 65333248u;
-            CancelID = 114633988u;
+            OkayID = (uint)ControlIDs.ButtonOK;
+            CancelID = (uint)ControlIDs.CancelButton;
             mWasMapview = UIManager.GetSceneWindow().MapViewModeEnabled;
             UIManager.DarkenBackground(true);
             UIManager.BeginModal(mModalDialogWindow);
@@ -463,7 +463,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
         private void OnCareerSelectionChanged(WindowBase sender, UIButtonClickEventArgs eventArgs)
         {
             int count = mCareerEntries.Count;
-            mCurrentIndex = ((sender.ID == 114633984u) ? (mCurrentIndex + 1) : (mCurrentIndex + (count - 1))) % count;
+            mCurrentIndex = ((sender.ID == (uint)ControlIDs.CareerCycleLeftButton) ? (mCurrentIndex + 1) : (mCurrentIndex + (count - 1))) % count;
             mSelectedCareer = mCareerEntries[mCurrentIndex];
             FillCareerInfo(mSelectedCareer);
             EnableDisableAcceptCareerButton(mCareerSelectionModel, mSelectedCareer);
@@ -515,20 +515,20 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             if (entry is not null)
             {
                 Text text;
-                Window window = mModalDialogWindow.GetChildByID(114633986u, true) as Window;
+                Window window = mModalDialogWindow.GetChildByID((uint)ControlIDs.JobIconWin, true) as Window;
                 (window.Drawable as ImageDrawable).Image = UIManager.LoadUIImage(ResourceKey.CreatePNGKey(entry.CareerIconColored, 0u));
                 window.Position = new(80f, 130f);
-                text = mModalDialogWindow.GetChildByID(107605765u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextCareerName, true) as Text;
                 text.Caption = LocalizeString("CareerOfferHeader");
-                text = mModalDialogWindow.GetChildByID(107605766u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextCareerTitle, true) as Text;
                 text.Caption = entry.GetLocalizedCareerName(mIsFemale);
-                text = mModalDialogWindow.GetChildByID(107605767u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextPayPerHour, true) as Text;
                 float oldHeight = text.Area.Height;
                 if (entry.IsActive)
                 {
                     text.Caption = entry.PayPerHourOrStipend > 0 ? Responder.Instance.LocalizationModel.LocalizeString("UI/Caption/CareerSelection:WeeklyStipend", entry.PayPerHourOrStipend) : string.Empty;
                     text.AutoSize(true);
-                    text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
+                    text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextHours, true) as Text;
                     if (entry.HasOpenHours)
                     {
                         text.Caption = Responder.Instance.LocalizationModel.LocalizeString("UI/Caption/CareerSelection:OpenHours");
@@ -544,21 +544,21 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                 {
                     text.Caption = mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation.Owner.GetLocalizedName();
                     text.AutoSize(true);
-                    text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
+                    text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextHours, true) as Text;
                     text.Caption = (entry as Career).IsPartTime ? LocalizeString("PartTime") : LocalizeString("FullTime");
                     HideWorkDays();
                 }
-                text = mModalDialogWindow.GetChildByID(107605767u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextPayPerHour, true) as Text;
                 float offset = text.Area.Height - oldHeight;
-                text = mModalDialogWindow.GetChildByID(107605768u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.TextHours, true) as Text;
                 text.Position = new(text.Area.TopLeft.x, text.Area.TopLeft.y + offset);
-                text = mModalDialogWindow.GetChildByID(107605769u, true) as Text;
+                text = mModalDialogWindow.GetChildByID((uint)ControlIDs.ScrollDescription, true) as Text;
                 text.Caption = mCareerSelectionModel.LocalizeCareerDetails(entry.CareerOfferInfo);
                 text.AutoSize(true);
                 text.Position = new(0f, 0f);
-                ScrollWindow scrollWindow = mModalDialogWindow.GetChildByID(107605770u, true) as ScrollWindow;
+                ScrollWindow scrollWindow = mModalDialogWindow.GetChildByID((uint)ControlIDs.ScrollWindow, true) as ScrollWindow;
                 scrollWindow.Update();
-                Button button = mModalDialogWindow.GetChildByID(114633987u, true) as Button;
+                Button button = mModalDialogWindow.GetChildByID((uint)ControlIDs.SeeLocationButton, true) as Button;
                 button.Visible = !(entry.IsActive && entry.ActiveCareerLotID == 0uL);
                 window.Invalidate();
             }
@@ -570,13 +570,14 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             {
                 GreyedOutTooltipCallback greyedOutTooltipCallback = null;
                 Sim sim = GameObject.GetObject<Sim>(model.SimGuid);
-                Button button = mModalDialogWindow.GetChildByID(65333248u, true) as Button;
+                SimDescription description = sim.SimDescription;
+                Button button = mModalDialogWindow.GetChildByID((uint)ControlIDs.ButtonOK, true) as Button;
                 button.Enabled = false;
                 string name = (occupation as Career)?.SharedData.Name.Substring(34) ?? occupation.Guid.ToString();
                 if (!occupation.CanAcceptCareer(model.SimGuid, ref greyedOutTooltipCallback))
                 {
                     button.TooltipText = greyedOutTooltipCallback is not null ? greyedOutTooltipCallback() : LocalizeString("NotCorrectAgeForOccupation");
-                    if (button.TooltipText == Localization.LocalizeString(sim.IsFemale, "Gameplay/Occupation:GreyedOutUiTooltipAlreadyHasOccupation", sim.SimDescription))
+                    if (button.TooltipText == Localization.LocalizeString(sim.IsFemale, "Gameplay/Occupation:GreyedOutUiTooltipAlreadyHasOccupation", description))
                     {
                         if ((!occupation.IsActive && mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation?.Owner == sim.CareerLocation) || occupation.IsActive)
                         {
@@ -588,14 +589,25 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                         return;
                     }
                 }
-                if (entry is Career career && !career.CareerAgeTest(sim.SimDescription))
+                if (InterviewLists.TryGetValue(description.SimDescriptionId, out List<InterviewData> list))
                 {
-                    button.TooltipText = entry is PTFilm && sim.SimDescription.CelebrityLevel < CelebrityManager.LowestVisibleLevel
+                    foreach (InterviewData data in list)
+                    {
+                        if (data.ActorId == description.SimDescriptionId && data.CareerName == occupation.Guid && data.RabbitHole == mCareerSelectionModel.mAvailableCareersLocationsEx[mCurrentIndex].CareerLocation.Owner)
+                        {
+                            button.TooltipText = LocalizeString(sim.IsFemale, "AlreadyHaveInterview");
+                            return;
+                        }
+                    }
+                }
+                if (entry is Career career && !career.CareerAgeTest(description))
+                {
+                    button.TooltipText = entry is PTFilm && description.CelebrityLevel < CelebrityManager.LowestVisibleLevel
                         ? LocalizeString(sim.IsFemale, "NeedsCelebrityLevel")
                         : LocalizeString(sim.IsFemale, "NotCorrectAgeForOccupation");
                     return;
                 }
-                if (entry is ActiveCareer && sim.SimDescription.TeenOrBelow)
+                if (entry is ActiveCareer && description.TeenOrBelow)
                 {
                     button.TooltipText = LocalizeString(sim.IsFemale, "TooYoungForProfession");
                     return;
@@ -618,9 +630,9 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         private void UpdateDaysofWeek(string workDays)
         {
-            for (uint num = 107605792u; num <= 107605798u; num += 1u)
+            for (ControlIDs id = ControlIDs.TextDaySunday; id <= ControlIDs.TextDaySaturday; id += 1u)
             {
-                Text text = mModalDialogWindow.GetChildByID(num, true) as Text;
+                Text text = mModalDialogWindow.GetChildByID((uint)id, true) as Text;
                 text.Visible = true;
                 text.TextColor = kDayTextNotWorkingColor;
                 text.AutoSize(false);
@@ -628,20 +640,20 @@ namespace Gamefreak130.JobOverhaulSpace.UI
             char[] array = workDays.ToCharArray();
             for (int i = 0; i < array.Length; i++)
             {
-                uint num2 = array[i] switch
+                ControlIDs id2 = array[i] switch
                 {
-                    'U' => 107605792u,
-                    'M' => 107605793u,
-                    'T' => 107605794u,
-                    'W' => 107605795u,
-                    'R' => 107605796u,
-                    'F' => 107605797u,
-                    'S' => 107605798u,
-                    _   => 0u
+                    'U' => ControlIDs.TextDaySunday,
+                    'M' => ControlIDs.TextDayMonday,
+                    'T' => ControlIDs.TextDayTuesday,
+                    'W' => ControlIDs.TextDayWednesday,
+                    'R' => ControlIDs.TextDayThursday,
+                    'F' => ControlIDs.TextDayFriday,
+                    'S' => ControlIDs.TextDaySaturday,
+                    _   => default
                 };
-                if (num2 > 0u)
+                if (id2 > 0u)
                 {
-                    Text text2 = mModalDialogWindow.GetChildByID(num2, true) as Text;
+                    Text text2 = mModalDialogWindow.GetChildByID((uint)id2, true) as Text;
                     if (text2 is not null)
                     {
                         text2.TextColor = kDayTextWorkingColor;
@@ -652,9 +664,9 @@ namespace Gamefreak130.JobOverhaulSpace.UI
 
         private void HideWorkDays()
         {
-            for (uint num = 107605792u; num <= 107605798u; num += 1u)
+            for (ControlIDs id = ControlIDs.TextDaySunday; id <= ControlIDs.TextDaySaturday; id += 1u)
             {
-                Text text = mModalDialogWindow.GetChildByID(num, true) as Text;
+                Text text = mModalDialogWindow.GetChildByID((uint)id, true) as Text;
                 text.Visible = false;
             }
         }

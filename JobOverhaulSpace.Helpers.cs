@@ -105,9 +105,12 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 }
                 if (@object is PhoneHome phone)
                 {
-                    foreach (InterviewData data in InterviewList)
+                    foreach (List<InterviewData> list in InterviewLists.Values)
                     {
-                        AddPhoneInteractions(phone, data);
+                        foreach (InterviewData data in list)
+                        {
+                            AddPhoneInteractions(phone, data);
+                        }
                     }
                 }
                 if (@object is SchoolRabbitHole school)
@@ -162,9 +165,12 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             }
             if (e.TargetObject is PhoneHome phoneHome)
             {
-                foreach (InterviewData data in InterviewList)
+                foreach (List<InterviewData> list in InterviewLists.Values)
                 {
-                    AddPhoneInteractions(phoneHome, data);
+                    foreach (InterviewData data in list)
+                    {
+                        AddPhoneInteractions(phoneHome, data);
+                    }
                 }
             }
             if (e.TargetObject is SchoolRabbitHole school)
@@ -186,71 +192,16 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         {
             if (e.TargetObject is Sim targetSim)
             {
-                foreach (InterviewData data in InterviewList)
-                {
-                    if (data.ActorId == targetSim.SimDescription.SimDescriptionId)
-                    {
-                        InteractionObjectPair iop = null;
-                        foreach (InteractionObjectPair current in data.RabbitHole.Interactions)
-                        {
-                            if ((current.InteractionDefinition as DoInterview.Definition)?.mData.ActorId == data.ActorId)
-                            {
-                                iop = current;
-                                break;
-                            }
-                        }
-                        if (iop is not null)
-                        {
-                            data.RabbitHole.RemoveInteraction(iop);
-                        }
-                        PhoneCell phone = targetSim.Inventory.Find<PhoneCell>();
-                        if (phone is not null)
-                        {
-                            RemovePhoneInteractions(targetSim, phone, false);
-                        }
-                        foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                        {
-                            RemovePhoneInteractions(targetSim, phoneHome, false);
-                        }
-                        AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
-                        AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
-                        InterviewList.Remove(data);
-                    }
-                }
+                InterviewData.DisposeActorData(targetSim.SimDescription.SimDescriptionId);
             }
             return ListenerAction.Keep;
         }
 
         internal static ListenerAction OnSimDestroyed(Event e)
         {
-            if (e.Actor is not null)
+            if (e.Actor is Sim sim)
             {
-                foreach (InterviewData data in InterviewList)
-                {
-                    if (data.ActorId == e.Actor.SimDescription.SimDescriptionId)
-                    {
-                        InteractionObjectPair iop = null;
-                        foreach (InteractionObjectPair current in data.RabbitHole.Interactions)
-                        {
-                            if ((current.InteractionDefinition as DoInterview.Definition)?.mData.ActorId == data.ActorId)
-                            {
-                                iop = current;
-                                break;
-                            }
-                        }
-                        if (iop is not null)
-                        {
-                            data.RabbitHole.RemoveInteraction(iop);
-                        }
-                        foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                        {
-                            RemovePhoneInteractions(e.Actor as Sim, phoneHome, false);
-                        }
-                        AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
-                        AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
-                        InterviewList.Remove(data);
-                    }
-                }
+                InterviewData.DisposeActorData(sim.SimDescription.SimDescriptionId);
             }
             return ListenerAction.Keep;
         }

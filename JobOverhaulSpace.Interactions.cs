@@ -100,9 +100,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 delegate {
                     if (AcceptCancelDialog.Show(LocalizeString("ClearAllInterviewsPrompt")))
                     {
-                        for (int i = InterviewList.Count - 1; i >= 0; i--)
+                        foreach (ulong key in new List<ulong>(InterviewLists.Keys))
                         {
-                            InterviewList[i].Dispose(false);
+                            InterviewData.DisposeActorData(key);
                         }
                         SimpleMessageDialog.Show(LocalizeString("ClearAllInterviewsMenuName"), LocalizeString("ClearAllInterviewsComplete"));
                     }
@@ -1811,14 +1811,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         return false;
                     }
-                    foreach (InterviewData data in InterviewList)
-                    {
-                        if (data.ActorId == actor.SimDescription.SimDescriptionId)
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview"));
-                            return false;
-                        }
-                    }
                     if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
@@ -1903,14 +1895,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 if (target.IsReadable)
                 {
-                    foreach (InterviewData data in InterviewList)
-                    {
-                        if (data.ActorId == actor.SimDescription.SimDescriptionId)
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
-                            return false;
-                        }
-                    }
                     if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
                         greyedOutTooltipCallback = CreateTooltipCallback(Localization.LocalizeString("Ui/Tooltip/HUD/Navigation:RobotCareerDisallowed"));
@@ -2014,14 +1998,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 if (target.IsComputerUsable(actor, true, false, isAutonomous))
                 {
-                    foreach (InterviewData data in InterviewList)
-                    {
-                        if (data.ActorId == actor.SimDescription.SimDescriptionId)
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
-                            return false;
-                        }
-                    }
                     bool flag = false;
                     if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {
@@ -2110,14 +2086,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 if (target.IsUsableBy(actor) && actor.Inventory.Find<PhoneSmart>() is not null)
                 {
-                    foreach (InterviewData data in InterviewList)
-                    {
-                        if (data.ActorId == actor.SimDescription.SimDescriptionId)
-                        {
-                            greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(actor.IsFemale, "AlreadyHaveInterview", actor));
-                            return false;
-                        }
-                    }
                     bool flag = false;
                     if (actor.SimDescription.IsEP11Bot && actor.TraitManager is not null && !actor.TraitManager.HasElement(TraitNames.ProfessionalChip))
                     {

@@ -60,7 +60,8 @@ namespace Gamefreak130
             //CONSIDER Move QuitWork?
             //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
-            //CONSIDER Multiple interviews, job offers at one time?
+            //TODO Revamp Cancel/Postpone interactions
+            //TODO Change alreadyhaveinterview string
 
             IsPoolLifeguardModInstalled = Common.Helpers.FindAssembly("icarusallsorts.PoolLifeguard");
             IsOnceReadInstalled = Common.Helpers.FindAssembly("NRaasOnceRead");
@@ -175,7 +176,7 @@ namespace Gamefreak130
         private static void OnWorldQuit(object sender, EventArgs e)
         {
             sSavedOccupationsForTravel = null;
-            InterviewList.Clear();
+            InterviewLists.Clear();
             RandomNewspaperSeeds.Clear();
             RandomNewspaperSeed = RandomUtil.GetInt(32767);
             RandomComputerSeed = RandomUtil.GetInt(32767);
@@ -546,27 +547,38 @@ namespace Gamefreak130
 
         private static void FixupInterviews()
         {
-            for (int i = InterviewList.Count - 1; i >= 0; i--)
+            foreach (ulong key in new List<ulong>(InterviewLists.Keys))
             {
-                InterviewData data = InterviewList[i];
-                if (SimDescription.Find(data.ActorId)?.CreatedSim is Sim sim && data.RabbitHole is RabbitHole rabbitHole)
+                if (SimDescription.Find(key)?.CreatedSim is not Sim sim)
                 {
-                    rabbitHole.AddInteraction(new DoInterview.Definition(data));
-                    PhoneCell phone = sim.Inventory.Find<PhoneCell>();
-                    if (phone is not null)
-                    {
-                        phone.AddInventoryInteraction(new PostponeInterview.Definition(data));
-                        phone.AddInventoryInteraction(new CancelInterview.Definition(data));
-                    }
-                    foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                    {
-                        AddPhoneInteractions(phoneHome, data);
-                    }
-                    data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, rabbitHole);
+                    InterviewData.DisposeActorData(key);
                 }
                 else
                 {
-                    data.Dispose(false);
+                    List<InterviewData> list = InterviewLists[key];
+                    for (int i = list.Count - 1; i >= 0; i--)
+                    {
+                        InterviewData data = list[i];
+                        if (data.RabbitHole is RabbitHole rabbitHole)
+                        {
+                            rabbitHole.AddInteraction(new DoInterview.Definition(data));
+                            PhoneCell phone = sim.Inventory.Find<PhoneCell>();
+                            if (phone is not null)
+                            {
+                                phone.AddInventoryInteraction(new PostponeInterview.Definition(data));
+                                phone.AddInventoryInteraction(new CancelInterview.Definition(data));
+                            }
+                            foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
+                            {
+                                AddPhoneInteractions(phoneHome, data);
+                            }
+                            data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, rabbitHole);
+                        }
+                        else
+                        {
+                            data.Dispose(false);
+                        }
+                    }
                 }
             }
         }
