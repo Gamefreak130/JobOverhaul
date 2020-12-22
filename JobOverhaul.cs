@@ -60,8 +60,8 @@ namespace Gamefreak130
             //CONSIDER Move QuitWork?
             //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
-            //TODO Revamp Cancel/Postpone interactions
-            //TODO Change alreadyhaveinterview string
+            //CONSIDER Move FixupInterviews to worldload?
+            //TODO Fixup the rest of the string tables
 
             IsPoolLifeguardModInstalled = Common.Helpers.FindAssembly("icarusallsorts.PoolLifeguard");
             IsOnceReadInstalled = Common.Helpers.FindAssembly("NRaasOnceRead");
@@ -238,6 +238,8 @@ namespace Gamefreak130
             foreach (Phone phone in GetObjects<Phone>())
             {
                 Common.Helpers.AddInteraction(phone, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction(phone, PostponeInterview.Singleton);
+                Common.Helpers.AddInteraction(phone, CancelInterview.Singleton);
             }
             foreach (SchoolRabbitHole school in GetObjects<SchoolRabbitHole>())
             {
@@ -559,19 +561,9 @@ namespace Gamefreak130
                     for (int i = list.Count - 1; i >= 0; i--)
                     {
                         InterviewData data = list[i];
-                        if (data.RabbitHole is RabbitHole rabbitHole)
+                        if (data.RabbitHole is RabbitHole rabbitHole && !rabbitHole.HasBeenDestroyed)
                         {
                             rabbitHole.AddInteraction(new DoInterview.Definition(data));
-                            PhoneCell phone = sim.Inventory.Find<PhoneCell>();
-                            if (phone is not null)
-                            {
-                                phone.AddInventoryInteraction(new PostponeInterview.Definition(data));
-                                phone.AddInventoryInteraction(new CancelInterview.Definition(data));
-                            }
-                            foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                            {
-                                AddPhoneInteractions(phoneHome, data);
-                            }
                             data.RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, data.OnRabbitHoleDisposed, null, rabbitHole);
                         }
                         else

@@ -103,15 +103,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                         RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
                     }
                 }
-                if (@object is PhoneHome phone)
+                if (@object is Phone phone)
                 {
-                    foreach (List<InterviewData> list in InterviewLists.Values)
-                    {
-                        foreach (InterviewData data in list)
-                        {
-                            AddPhoneInteractions(phone, data);
-                        }
-                    }
+                    Common.Helpers.AddInteraction(phone, PostponeInterview.Singleton);
+                    Common.Helpers.AddInteraction(phone, CancelInterview.Singleton);
                 }
                 if (@object is SchoolRabbitHole school)
                 {
@@ -129,7 +124,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         }
 
         internal static ListenerAction OnObjectChanged(Event e)
-        {
+        {//TODO refactor these two listeners into one
             if (e.TargetObject is Computer or Phone or Newspaper)
             {
                 Common.Helpers.AddInteraction((GameObject)e.TargetObject, ChangeSettings.Singleton);
@@ -163,15 +158,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
                 }
             }
-            if (e.TargetObject is PhoneHome phoneHome)
+            if (e.TargetObject is Phone phone)
             {
-                foreach (List<InterviewData> list in InterviewLists.Values)
-                {
-                    foreach (InterviewData data in list)
-                    {
-                        AddPhoneInteractions(phoneHome, data);
-                    }
-                }
+                Common.Helpers.AddInteraction(phone, PostponeInterview.Singleton);
+                Common.Helpers.AddInteraction(phone, CancelInterview.Singleton);
             }
             if (e.TargetObject is SchoolRabbitHole school)
             {
@@ -339,81 +329,6 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 }
             }
             return Settings.EnableJoinProfessionInRabbitHoleOrLot && CareerManager.GetStaticOccupation(profession) is ActiveCareer activeCareer && IsActiveCareerAvailable(activeCareer) && ActiveCareer.CanAddActiveCareer(sim.SimDescription, profession);
-        }
-
-        public static void AddPhoneInteractions(PhoneHome phoneHome, InterviewData data)
-        {
-            bool hasPostpone = false;
-            bool hasCancel = false;
-            foreach (InteractionObjectPair iop in phoneHome.Interactions)
-            {
-                if ((iop.InteractionDefinition as PostponeInterview.Definition)?.mData == data)
-                {
-                    hasPostpone = true;
-                }
-                if ((iop.InteractionDefinition as CancelInterview.Definition)?.mData == data)
-                {
-                    hasCancel = true;
-                }
-            }
-            if (!hasPostpone)
-            {
-                phoneHome.AddInteraction(new PostponeInterview.Definition(data));
-            }
-            if (!hasCancel)
-            {
-                phoneHome.AddInteraction(new CancelInterview.Definition(data));
-            }
-        }
-
-        public static void RemovePhoneInteractions(Sim actor, Phone phone, bool stopCurrentInteraction)
-        {
-            InteractionObjectPair postponeIop = null;
-            InteractionObjectPair cancelIop = null;
-            ulong id = actor.SimDescription.SimDescriptionId;
-            List<InteractionObjectPair> pairs = phone is PhoneCell ? phone.ItemComp.InteractionsInventory : phone.Interactions;
-            foreach (InteractionObjectPair current in pairs)
-            {
-                if ((current.InteractionDefinition as PostponeInterview.Definition)?.mData.ActorId == id)
-                {
-                    postponeIop = current;
-                }
-                if ((current.InteractionDefinition as CancelInterview.Definition)?.mData.ActorId == id)
-                {
-                    cancelIop = current;
-                }
-            }
-            if (postponeIop is not null)
-            {
-                pairs.Remove(postponeIop);
-                for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
-                {
-                    InteractionInstance current = actor.InteractionQueue.mInteractionList[i];
-                    if (current.InteractionDefinition == postponeIop.InteractionDefinition)
-                    {
-                        actor.InteractionQueue.RemoveInteractionByRef(current);
-                    }
-                }
-            }
-            if (cancelIop is not null)
-            {
-                pairs.Remove(cancelIop);
-                for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
-                {
-                    InteractionInstance current = actor.InteractionQueue.mInteractionList[i];
-                    if (current.InteractionDefinition == cancelIop.InteractionDefinition)
-                    {
-                        actor.InteractionQueue.RemoveInteractionByRef(current);
-                    }
-                }
-            }
-            if (actor.InteractionQueue.GetCurrentInteraction() is InteractionInstance instance)
-            {
-                if (stopCurrentInteraction && (instance.InteractionDefinition.GetType() == postponeIop.InteractionDefinition.GetType() || instance.InteractionDefinition.GetType() == cancelIop.InteractionDefinition.GetType()))
-                {
-                    actor.InteractionQueue.CancelNthInteraction(0, false, ExitReason.CanceledByScript);
-                }
-            }
         }
 
         public static bool FindJobTest(Sim actor, bool restrictToEarnedDegrees)

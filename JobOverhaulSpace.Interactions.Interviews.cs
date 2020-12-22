@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Sims3.Gameplay.Queries;
+using static Sims3.UI.ObjectPicker;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
 {
@@ -68,20 +69,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         careerLocation.Owner.GetLocalizedName(),
                         careerLocation.Career.GetLocalizedCareerName(actor.IsFemale),
                         GetTextDayOfWeek(InterviewDate),
-                        SimClockUtils.GetText(Convert.ToInt32(InterviewDate.Hour), 0)
+                        SimClockUtils.GetText(Convert.ToInt32(InterviewDate.Hour))
                     });
                 StyledNotification.Show(new(text, StyledNotification.NotificationStyle.kGameMessagePositive));
                 RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) - 1, TimeUnit.Hours, OnReminderCallback, "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, actor);
                 TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(InterviewDate) + 0.5f, TimeUnit.Hours, OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, actor);
                 careerLocation.Owner.AddInteraction(new DoInterview.Definition(this));
                 RabbitHoleDisposedListener = EventTracker.AddListener(EventTypeId.kEventObjectDisposed, OnRabbitHoleDisposed, null, RabbitHole);
-                PhoneCell phone = actor.Inventory.Find<PhoneCell>();
-                phone?.AddInventoryInteraction(new PostponeInterview.Definition(this));
-                phone?.AddInventoryInteraction(new CancelInterview.Definition(this));
-                foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                {
-                    AddPhoneInteractions(phoneHome, this);
-                }
                 if (!InterviewLists.ContainsKey(ActorId))
                 {
                     InterviewLists[ActorId] = new();
@@ -113,15 +107,10 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 InteractionObjectPair iop = null;
                 if (SimDescription.Find(ActorId)?.CreatedSim is Sim sim)
                 {
-                    PhoneCell phone = sim.Inventory.Find<PhoneCell>();
-                    if (phone is not null)
+                    foreach (Phone phone in GetObjects<Phone>())
                     {
-                        RemovePhoneInteractions(sim, phone, isTimeout);
-                    }
-                    foreach (PhoneHome phoneHome in GetObjects<PhoneHome>())
-                    {
-                        RemovePhoneInteractions(sim, phoneHome, isTimeout);
-                    }
+                        RemovePhoneInteractions(phone, isTimeout);
+                    } 
                     if (RabbitHole is not null)
                     {
                         foreach (InteractionObjectPair current in RabbitHole.Interactions)
@@ -136,13 +125,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     if (iop is not null)
                     {
                         InteractionInstance firstInstance = sim.InteractionQueue.GetCurrentInteraction();
-                        if (firstInstance?.InteractionDefinition.GetType() == iop.InteractionDefinition.GetType() && isTimeout)
+                        if (isTimeout)
                         {
-                            firstInstance.CancellableByPlayer = false;
-                        }
-                        else if (isTimeout)
-                        {
-                            if (sim.IsSelectable)
+                            if (firstInstance?.InteractionDefinition is DoInterview.Definition definition && definition.mData == this)
+                            {
+                                firstInstance.CancellableByPlayer = false;
+                            }
+                            else if (sim.IsSelectable)
                             {
                                 Audio.StartSound("sting_opp_fail");
                                 sim.ShowTNSIfSelectable(LocalizeString(sim.IsFemale, "InterviewTimeout", new object[]
@@ -155,7 +144,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         for (int i = sim.InteractionQueue.Count - 1; i >= 1; i--)
                         {
                             InteractionInstance current = sim.InteractionQueue.mInteractionList[i];
-                            if (current.InteractionDefinition.GetType() == iop.InteractionDefinition.GetType())
+                            if (current.InteractionDefinition is DoInterview.Definition definition && definition.mData == this)
                             {
                                 sim.InteractionQueue.RemoveInteractionByRef(current);
                             }
@@ -173,6 +162,56 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 AlarmManager.Global.RemoveAlarm(TimeoutAlarm);
                 EventTracker.RemoveListener(RabbitHoleDisposedListener);
                 RabbitHoleDisposedListener = null;
+            }
+
+            private void RemovePhoneInteractions(Phone phone, bool stopCurrentInteraction)
+            {
+                if (SimDescription.Find(ActorId)?.CreatedSim is Sim actor)
+                {
+                    InteractionObjectPair postponeIop = null;
+                    InteractionObjectPair cancelIop = null;
+                    List<InteractionObjectPair> pairs = phone is PhoneCell ? phone.ItemComp.InteractionsInventory : phone.Interactions;
+                    foreach (InteractionObjectPair current in pairs)
+                    {
+                        if (current.InteractionDefinition as PostponeInterview.Definition is not null)
+                        {
+                            postponeIop = current;
+                        }
+                        if (current.InteractionDefinition as CancelInterview.Definition is not null)
+                        {
+                            cancelIop = current;
+                        }
+                    }
+                    if (postponeIop is not null)
+                    {
+                        for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
+                        {
+                            InteractionInstance current = actor.InteractionQueue.mInteractionList[i];
+                            if (current.InteractionDefinition == postponeIop.InteractionDefinition && (current.GetSelectedObject() as InterviewData) == this)
+                            {
+                                actor.InteractionQueue.RemoveInteractionByRef(current);
+                            }
+                        }
+                    }
+                    if (cancelIop is not null)
+                    {
+                        for (int i = actor.InteractionQueue.Count - 1; i >= 0; i--)
+                        {
+                            InteractionInstance current = actor.InteractionQueue.mInteractionList[i];
+                            if (current.InteractionDefinition == cancelIop.InteractionDefinition && (current.GetSelectedObject() as InterviewData) == this)
+                            {
+                                actor.InteractionQueue.RemoveInteractionByRef(current);
+                            }
+                        }
+                    }
+                    if (actor.InteractionQueue.GetCurrentInteraction() is InteractionInstance instance)
+                    {
+                        if (stopCurrentInteraction && (instance.InteractionDefinition.GetType() == postponeIop.InteractionDefinition.GetType() || instance.InteractionDefinition.GetType() == cancelIop.InteractionDefinition.GetType()))
+                        {
+                            actor.InteractionQueue.CancelNthInteraction(0, false, ExitReason.CanceledByScript);
+                        }
+                    }
+                }
             }
 
             internal static void DisposeActorData(ulong actorId)
@@ -223,7 +262,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         {
                             actor,
                             GetTextDayOfWeek(mData.InterviewDate),
-                            SimClockUtils.GetText(Convert.ToInt32(mData.InterviewDate.Hour), 0)
+                            SimClockUtils.GetText(Convert.ToInt32(mData.InterviewDate.Hour))
                         }));
                         return false;
                     }
@@ -343,56 +382,79 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public class Definition : CallDefinition<PostponeInterview>
             {
-                internal InterviewData mData;
-
-                public Definition()
-                {
-                }
-
-                public Definition(InterviewData data) => mData = data;
-
                 public override string[] GetPath(bool isFemale) => new[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
 
-                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("PostponeInterview");
+                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("PostponeInterview") + Localization.Ellipsis;
 
                 public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
                 {
-                    if (SimClock.CurrentTime() > SimClock.Subtract(mData.InterviewDate, TimeUnit.Hours, 1))
+                    if (InterviewLists.TryGetValue(a.SimDescription.SimDescriptionId, out List<InterviewData> list))
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "PostponePointOfNoReturn", a));
-                        return false;
+                        foreach (InterviewData data in list)
+                        {
+                            if (SimClock.CurrentTime() < SimClock.Subtract(data.InterviewDate, TimeUnit.Hours, 1f) && data.TimesPostponed < Settings.MaxInterviewPostpones)
+                            {
+                                return base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback);
+                            }
+                        }
                     }
-                    if (mData.TimesPostponed >= Settings.MaxInterviewPostpones)
+                    return false;
+                }
+
+                public override void PopulatePieMenuPicker(ref InteractionInstanceParameters parameters, out List<TabInfo> listObjs, out List<HeaderInfo> headers, out int NumSelectableRows)
+                {
+                    headers = new()
                     {
-                        greyedOutTooltipCallback = CreateTooltipCallback(LocalizeString(a.IsFemale, "OutOfPostpones", a));
-                        return false;
+                        new("Ui/Caption/ObjectPicker:Name", "", 350),
+                        new("Gamefreak130/LocalizedMod/JobOverhaul:TimeHeader", "", 150)
+                    };
+                    List<RowInfo> rows = new();
+                    foreach (InterviewData data in InterviewLists[parameters.Actor.SimDescription.SimDescriptionId])
+                    {
+                        if (SimClock.CurrentTime() < SimClock.Subtract(data.InterviewDate, TimeUnit.Hours, 1f) && data.TimesPostponed < Settings.MaxInterviewPostpones)
+                        {
+                            Occupation occupation = CareerManager.GetStaticOccupation(data.CareerName);
+                            rows.Add(new(data, new()
+                            {
+                                new ImageAndTextColumn(occupation.CareerIconColored, $"{occupation.CareerName} ({data.RabbitHole.GetLocalizedName()})"),
+                                new TextColumn($"{SimClockUtils.GetDayAsText(data.InterviewDate.DayOfWeek)} {SimClockUtils.GetText(Convert.ToInt32(data.InterviewDate.Hour))}")
+                            }));
+                        }
                     }
-                    return base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback) && mData.ActorId == a.SimDescription.SimDescriptionId;
+                    listObjs = new() { new("", "", rows) };
+                    NumSelectableRows = 1;
                 }
             }
 
-            public override ConversationBehavior OnCallConnected() => ConversationBehavior.TalkBriefly;
+            public static readonly InteractionDefinition Singleton = new Definition();
 
-            public override void OnCallFinished()
+            public override bool Run() => GetSelectedObject() is InterviewData data && SimClock.CurrentTime() < SimClock.Subtract(data.InterviewDate, TimeUnit.Hours, 1f) && data.TimesPostponed < Settings.MaxInterviewPostpones && base.Run();
+
+            public override ConversationBehavior OnCallConnected() 
             {
-                InterviewData data = (InteractionDefinition as Definition).mData;
-                HolidayManager manager = HolidayManager.Instance;
-                do
+                InterviewData data = GetSelectedObject() as InterviewData;
+                if (InterviewLists.TryGetValue(data.ActorId, out List<InterviewData> list) && list.Contains(data))
                 {
-                    data.InterviewDate = SimClock.Add(data.InterviewDate, TimeUnit.Days, 1);
-                } while (data.InterviewDate.DayOfWeek is DaysOfTheWeek.Saturday or DaysOfTheWeek.Sunday || (manager is not null && SimClock.IsSameDay(data.InterviewDate, manager.mStartDateTimeOfHoliday)));
-                AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
-                data.RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) - 1, TimeUnit.Hours, data.OnReminderCallback, "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, Actor);
-                AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
-                data.TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) + 0.5f, TimeUnit.Hours, data.OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, Actor);
-                data.TimesPostponed += 1;
-                Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, data.TimesPostponed >= Settings.MaxInterviewPostpones ? "InterviewPostponedFinal" : "InterviewPostponed", new object[]
+                    HolidayManager manager = HolidayManager.Instance;
+                    do
                     {
+                        data.InterviewDate = SimClock.Add(data.InterviewDate, TimeUnit.Days, 1);
+                    } while (data.InterviewDate.DayOfWeek is DaysOfTheWeek.Saturday or DaysOfTheWeek.Sunday || (manager is not null && SimClock.IsSameDay(data.InterviewDate, manager.mStartDateTimeOfHoliday)));
+                    AlarmManager.Global.RemoveAlarm(data.RemindAlarm);
+                    data.RemindAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) - 1, TimeUnit.Hours, data.OnReminderCallback, "Gamefreak130 wuz here -- Interview Reminder", AlarmType.AlwaysPersisted, Actor);
+                    AlarmManager.Global.RemoveAlarm(data.TimeoutAlarm);
+                    data.TimeoutAlarm = AlarmManager.Global.AddAlarm(SimClock.HoursUntil(data.InterviewDate) + 0.5f, TimeUnit.Hours, data.OnInterviewTimeout, "Gamefreak130 wuz here -- Interview Timeout", AlarmType.AlwaysPersisted, Actor);
+                    data.TimesPostponed += 1;
+                    Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, data.TimesPostponed >= Settings.MaxInterviewPostpones ? "InterviewPostponedFinal" : "InterviewPostponed", new object[]
+                        {
                         Actor,
                         data.RabbitHole.GetLocalizedName(),
                         GetTextDayOfWeek(data.InterviewDate),
-                        SimClockUtils.GetText(Convert.ToInt32(data.InterviewDate.Hour), 0)
-                    }), data.TimesPostponed >= Settings.MaxInterviewPostpones ? StyledNotification.NotificationStyle.kGameMessageNegative : StyledNotification.NotificationStyle.kSystemMessage);
+                        SimClockUtils.GetText(Convert.ToInt32(data.InterviewDate.Hour))
+                        }), data.TimesPostponed >= Settings.MaxInterviewPostpones ? StyledNotification.NotificationStyle.kGameMessageNegative : StyledNotification.NotificationStyle.kSystemMessage);
+                    return ConversationBehavior.TalkBriefly;
+                }
+                return ConversationBehavior.JustHangUp;
             }
         }
 
@@ -400,35 +462,54 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             public class Definition : CallDefinition<CancelInterview>
             {
-                internal InterviewData mData;
-
-                public Definition()
-                {
-                }
-
-                public Definition(InterviewData data) => mData = data;
-
                 public override string[] GetPath(bool isFemale) => new[] { Phone.LocalizeString("JobsAndOffers") + Localization.Ellipsis };
 
-                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("CancelInterview");
+                public override string GetInteractionName(Sim actor, Phone target, InteractionObjectPair iop) => LocalizeString("CancelInterview") + Localization.Ellipsis;
 
-                public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback) && mData.ActorId == a.SimDescription.SimDescriptionId;
+                public override bool Test(Sim a, Phone target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback) => base.Test(a, target, isAutonomous, ref greyedOutTooltipCallback) && InterviewLists.ContainsKey(a.SimDescription.SimDescriptionId);
+
+                public override void PopulatePieMenuPicker(ref InteractionInstanceParameters parameters, out List<TabInfo> listObjs, out List<HeaderInfo> headers, out int NumSelectableRows)
+                {
+                    headers = new()
+                    {
+                        new("Ui/Caption/ObjectPicker:Name", "", 350),
+                        new("Gamefreak130/LocalizedMod/JobOverhaul:TimeHeader", "", 150)
+                    };
+                    List<RowInfo> rows = new();
+                    foreach (InterviewData data in InterviewLists[parameters.Actor.SimDescription.SimDescriptionId])
+                    {
+                        Occupation occupation = CareerManager.GetStaticOccupation(data.CareerName);
+                        rows.Add(new(data, new()
+                        {
+                            new ImageAndTextColumn(occupation.CareerIconColored, $"{occupation.CareerName} ({data.RabbitHole.GetLocalizedName()})"),
+                            new TextColumn($"{SimClockUtils.GetDayAsText(data.InterviewDate.DayOfWeek)} {SimClockUtils.GetText(Convert.ToInt32(data.InterviewDate.Hour))}")
+                        }));
+                    }
+                    listObjs = new() { new("", "", rows) };
+                    NumSelectableRows = 1;
+                }
             }
 
-            public override ConversationBehavior OnCallConnected() => ConversationBehavior.TalkBriefly;
+            public static readonly InteractionDefinition Singleton = new Definition();
 
-            public override void OnCallFinished()
+            public override ConversationBehavior OnCallConnected()
             {
-                if (TwoButtonDialog.Show(LocalizeString(Actor.IsFemale, "CancelInterviewDialog", Actor), LocalizationHelper.Yes, LocalizationHelper.No))
+                InterviewData data = GetSelectedObject() as InterviewData;
+                if (InterviewLists.TryGetValue(data.ActorId, out List<InterviewData> list) && list.Contains(data))
                 {
-                    InterviewData data = (InteractionDefinition as Definition).mData;
-                    data.Dispose(false);
-                    Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, "InterviewCanceled", new object[]
+                    if (TwoButtonDialog.Show(LocalizeString(Actor.IsFemale, "CancelInterviewDialog", Actor), LocalizationHelper.Yes, LocalizationHelper.No))
                     {
+                        data.Dispose(false);
+                        Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, "InterviewCanceled", new object[]
+                        {
                         Actor,
                         CareerManager.GetStaticOccupation(data.CareerName).GetLocalizedCareerName(Actor.IsFemale)
-                    }), StyledNotification.NotificationStyle.kSystemMessage);
+                        }), StyledNotification.NotificationStyle.kSystemMessage);
+                        return ConversationBehavior.Nod;
+                    }
+                    return ConversationBehavior.ShakeHead;
                 }
+                return ConversationBehavior.JustHangUp;
             }
         }
     }
