@@ -57,7 +57,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
 
             public override bool Test(Sim actor, GameObject target, bool isAutonomous, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
             {
-                mIsPhone = target is PhoneCell;
+                mIsPhone = target is Phone;
                 return (target is Computer or PhoneHome or Newspaper { IsReadable: true } || (mIsPhone && (target as PhoneCell).IsUsableBy(actor))) && actor.SimDescription.TeenOrAbove && !GameUtils.IsOnVacation() && !GameUtils.IsUniversityWorld();
             }
 
