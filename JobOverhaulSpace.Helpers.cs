@@ -69,67 +69,23 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
         {
             if (e is World.OnObjectPlacedInLotEventArgs onObjectPlacedInLotEventArgs)
             {
-                GameObject @object = GameObject.GetObject(onObjectPlacedInLotEventArgs.ObjectId);
-                if (@object is Computer or Phone or Newspaper)
-                {
-                    Common.Helpers.AddInteraction(@object, ChangeSettings.Singleton);
-                }
-                if (@object is Computer computer)
-                {
-                    Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
-                    computer.RemoveInteractionByType(definitionType);
-                    InteractionObjectPair iop = null;
-                    if (computer.ItemComp?.InteractionsInventory is not null)
-                    {
-                        foreach (InteractionObjectPair current in computer.ItemComp.InteractionsInventory)
-                        {
-                            if (current.InteractionDefinition.GetType() == definitionType)
-                            {
-                                iop = current;
-                                break;
-                            }
-                        }
-                    }
-                    if (iop is not null)
-                    {
-                        computer.ItemComp.InteractionsInventory.Remove(iop);
-                    }
-                }
-                if (@object is Newspaper newspaper)
-                {
-                    newspaper.RemoveInteractionByType(FindActiveCareerNewspaper.Singleton);
-                    if (!RandomNewspaperSeeds.ContainsKey(newspaper.ObjectId))
-                    {
-                        RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
-                    }
-                }
-                if (@object is Phone phone)
-                {
-                    Common.Helpers.AddInteraction(phone, PostponeInterview.Singleton);
-                    Common.Helpers.AddInteraction(phone, CancelInterview.Singleton);
-                }
-                if (@object is SchoolRabbitHole school)
-                {
-                    Common.Helpers.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
-                }
-                if (@object is CityHall cityHall)
-                {
-                    Common.Helpers.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
-                }
-                if (@object is LifeguardChair chair)
-                {
-                    chair.RemoveInteractionByType(LifeguardChair.JoinLifeGuardCareer.Singleton);
-                }
+                AddObjectInteractions(GameObject.GetObject(onObjectPlacedInLotEventArgs.ObjectId));
             }
         }
 
         internal static ListenerAction OnObjectChanged(Event e)
-        {//TODO refactor these two listeners into one
-            if (e.TargetObject is Computer or Phone or Newspaper)
+        {
+            AddObjectInteractions(e.TargetObject as GameObject);
+            return ListenerAction.Keep;
+        }
+
+        private static void AddObjectInteractions(GameObject @object)
+        {
+            if (@object is Computer or Phone or Newspaper)
             {
-                Common.Helpers.AddInteraction((GameObject)e.TargetObject, ChangeSettings.Singleton);
+                Common.Helpers.AddInteraction(@object, ChangeSettings.Singleton);
             }
-            if (e.TargetObject is Computer computer)
+            if (@object is Computer computer)
             {
                 Type definitionType = Computer.FindActiveCareer.Singleton.GetType();
                 computer.RemoveInteractionByType(definitionType);
@@ -150,7 +106,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     computer.ItemComp.InteractionsInventory.Remove(iop);
                 }
             }
-            if (e.TargetObject is Newspaper newspaper)
+            if (@object is Newspaper newspaper)
             {
                 newspaper.RemoveInteractionByType(FindActiveCareerNewspaper.Singleton);
                 if (!RandomNewspaperSeeds.ContainsKey(newspaper.ObjectId))
@@ -158,24 +114,23 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     RandomNewspaperSeeds.Add(newspaper.ObjectId, RandomNewspaperSeed + SimClock.ElapsedCalendarDays());
                 }
             }
-            if (e.TargetObject is Phone phone)
+            if (@object is Phone phone)
             {
                 Common.Helpers.AddInteraction(phone, PostponeInterview.Singleton);
                 Common.Helpers.AddInteraction(phone, CancelInterview.Singleton);
             }
-            if (e.TargetObject is SchoolRabbitHole school)
+            if (@object is SchoolRabbitHole school)
             {
                 Common.Helpers.AddInteraction(school, CollegeOfBusiness.AttendResumeWritingAndInterviewTechniquesClass.Singleton);
             }
-            if (e.TargetObject is CityHall cityHall)
+            if (@object is CityHall cityHall)
             {
                 Common.Helpers.AddInteraction(cityHall, JoinActiveCareerDaycare.Singleton);
             }
-            if (e.TargetObject is LifeguardChair chair)
+            if (@object is LifeguardChair chair)
             {
                 chair.RemoveInteractionByType(LifeguardChair.JoinLifeGuardCareer.Singleton);
             }
-            return ListenerAction.Keep;
         }
 
         internal static ListenerAction OnSimInBoardingSchool(Event e)
