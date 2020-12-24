@@ -253,10 +253,11 @@ namespace Gamefreak130
             {
                 chair.RemoveInteractionByType(LifeguardChair.JoinLifeGuardCareer.Singleton);
             }
-            AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupInterviews, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
+            //AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupInterviews, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
+            FixupInterviews();
+            FixupLifeguard();
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupCareerOpportunities, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             AlarmManager.Global.AddAlarm(1f, TimeUnit.Seconds, FixupNewspaperSeeds, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
-            AlarmManager.Global.AddAlarm(2f, TimeUnit.Seconds, FixupLifeguard, "Gamefreak130 wuz here -- Delayed Fixup", AlarmType.NeverPersisted, null);
             World.OnObjectPlacedInLotEventHandler += OnObjectPlacedInLot;
             EventTracker.AddListener(EventTypeId.kInventoryObjectAdded, OnObjectChanged);
             EventTracker.AddListener(EventTypeId.kObjectStateChanged, OnObjectChanged);
@@ -589,7 +590,7 @@ namespace Gamefreak130
                         {
                             foreach (Opportunity.OpportunitySharedData.EventInfo info in opportunity.EventList)
                             {
-                                if (info.mEventId is EventTypeId.kSimEnteredVacationWorld || info.mEventId is EventTypeId.kSimReturnedFromVacationWorld)
+                                if (info.mEventId is EventTypeId.kSimEnteredVacationWorld or EventTypeId.kSimReturnedFromVacationWorld)
                                 {
                                     goto CJACK_01;
                                 }
