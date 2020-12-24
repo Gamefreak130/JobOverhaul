@@ -613,7 +613,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers.OccupationStates
         {
             Methods.DropOccupation(manager);
             ActiveCareer activeCareer = CareerManager.GetStaticOccupation(Guid) as ActiveCareer;
-            if (activeCareer is not null && activeCareer.IsActiveCareerAvailable() && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & manager.mSimDescription.Age) is not CASAgeGenderFlags.None && base.AcquireOccupation(manager))
+            if (activeCareer is not null && Methods.IsActiveCareerAvailable(activeCareer) && (activeCareer.GetOccupationStaticDataForActiveCareer().ValidAges & manager.mSimDescription.Age) is not CASAgeGenderFlags.None && base.AcquireOccupation(manager))
             {
                 manager.OccupationAsActiveCareer.mLifetimeEarningsForPensionCalculation = MoneyEarned;
                 return true;
