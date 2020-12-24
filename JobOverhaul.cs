@@ -60,8 +60,6 @@ namespace Gamefreak130
             //CONSIDER Move QuitWork?
             //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
-            //CONSIDER Move FixupInterviews to worldload?
-            //TODO Fixup the rest of the string tables
 
             IsPoolLifeguardModInstalled = Common.Helpers.FindAssembly("icarusallsorts.PoolLifeguard");
             IsOnceReadInstalled = Common.Helpers.FindAssembly("NRaasOnceRead");
