@@ -179,9 +179,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 }));
 
             Common.UI.MenuContainer container2 = new(LocalizeString("MenuTitle"), LocalizeString("CareerAvailabilitySettingsMenuName"));
-            foreach (string key in Settings.CareerAvailabilitySettings.Keys)
+            foreach (string key in Settings.CareerAvailabilityMap.Keys)
             {
-                CareerAvailabilitySettings settings = Settings.CareerAvailabilitySettings[key];
+                PersistedSettings.CareerAvailabilitySettings settings = Settings.CareerAvailabilityMap[key];
                 string name = settings.IsActive ? XpBasedCareer.LocalizeString(Actor.IsFemale, key) : Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
                 Common.UI.MenuContainer jobContainer = new(LocalizeString("MenuTitle"), name);
                 jobContainer.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("IsAvailableMenuName"), "IsAvailable", null, settings));
@@ -218,9 +218,9 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             container.AddMenuObject(new Common.UI.GenerateMenuObject(LocalizeString("CareerAvailabilitySettingsMenuName"), null, container2));
 
             Common.UI.MenuContainer container3 = new(LocalizeString("MenuTitle"), LocalizeString("InterviewSettingsMenuName"));
-            foreach (string key in Settings.InterviewSettings.Keys)
+            foreach (string key in Settings.InterviewMap.Keys)
             {
-                InterviewSettings settings = Settings.InterviewSettings[key];
+                PersistedSettings.InterviewSettings settings = Settings.InterviewMap[key];
                 string name = Localization.LocalizeString(Actor.IsFemale, "Gameplay/Excel/Careers/CareerList:" + key);
                 Common.UI.MenuContainer interviewContainer = new(LocalizeString("MenuTitle"), name);
                 interviewContainer.AddMenuObject(new Common.UI.SetSimplePropertyObject<bool>(LocalizeString("RequiresInterviewMenuName"), "RequiresInterview", null, settings));
@@ -620,7 +620,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (flag && Actor.IsSelectable && Target.CareerLocations.TryGetValue((ulong)Occupation, out CareerLocation careerLocation) && careerLocation.Career.CanAcceptCareer(Actor.ObjectId, ref tooltipCallback) && careerLocation.Career.CareerAgeTest(Actor.SimDescription))
             {
                 string name = careerLocation.Career.SharedData.Name.Substring(34);
-                if (Settings.CareerAvailabilitySettings.TryGetValue(name, out CareerAvailabilitySettings availabilitySettings) && availabilitySettings.IsAvailable)
+                if (Settings.CareerAvailabilityMap.TryGetValue(name, out PersistedSettings.CareerAvailabilitySettings availabilitySettings) && availabilitySettings.IsAvailable)
                 {
                     if (GameUtils.IsInstalled(ProductVersion.EP9) && availabilitySettings.RequiredDegrees.Count > 0)
                     {
@@ -632,7 +632,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    if (Settings.InterviewSettings.TryGetValue(name, out InterviewSettings interviewSettings) && interviewSettings.RequiresInterview)
+                    if (Settings.InterviewMap.TryGetValue(name, out PersistedSettings.InterviewSettings interviewSettings) && interviewSettings.RequiresInterview)
                     {
                         new InterviewData(careerLocation, Actor);
                     }
@@ -1648,8 +1648,8 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     }
                     if (mLocation.Career is not School && !(IsCareersInstalled && mLocation.Career.GetType() == Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer")))
                     {
-                        Settings.InterviewSettings.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out InterviewSettings interviewSettings);
-                        Settings.CareerAvailabilitySettings.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out CareerAvailabilitySettings availabilitySettings);
+                        Settings.InterviewMap.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out PersistedSettings.InterviewSettings interviewSettings);
+                        Settings.CareerAvailabilityMap.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out PersistedSettings.CareerAvailabilitySettings availabilitySettings);
                         if (interviewSettings is null || availabilitySettings is null || !Settings.EnableGetJobInRabbitHole || !availabilitySettings.IsAvailable || interviewSettings.RequiresInterview)
                         {
                             return false;

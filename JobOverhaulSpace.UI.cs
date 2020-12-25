@@ -184,7 +184,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                             {
                                 Career career = occupation as Career;
                                 string name = career.SharedData.Name.Substring(34);
-                                if (Settings.InterviewSettings.TryGetValue(name, out InterviewSettings interviewSettings) && interviewSettings.RequiresInterview)
+                                if (Settings.InterviewMap.TryGetValue(name, out PersistedSettings.InterviewSettings interviewSettings) && interviewSettings.RequiresInterview)
                                 {
                                     new InterviewData(mCurrentCareerLocation, sim);
                                 }
@@ -612,7 +612,7 @@ namespace Gamefreak130.JobOverhaulSpace.UI
                     button.TooltipText = LocalizeString(sim.IsFemale, "TooYoungForProfession");
                     return;
                 }
-                if (GameUtils.IsInstalled(ProductVersion.EP9) && Settings.CareerAvailabilitySettings.TryGetValue(name, out CareerAvailabilitySettings settings) && settings.RequiredDegrees.Count > 0)
+                if (GameUtils.IsInstalled(ProductVersion.EP9) && Settings.CareerAvailabilityMap.TryGetValue(name, out PersistedSettings.CareerAvailabilitySettings settings) && settings.RequiredDegrees.Count > 0)
                 {
                     foreach (AcademicDegreeNames degree in settings.RequiredDegrees)
                     {

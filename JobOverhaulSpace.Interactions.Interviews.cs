@@ -288,7 +288,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             {
                 CancellableByPlayer = false;
                 mData.Dispose(false);
-                if (Actor.IsSelectable && CareerManager.GetStaticCareer(mData.CareerName) is Career career && Settings.InterviewSettings.TryGetValue(career.SharedData.Name.Substring(34), out InterviewSettings settings))
+                if (Actor.IsSelectable && CareerManager.GetStaticCareer(mData.CareerName) is Career career && Settings.InterviewMap.TryGetValue(career.SharedData.Name.Substring(34), out PersistedSettings.InterviewSettings settings))
                 {
                     float chance = career.Category is Career.CareerCategory.FullTime ? Settings.BaseFullTimeJobChance : Settings.BasePartTimeJobChance;
                     chance -= Settings.PostponeInterviewChanceChange * mData.TimesPostponed;

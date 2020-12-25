@@ -268,7 +268,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
     {
         public static bool TestApplyForProfession(Sim sim, OccupationNames profession, ref GreyedOutTooltipCallback greyedOutTooltipCallback)
         {
-            if (!Settings.CareerAvailabilitySettings.TryGetValue(profession.ToString(), out CareerAvailabilitySettings settings) || !settings.IsAvailable)
+            if (!Settings.CareerAvailabilityMap.TryGetValue(profession.ToString(), out PersistedSettings.CareerAvailabilitySettings settings) || !settings.IsAvailable)
             {
                 return false;
             }
@@ -324,7 +324,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             foreach (Occupation current in CareerManager.OccupationList)
             {
                 string name = (current as Career)?.SharedData.Name.Substring(34) ?? current.Guid.ToString();
-                if (Settings.CareerAvailabilitySettings.TryGetValue(name, out CareerAvailabilitySettings settings) && settings.IsAvailable)
+                if (Settings.CareerAvailabilityMap.TryGetValue(name, out PersistedSettings.CareerAvailabilitySettings settings) && settings.IsAvailable)
                 {
                     if (current is Career career and not School && career.Locations.Count > 0 && career.CareerAgeTest(actor.SimDescription))
                     {
@@ -397,7 +397,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 if (rand.OccupationEntry is Occupation occupation)
                 {
                     string name = (occupation as Career)?.SharedData.Name.Substring(34) ?? occupation.Guid.ToString();
-                    if (Settings.CareerAvailabilitySettings.TryGetValue(name, out CareerAvailabilitySettings settings) && settings.IsAvailable)
+                    if (Settings.CareerAvailabilityMap.TryGetValue(name, out PersistedSettings.CareerAvailabilitySettings settings) && settings.IsAvailable)
                     {
                         list3.Add(rand);
                         num++;
@@ -415,7 +415,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                 if (rand.OccupationEntry is Occupation occupation)
                 {
                     string name = (occupation as Career)?.SharedData.Name.Substring(34) ?? occupation.Guid.ToString();
-                    if (Settings.CareerAvailabilitySettings.TryGetValue(name, out CareerAvailabilitySettings settings) && settings.IsAvailable)
+                    if (Settings.CareerAvailabilityMap.TryGetValue(name, out PersistedSettings.CareerAvailabilitySettings settings) && settings.IsAvailable)
                     {
                         list3.Add(rand);
                         num++;

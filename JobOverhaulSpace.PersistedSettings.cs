@@ -9,69 +9,71 @@ using System.Collections.Generic;
 #pragma warning disable IDE0032 // Use auto property
 namespace Gamefreak130.JobOverhaulSpace
 {
-    [Persistable]
-    public class InterviewSettings
-    {
-        private bool mRequiresInterview = true;
-
-        private readonly List<TraitNames> mPositiveTraits = new() { TraitNames.Ambitious };
-
-        private readonly List<TraitNames> mNegativeTraits = new() { TraitNames.Loser };
-
-        private readonly List<SkillNames> mRequiredSkills = new();
-
-        public bool RequiresInterview { get => mRequiresInterview; set => mRequiresInterview = value; }
-
-        public List<TraitNames> PositiveTraits => mPositiveTraits;
-
-        public List<TraitNames> NegativeTraits => mNegativeTraits;
-
-        public List<SkillNames> RequiredSkills => mRequiredSkills;
-
-        public InterviewSettings()
-        {
-        }
-
-        public InterviewSettings(bool requiresInterview, List<TraitNames> posTraits, List<TraitNames> negTraits, List<SkillNames> skills)
-        {
-            mRequiresInterview = requiresInterview;
-            mPositiveTraits = posTraits;
-            mNegativeTraits = negTraits;
-            mRequiredSkills = skills;
-        }
-    }
-
-    [Persistable]
-    public class CareerAvailabilitySettings
-    {
-        private readonly bool mIsActive;
-
-        private bool mIsAvailable = true;
-
-        private readonly List<AcademicDegreeNames> mRequiredDegrees = new();
-
-        public bool IsActive => mIsActive;
-
-        public bool IsAvailable { get => mIsAvailable; set => mIsAvailable = value; }
-
-        public List<AcademicDegreeNames> RequiredDegrees => mRequiredDegrees;
-
-        private CareerAvailabilitySettings()
-        {
-        }
-
-        public CareerAvailabilitySettings(bool isActive) => mIsActive = isActive;
-
-        public CareerAvailabilitySettings(bool isAvailable, bool isActive, List<AcademicDegreeNames> requiredDegrees)
-        {
-            mIsAvailable = isAvailable;
-            mRequiredDegrees = requiredDegrees;
-            mIsActive = isActive;
-        }
-    }
-
     public class PersistedSettings : Settings
     {
+        // I wish these classes weren't nested
+        // But moving them will break existing settings, so here they will stay
+        [Persistable]
+        public class InterviewSettings
+        {
+            private bool mRequiresInterview = true;
+
+            private readonly List<TraitNames> mPositiveTraits = new() { TraitNames.Ambitious };
+
+            private readonly List<TraitNames> mNegativeTraits = new() { TraitNames.Loser };
+
+            private readonly List<SkillNames> mRequiredSkills = new();
+
+            public bool RequiresInterview { get => mRequiresInterview; set => mRequiresInterview = value; }
+
+            public List<TraitNames> PositiveTraits => mPositiveTraits;
+
+            public List<TraitNames> NegativeTraits => mNegativeTraits;
+
+            public List<SkillNames> RequiredSkills => mRequiredSkills;
+
+            public InterviewSettings()
+            {
+            }
+
+            public InterviewSettings(bool requiresInterview, List<TraitNames> posTraits, List<TraitNames> negTraits, List<SkillNames> skills)
+            {
+                mRequiresInterview = requiresInterview;
+                mPositiveTraits = posTraits;
+                mNegativeTraits = negTraits;
+                mRequiredSkills = skills;
+            }
+        }
+
+        [Persistable]
+        public class CareerAvailabilitySettings
+        {
+            private readonly bool mIsActive;
+
+            private bool mIsAvailable = true;
+
+            private readonly List<AcademicDegreeNames> mRequiredDegrees = new();
+
+            public bool IsActive => mIsActive;
+
+            public bool IsAvailable { get => mIsAvailable; set => mIsAvailable = value; }
+
+            public List<AcademicDegreeNames> RequiredDegrees => mRequiredDegrees;
+
+            private CareerAvailabilitySettings()
+            {
+            }
+
+            public CareerAvailabilitySettings(bool isActive) => mIsActive = isActive;
+
+            public CareerAvailabilitySettings(bool isAvailable, bool isActive, List<AcademicDegreeNames> requiredDegrees)
+            {
+                mIsAvailable = isAvailable;
+                mRequiredDegrees = requiredDegrees;
+                mIsActive = isActive;
+            }
+        }
+
         [Tunable, TunableComment("True/False: Whether or not to enable the EA default 'Join Career' rabbithole interactions for occupations that do not require an interview")]
         private static readonly bool kEnableGetJobInRabbitHole = true;
 
@@ -218,9 +220,9 @@ namespace Gamefreak130.JobOverhaulSpace
 
         public float ApplicationTime { get => mApplicationTime; set => mApplicationTime = value; }
 
-        public Dictionary<string, InterviewSettings> InterviewSettings => mInterviewSettings;
+        public Dictionary<string, InterviewSettings> InterviewMap => mInterviewSettings;
 
-        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilitySettings => mCareerAvailabilitySettings;
+        public Dictionary<string, CareerAvailabilitySettings> CareerAvailabilityMap => mCareerAvailabilitySettings;
 
         public Dictionary<string, bool> SelfEmployedAvailabilitySettings => mSelfEmployedAvailabilitySettings;
     }

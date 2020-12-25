@@ -299,7 +299,7 @@ namespace Gamefreak130
                     career.mAvailableInFuture = true;
                     string name = career.Guid.ToString();
                     currentCareers.Add(name);
-                    if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
+                    if (!Settings.CareerAvailabilityMap.ContainsKey(name))
                     {
                         newActiveCareers.Add(career.Guid.ToString());
                     }
@@ -328,7 +328,7 @@ namespace Gamefreak130
                     foreach (XmlDbRow row in xmlDbTable.Rows)
                     {
                         string name = row.GetString("CareerName");
-                        if (!string.IsNullOrEmpty(name) && !Settings.InterviewSettings.ContainsKey(name) && newCareers.Contains(name))
+                        if (!string.IsNullOrEmpty(name) && !Settings.InterviewMap.ContainsKey(name) && newCareers.Contains(name))
                         {
                             bool requiresInterview = row.GetBool("RequiresInterview");
                             string toList = row.GetString("PositiveTraits").Replace(" ", string.Empty);
@@ -400,8 +400,8 @@ namespace Gamefreak130
                                     }
                                 }
                             }
-                            InterviewSettings interviewData = new(requiresInterview, posTraits, negTraits, skills);
-                            Settings.InterviewSettings.Add(name, interviewData);
+                            PersistedSettings.InterviewSettings interviewData = new(requiresInterview, posTraits, negTraits, skills);
+                            Settings.InterviewMap.Add(name, interviewData);
                         }
                     }
                 }
@@ -444,18 +444,18 @@ namespace Gamefreak130
                             if (newCareers.Contains(name))
                             {
                                 newCareers.Remove(name);
-                                if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
+                                if (!Settings.CareerAvailabilityMap.ContainsKey(name))
                                 {
-                                    CareerAvailabilitySettings settings = new(isAvailable, false, degrees);
-                                    Settings.CareerAvailabilitySettings.Add(name, settings);
+                                    PersistedSettings.CareerAvailabilitySettings settings = new(isAvailable, false, degrees);
+                                    Settings.CareerAvailabilityMap.Add(name, settings);
                                 }
                                 continue;
                             }
                             if (newActiveCareers.Contains(name))
                             {
                                 newActiveCareers.Remove(name);
-                                CareerAvailabilitySettings settings = new(isAvailable, true, degrees);
-                                Settings.CareerAvailabilitySettings.Add(name, settings);
+                                PersistedSettings.CareerAvailabilitySettings settings = new(isAvailable, true, degrees);
+                                Settings.CareerAvailabilityMap.Add(name, settings);
                             }
                         }
                     }
@@ -488,13 +488,13 @@ namespace Gamefreak130
                 if (newCareers.Contains(name))
                 {
                     newCareers.Remove(name);
-                    if (!Settings.InterviewSettings.ContainsKey(name))
+                    if (!Settings.InterviewMap.ContainsKey(name))
                     {
-                        Settings.InterviewSettings.Add(name, new());
+                        Settings.InterviewMap.Add(name, new());
                     }
-                    if (!Settings.CareerAvailabilitySettings.ContainsKey(name))
+                    if (!Settings.CareerAvailabilityMap.ContainsKey(name))
                     {
-                        Settings.CareerAvailabilitySettings.Add(name, new(false));
+                        Settings.CareerAvailabilityMap.Add(name, new(false));
                     }
                 }
             }
@@ -504,7 +504,7 @@ namespace Gamefreak130
                 if (newActiveCareers.Contains(name))
                 {
                     newActiveCareers.Remove(name);
-                    Settings.CareerAvailabilitySettings.Add(name, new(true));
+                    Settings.CareerAvailabilityMap.Add(name, new(true));
                 }
             }
             foreach (Occupation occupation in CareerManager.OccupationList)
@@ -517,24 +517,24 @@ namespace Gamefreak130
                 }
             }
 
-            string[] interviewKeys = new string[Settings.InterviewSettings.Count];
-            string[] careerKeys = new string[Settings.CareerAvailabilitySettings.Count];
+            string[] interviewKeys = new string[Settings.InterviewMap.Count];
+            string[] careerKeys = new string[Settings.CareerAvailabilityMap.Count];
             string[] selfEmployedKeys = new string[Settings.SelfEmployedAvailabilitySettings.Count];
-            Settings.InterviewSettings.Keys.CopyTo(interviewKeys, 0);
-            Settings.CareerAvailabilitySettings.Keys.CopyTo(careerKeys, 0);
+            Settings.InterviewMap.Keys.CopyTo(interviewKeys, 0);
+            Settings.CareerAvailabilityMap.Keys.CopyTo(careerKeys, 0);
             Settings.SelfEmployedAvailabilitySettings.Keys.CopyTo(selfEmployedKeys, 0);
             foreach (string key in interviewKeys)
             {
                 if (!currentInterviews.Contains(key))
                 {
-                    Settings.InterviewSettings.Remove(key);
+                    Settings.InterviewMap.Remove(key);
                 }
             }
             foreach (string key in careerKeys)
             {
                 if (!currentCareers.Contains(key))
                 {
-                    Settings.CareerAvailabilitySettings.Remove(key);
+                    Settings.CareerAvailabilityMap.Remove(key);
                 }
             }
             foreach (string key in selfEmployedKeys)
@@ -626,7 +626,7 @@ namespace Gamefreak130
 
         private static void FixupNewspaperSeeds()
         {
-            ObjectGuid[] keys = new ObjectGuid[Settings.InterviewSettings.Count];
+            ObjectGuid[] keys = new ObjectGuid[Settings.InterviewMap.Count];
             RandomNewspaperSeeds.Keys.CopyTo(keys, 0);
             foreach (ObjectGuid id in keys)
             {
