@@ -14,7 +14,7 @@
       <!--True/False: Whether or not to enable the EA default 'Join Profession' interactions-->
     </kEnableJoinProfessionInRabbitHoleOrLot>
     <kInstantGratification value="False">
-      <!--True/False: Whether or not job offers from computers, newspapers, or smartphones will be presented in one menu; if set to true, kHoloComputerInstantGratification and kHoloPhoneInstantGratification are also assumed to be true"-->
+      <!--True/False: Whether or not job offers from computers, newspapers, or smartphones will be presented in one menu; if set to true, kHoloComputerInstantGratification and kHoloPhoneInstantGratification are also assumed to be true-->
     </kInstantGratification>
     <kHoloComputerInstantGratification value="True">
       <!--True/False: Whether or not to have the Holocomputer present all job offers in one menu like the crazy future tech it is, rather than through multiple dialogues over time-->
@@ -28,6 +28,9 @@
     <kNumBonusResumeJobs value="1">
       <!--How many bonus job offers to award sims with enough blog followers through the "Upload Resume" interaction-->
     </kNumBonusResumeJobs>
+    <kMinJobOffers value="0">
+      <!--The minimum guaranteed number of job offers available through a particular newspaper or the online classifieds; the maximum number is determined by the "FindJobNumJobOpportunies" element of computer and newspaper tuning-->
+    </kMinJobOffers>
     <kBaseFullTimeJobChance value="30">
       <!--Range 0-100: Base chance of a sim getting a full-time job after a job interview-->
     </kBaseFullTimeJobChance>

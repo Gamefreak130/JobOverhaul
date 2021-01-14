@@ -74,6 +74,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
         {
             Common.UI.MenuContainer container = new(LocalizeString("MenuTitle"), LocalizeString("Settings"));
             container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("NumBonusResumeJobsMenuName"), LocalizeString("NumBonusResumeJobsPrompt"), "NumBonusResumeJobs", () => GameUtils.IsInstalled(ProductVersion.EP9), Settings));
+            container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("MinJobOffersMenuName"), LocalizeString("MinJobOffersPrompt"), "MinJobOffers", null, Settings));
             container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("FullTimeInterviewHourMenuName"), LocalizeString("FullTimeInterviewHourPrompt"), "FullTimeInterviewHour", null, Settings));
             container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("PartTimeInterviewHourMenuName"), LocalizeString("PartTimeInterviewHourPrompt"), "PartTimeInterviewHour", null, Settings));
             container.AddMenuObject(new Common.UI.SetSimplePropertyObject<int>(LocalizeString("MaxInterviewPostponesMenuName"), LocalizeString("MaxInterviewPostponesPrompt"), "MaxInterviewPostpones", null, Settings));

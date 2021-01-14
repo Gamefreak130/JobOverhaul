@@ -2,6 +2,8 @@
 using Sims3.Gameplay.Academics;
 using Sims3.Gameplay.ActorSystems;
 using Sims3.Gameplay.Skills;
+using Sims3.Gameplay.Objects.Electronics;
+using Sims3.Gameplay.Objects.Miscellaneous;
 using Sims3.SimIFace;
 using System;
 using System.Collections.Generic;
@@ -95,6 +97,9 @@ namespace Gamefreak130.JobOverhaulSpace
         [Tunable, TunableComment("How many bonus job offers to award sims with enough blog followers through the 'Upload Resume' interaction")]
         private static readonly int kNumBonusResumeJobs = 1;
 
+        [Tunable, TunableComment("The minimum guaranteed number of job offers available through a particular newspaper or the online classifieds; the maximum number is determined by the \"FindJobNumJobOpportunies\" element of computer and newspaper tuning")]
+        private static readonly int kMinJobOffers = 0;
+
         [Tunable, TunableComment("Range 0-24: The hour at which an interview for a full-time job will be scheduled")]
         private static readonly int kFullTimeInterviewHour = 10;
 
@@ -152,6 +157,8 @@ namespace Gamefreak130.JobOverhaulSpace
 
         private int mNumBonusResumeJobs = kNumBonusResumeJobs;
 
+        private int mMinJobOffers = kMinJobOffers;
+
         private int mMaxInterviewPostpones = kMaxInterviewPostpones;
 
         private float mBaseFullTimeJobChance = kBaseFullTimeJobChance;
@@ -197,6 +204,10 @@ namespace Gamefreak130.JobOverhaulSpace
         public int PartTimeInterviewHour { get => mPartTimeInterviewHour; set => mPartTimeInterviewHour = Math.Min(value, 23); }
 
         public int NumBonusResumeJobs { get => mNumBonusResumeJobs; set => mNumBonusResumeJobs = value; }
+
+        public int MinJobOffers { get => mMinJobOffers; set => mMinJobOffers = Common.Helpers.Min(value, ComputerCheap.kComputerTuning.FindJobNumJobOpportunies, ComputerExpensive.kComputerTuning.FindJobNumJobOpportunies, ComputerLaptop.kComputerTuning.FindJobNumJobOpportunies, 
+                                                                                                  ComputerLaptopModern.kComputerTuning.FindJobNumJobOpportunies, ComputerLaptopVenue.kComputerTuning.FindJobNumJobOpportunies, HoloComputer.kComputerTuning.FindJobNumJobOpportunies, 
+                                                                                                  Newspaper.kFindJobNumJobsOpportunitiesPerDay, Phone.UploadResume.FindJobNumJobOpportunies); }
 
         public int MaxInterviewPostpones { get => mMaxInterviewPostpones; set => mMaxInterviewPostpones = value; }
 
