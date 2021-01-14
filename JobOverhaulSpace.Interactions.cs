@@ -1953,16 +1953,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             if (OccupationEntries.Count == 0)
             {
                 StyledNotification.Show(new(LocalizeString("JobsExhausted"), StyledNotification.NotificationStyle.kGameMessagePositive));
-                Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }
             if (Settings.InstantGratification)
             {
-                if (!UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false))
-                {
-                    Target.StopUsingNewspaper(Actor, mCurrentStateMachine, mFromInventory);
-                }
+                UI.CareerSelectionModelEx.Singleton.ShowCareerSelection(Actor, Target.ObjectId, OccupationEntries, false);
                 Actor.AddExitReason(ExitReason.Finished);
                 return;
             }

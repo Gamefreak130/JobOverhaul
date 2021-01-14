@@ -10,7 +10,7 @@ using Sims3.SimIFace;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Gamefreak130.JobOverhaul")]
-[assembly: AssemblyCopyright("Copyright © 2018-2020")]
+[assembly: AssemblyCopyright("Copyright © 2018-2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: Tunable]
