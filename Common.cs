@@ -196,6 +196,42 @@ namespace Gamefreak130.Common
         public static List<T> CloneList<T>(IEnumerable<T> old) => old is not null ? new(old) : null;
 
         public static object CoinFlipSelect(object obj1, object obj2) => RandomUtil.CoinFlip() ? obj1 : obj2;
+
+        public static int Max(params int[] values)
+        {
+            if (values.Length == 0)
+            {
+                throw new ArgumentException("No values to compare");
+            }
+            if (values.Length == 1)
+            {
+                return values[0];
+            }
+            int runningMax = values[0];
+            for (int i = 1; i < values.Length - 1; i++)
+            {
+                runningMax = Math.Max(runningMax, values[i]);
+            }
+            return runningMax;
+        }
+
+        public static int Min(params int[] values)
+        {
+            if (values.Length == 0)
+            {
+                throw new ArgumentException("No values to compare");
+            }
+            if (values.Length == 1)
+            {
+                return values[0];
+            }
+            int runningMin = values[0];
+            for (int i = 1; i < values.Length - 1; i++)
+            {
+                runningMin = Math.Min(runningMin, values[i]);
+            }
+            return runningMin;
+        }
     }
 
     public static class Reflection

@@ -339,7 +339,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             return false;
         }
 
-        public static List<OccupationEntryTuple> GetRandomJobs(Sim actor, int numbJobOpps, bool isResume, int randomSeed)
+        public static List<OccupationEntryTuple> GetRandomJobs(Sim actor, int maxJobOpps, bool isResume, int randomSeed)
         {
             bool flag = false;
             if (actor.SkillManager.GetElement(SkillNames.SocialNetworking) is SocialNetworkingSkill socialNetworkingSkill && Settings.NumBonusResumeJobs > 0)
@@ -351,6 +351,8 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
             {
                 return new();
             }
+            Random randomizer = new(randomSeed);
+            int numJobOpps = RandomUtil.GetInt(Settings.MinJobOffers, maxJobOpps, randomizer);
             List<OccupationEntryTuple> list = new();
             List<OccupationEntryTuple> list2 = new();
             GreyedOutTooltipCallback tooltipCallback = null;
@@ -387,11 +389,10 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                     list2.Add(tuple);
                 }
             }
-            Random randomizer = new(randomSeed);
-            List<OccupationEntryTuple> list3 = new(numbJobOpps);
+            List<OccupationEntryTuple> list3 = new(numJobOpps);
             int num = 0;
             int randNum = list.Count != 0 ? RandomUtil.GetInt(1, list.Count, randomizer) : 0;
-            while ((num < numbJobOpps || flag) && list.Count != 0 && num != randNum)
+            while ((num < numJobOpps || flag) && list.Count != 0 && num != randNum)
             {
                 OccupationEntryTuple rand = RandomUtil.GetRandomObjectFromList(list, randomizer);
                 if (rand.OccupationEntry is Occupation occupation)
@@ -402,14 +403,14 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                         list3.Add(rand);
                         num++;
                     }
-                    if (num >= numbJobOpps + Settings.NumBonusResumeJobs)
+                    if (num >= numJobOpps + Settings.NumBonusResumeJobs)
                     {
                         flag = false;
                     }
                     list.Remove(rand);
                 }
             }
-            while ((num < numbJobOpps || flag) && list2.Count != 0)
+            while ((num < numJobOpps || flag) && list2.Count != 0)
             {
                 OccupationEntryTuple rand = RandomUtil.GetRandomObjectFromList(list2, randomizer);
                 if (rand.OccupationEntry is Occupation occupation)
@@ -420,7 +421,7 @@ namespace Gamefreak130.JobOverhaulSpace.Helpers
                         list3.Add(rand);
                         num++;
                     }
-                    if (num >= numbJobOpps + Settings.NumBonusResumeJobs)
+                    if (num >= numJobOpps + Settings.NumBonusResumeJobs)
                     {
                         flag = false;
                     }
