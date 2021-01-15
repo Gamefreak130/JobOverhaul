@@ -56,7 +56,6 @@ namespace Gamefreak130
             // TO ACCOUNT FOR DAYCARE VISITLOT WORKAROUND
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
-            //TEST In-place upgrade
             //CONSIDER Move QuitWork?
             //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
