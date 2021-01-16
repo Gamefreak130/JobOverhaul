@@ -538,7 +538,7 @@ namespace Gamefreak130.Common
                     }
                 }
             }
-            else if ((type.IsGenericType && type == typeof(IList)) || type.IsArray)
+            else if ((type.IsGenericType && currentObj is IList) || type.IsArray)
             {
                 Type elementType = type.IsGenericType ? type.GetGenericArguments()[0] : type.GetElementType();
                 IList list = type.IsArray ? Array.CreateInstance(elementType, objNode.ChildNodes.Count) : Activator.CreateInstance(type, true) as IList;
