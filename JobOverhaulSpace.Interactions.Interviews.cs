@@ -109,7 +109,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 {
                     foreach (Phone phone in GetObjects<Phone>())
                     {
-                        RemovePhoneInteractions(phone, isTimeout);
+                        CancelPhoneInteractions(phone, isTimeout);
                     } 
                     if (RabbitHole is not null)
                     {
@@ -152,11 +152,13 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         RabbitHole.RemoveInteraction(iop);
                     }
                 }
-                List<InterviewData> actorList = InterviewLists[ActorId];
-                actorList.Remove(this);
-                if (actorList.Count == 0)
+                if (InterviewLists.TryGetValue(ActorId, out List<InterviewData> actorList))
                 {
-                    InterviewLists.Remove(ActorId);
+                    actorList.Remove(this);
+                    if (actorList.Count == 0)
+                    {
+                        InterviewLists.Remove(ActorId);
+                    }
                 }
                 AlarmManager.Global.RemoveAlarm(RemindAlarm);
                 AlarmManager.Global.RemoveAlarm(TimeoutAlarm);
@@ -164,7 +166,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                 RabbitHoleDisposedListener = null;
             }
 
-            private void RemovePhoneInteractions(Phone phone, bool stopCurrentInteraction)
+            private void CancelPhoneInteractions(Phone phone, bool stopCurrentInteraction)
             {
                 if (SimDescription.Find(ActorId)?.CreatedSim is Sim actor)
                 {

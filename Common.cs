@@ -335,7 +335,7 @@ namespace Gamefreak130.Common
                 Simulator.CreateExportFile(ref fileHandle, fileName);
                 if (fileHandle != 0)
                 {
-                    CustomXmlWriter xmlWriter = new CustomXmlWriter(fileHandle);
+                    CustomXmlWriter xmlWriter = new(fileHandle);
                     xmlWriter.WriteStartDocument();
                     xmlWriter.WriteToBuffer(GenerateXmlWrapper(content));
                     xmlWriter.FlushBufferToFile();
@@ -414,7 +414,7 @@ namespace Gamefreak130.Common
 
         internal static readonly ExceptionLogger sInstance = new();
 
-        protected override void Notify() => StyledNotification.Show(new StyledNotification.Format($"Error occurred in {sName}\n\nAn error log has been created in your user directory. Please send it to Gamefreak130 for further review.", StyledNotification.NotificationStyle.kSystemMessage));
+        protected override void Notify() => StyledNotification.Show(new($"Error occurred in {sName}\n\nAn error log has been created in your user directory. Please send it to Gamefreak130 for further review.", StyledNotification.NotificationStyle.kSystemMessage));
     }
 
     [Persistable]
