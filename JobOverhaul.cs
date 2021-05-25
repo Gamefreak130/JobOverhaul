@@ -31,6 +31,7 @@ using static Gamefreak130.JobOverhaulSpace.Helpers.Listeners;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.Queries;
+using static Sims3.SimIFace.ResourceUtils;
 
 namespace Gamefreak130
 {
@@ -345,9 +346,9 @@ namespace Gamefreak130
                                     {
                                         foreach (ulong id in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
                                         {
-                                            if (ResourceUtils.HashString64(str) == id)
+                                            if (HashString64(str) == id)
                                             {
-                                                posTraits.Add((TraitNames)ResourceUtils.HashString64(str));
+                                                posTraits.Add((TraitNames)HashString64(str));
                                             }
                                         }
                                     }
@@ -368,9 +369,9 @@ namespace Gamefreak130
                                     {
                                         foreach (ulong id in GenericManager<TraitNames, Trait, Trait>.sDictionary.Keys)
                                         {
-                                            if (ResourceUtils.HashString64(str) == id)
+                                            if (HashString64(str) == id)
                                             {
-                                                negTraits.Add((TraitNames)ResourceUtils.HashString64(str));
+                                                negTraits.Add((TraitNames)HashString64(str));
                                             }
                                         }
                                     }
@@ -391,9 +392,9 @@ namespace Gamefreak130
                                     {
                                         foreach (ulong id in GenericManager<SkillNames, Skill, Skill>.sDictionary.Keys)
                                         {
-                                            if (ResourceUtils.HashString64(str) == id)
+                                            if (HashString64(str) == id)
                                             {
-                                                skills.Add((SkillNames)ResourceUtils.HashString64(str));
+                                                skills.Add((SkillNames)HashString64(str));
                                             }
                                         }
                                     }
@@ -432,9 +433,9 @@ namespace Gamefreak130
                                     {
                                         foreach (ulong id in GenericManager<AcademicDegreeNames, AcademicDegreeStaticData, AcademicDegree>.sDictionary.Keys)
                                         {
-                                            if (ResourceUtils.HashString64(str) == id)
+                                            if (HashString64(str) == id)
                                             {
-                                                degrees.Add((AcademicDegreeNames)ResourceUtils.HashString64(str));
+                                                degrees.Add((AcademicDegreeNames)HashString64(str));
                                             }
                                         }
                                     }
@@ -468,7 +469,7 @@ namespace Gamefreak130
                 {
                     foreach (XmlDbRow row in xmlDbTable.Rows)
                     {
-                        string name = row.TryGetEnum("CareerName", out _, OccupationNames.Undefined) ? row.GetString("CareerName") : ResourceUtils.HashString64(row.GetString("CareerName")).ToString();
+                        string name = row.TryGetEnum("CareerName", out _, OccupationNames.Undefined) ? row.GetString("CareerName") : HashString64(row.GetString("CareerName")).ToString();
                         if (!string.IsNullOrEmpty(name))
                         {
                             bool isAvailable = row.GetBool("Enabled");
@@ -635,12 +636,6 @@ namespace Gamefreak130
                 }
             }
         }
-
-        public const ulong kReadyForInterviewGuid = 0xCA57D12A3647413D;
-
-        public const ulong kGotTheJobGuid = 0x1770B99317A5D98A;
-
-        public const ulong kBadInterviewGuid = 0x552A7AD84AF2FA7E;
 
         public static bool IsPoolLifeguardModInstalled { get; private set; }
 

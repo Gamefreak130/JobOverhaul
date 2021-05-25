@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using static Gamefreak130.JobOverhaul;
 using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
+using static Sims3.SimIFace.ResourceUtils;
 using static Sims3.Gameplay.Queries;
 using static Sims3.UI.ObjectPicker;
 
@@ -315,7 +316,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             chance += Settings.RequiredSkillInterviewChanceChange * Actor.SkillManager.GetElement(skill).SkillLevel;
                         }
                     }
-                    if (Actor.BuffManager.HasElement(kReadyForInterviewGuid))
+                    if (Actor.BuffManager.HasElement(HashString64("Gamefreak130_ReadyForInterviewBuff")))
                     {
                         chance += Settings.ReadyForInterviewChanceChange;
                     }
@@ -352,7 +353,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                                     }
                                     Audio.StartSound("sting_career_positive");
                                 }
-                                Actor.BuffManager.AddElement(0x1770B99317A5D98A, (Origin)ResourceUtils.HashString64("FromGoodInterview"));
+                                Actor.BuffManager.AddElement(HashString64("Gamefreak130_GotTheJobBuff"), (Origin)HashString64("FromGoodInterview"));
                             }
                             return true;
                         }
@@ -361,7 +362,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                     {
                         Actor.ShowTNSIfSelectable(LocalizeString(Actor.IsFemale, "InterviewFailure", Actor), StyledNotification.NotificationStyle.kGameMessageNegative, Target.RabbitHoleProxy.ObjectId, ObjectGuid.InvalidObjectGuid);
                         Audio.StartSound("sting_opp_fail");
-                        Actor.BuffManager.AddElement(0x552A7AD84AF2FA7E, (Origin)ResourceUtils.HashString64("FromBadInterview"));
+                        Actor.BuffManager.AddElement(HashString64("Gamefreak130_BadInterviewBuff"), (Origin)HashString64("FromBadInterview"));
                         return true;
                     }
                 }

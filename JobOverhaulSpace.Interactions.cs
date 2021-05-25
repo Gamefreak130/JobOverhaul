@@ -42,6 +42,7 @@ using static Gamefreak130.JobOverhaulSpace.Helpers.Methods;
 using static Gamefreak130.JobOverhaulSpace.Interactions.Interviews;
 using static Sims3.Gameplay.ActiveCareer.ActiveCareers.DaycareTransportSituation;
 using static Sims3.Gameplay.Queries;
+using static Sims3.SimIFace.ResourceUtils;
 using static Sims3.UI.ObjectPicker;
 
 namespace Gamefreak130.JobOverhaulSpace.Interactions
@@ -1434,7 +1435,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             return true;
         }
 
-        public override ThumbnailKey GetIconKey() => new(new(ResourceUtils.HashString64("w_daycare_career_large"), 796721156u, ResourceUtils.ProductVersionToGroupId(ProductVersion.BaseGame)), ThumbnailSize.Medium);
+        public override ThumbnailKey GetIconKey() => new(new(HashString64("w_daycare_career_large"), 796721156u, ProductVersionToGroupId(ProductVersion.BaseGame)), ThumbnailSize.Medium);
     }
 
     public class JoinActiveCareerPrivateEyeEx : PoliceStation.JoinActiveCareerPrivateEye
@@ -1641,12 +1642,6 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                         greyedOutTooltipCallback = NRaasDebugTooltip("CareerAgeTest");
                         return false;
                     }
-                    Career occupationAsCareer = a.OccupationAsCareer;
-                    if (occupationAsCareer?.Guid == mLocation.Career.Guid && occupationAsCareer?.CareerLoc == mLocation)
-                    {
-                        greyedOutTooltipCallback = NRaasDebugTooltip("Already Working There");
-                        return false;
-                    }
                     if (mLocation.Career is not School && !(IsCareersInstalled && mLocation.Career.GetType() == Type.GetType("NRaas.Gameplay.Careers.Unemployed, NRaasCareer")))
                     {
                         Settings.InterviewMap.TryGetValue(mLocation.Career.SharedData.Name.Substring(34), out PersistedSettings.InterviewSettings interviewSettings);
@@ -1667,7 +1662,20 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             }
                         }
                     }
-                    return mLocation.Career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback);
+                    Career occupationAsCareer = a.OccupationAsCareer;
+                    if (occupationAsCareer?.Guid == mLocation.Career.Guid)
+                    {
+                        if (occupationAsCareer.CareerLoc == mLocation)
+                        {
+                            greyedOutTooltipCallback = NRaasDebugTooltip("Already Working There");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return mLocation.Career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback);
+                    }
+                    return true;
                 }
                 catch (Exception exception)
                 {
@@ -1774,7 +1782,7 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
             EndCommodityUpdates(flag);
             if (flag)
             {
-                Actor.BuffManager.AddElement(kReadyForInterviewGuid, Target is CollegeOfBusiness ? Origin.FromCollegeOfBusinessRabbitHole : Origin.FromSchool);
+                Actor.BuffManager.AddElement(HashString64("Gamefreak130_ReadyForInterviewBuff"), Target is CollegeOfBusiness ? Origin.FromCollegeOfBusinessRabbitHole : Origin.FromSchool);
                 Actor.ShowTNSIfSelectable(CollegeOfBusiness.LocalizeString(Actor.IsFemale, "InterviewResume", Actor), StyledNotification.NotificationStyle.kGameMessagePositive);
             }
             return flag;
