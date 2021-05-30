@@ -1670,12 +1670,12 @@ namespace Gamefreak130.JobOverhaulSpace.Interactions
                             greyedOutTooltipCallback = NRaasDebugTooltip("Already Working There");
                             return false;
                         }
+                        return true;
                     }
                     else
                     {
                         return mLocation.Career.CanAcceptCareer(a.ObjectId, ref greyedOutTooltipCallback);
                     }
-                    return true;
                 }
                 catch (Exception exception)
                 {

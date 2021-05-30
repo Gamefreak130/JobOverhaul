@@ -58,7 +58,6 @@ namespace Gamefreak130
             // SERIOUSLY DO NOT FORGET THIS YOU FUCKING MORON
 
             //CONSIDER Move QuitWork?
-            //CONSIDER Random amount of jobs per day from specified min to max?
             //CONSIDER Fix Rabbit hole proxy jobs w/out replacing rabbit hole?
 
             IsPoolLifeguardModInstalled = Common.Helpers.FindAssembly("icarusallsorts.PoolLifeguard");
